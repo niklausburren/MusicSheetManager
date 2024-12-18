@@ -1,0 +1,54 @@
+﻿<Window x:Class="MusicSheetManager.Views.ImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Title="Import Music Sheets" Height="800" Width="1024" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel Grid.Column="0" Margin="10">
+            <GroupBox Header="Metadata" Padding="5,0,5,5" VerticalAlignment="Top">
+                <StackPanel>
+                    <Label Content="Title" />
+                    <TextBox Name="TitleTextBox" IsReadOnly="True" />
+                    <Label Content="Composer" />
+                    <TextBox Name="ComposerTextBox" />
+                    <Label Content="Arranger" />
+                    <TextBox Name="ArrangerTextBox" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Import options" Padding="5,0,5,5" VerticalAlignment="Top">
+                <StackPanel>
+                    <Label Content="Pages per Sheet" />
+                    <ComboBox Name="PagesPerSheetComboBox" SelectedIndex="0">
+                        <ComboBoxItem Content="1 Page" />
+                        <ComboBoxItem Content="2 Pages" />
+                        <ComboBoxItem Content="3 Pages" />
+                        <ComboBoxItem Content="4 Pages" />
+                        <ComboBoxItem Content="Alle Pages" />
+                    </ComboBox>
+                    <CheckBox Content="Split A3 to A4" Name="SplitA3ToA4CheckBox" IsChecked="True" Margin="0,10,0,0" />
+                    <CheckBox Content="Rotate" Name="RotateCheckBox" IsChecked="True" Margin="0,10,0,0" />
+                </StackPanel>
+            </GroupBox>
+            <Button Content="Import" Name="ImportButton" Margin="0,10,0,0" VerticalAlignment="Top" Command="{Binding ImportCommand}" />
+            <ListView Name="MusicSheetListView" Margin="0,10,0,0">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Instrument" DisplayMemberBinding="{Binding Instrument}" Width="100"/>
+                        <GridViewColumn Header="Voice" DisplayMemberBinding="{Binding Voice}" Width="100"/>
+                        <GridViewColumn Header="Clef" DisplayMemberBinding="{Binding Clef}" Width="100"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+        
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <WebBrowser Name="PdfWebViewer" Grid.Column="2" />
+    </Grid>
+</Window>
