@@ -1,5 +1,5 @@
-﻿using Autofac;
-using System.Windows;
+﻿using System.Windows;
+using Autofac;
 using MusicSheetManager.Views;
 
 namespace MusicSheetManager
@@ -9,19 +9,26 @@ namespace MusicSheetManager
     /// </summary>
     public partial class App : Application
     {
-        private IContainer _container;
+        #region Properties
+
+        public static  IContainer Container { get; private set; }
+
+        #endregion
+
+
+        #region Protected Methods
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Autofac konfigurieren
-            _container = DependencyConfig.Configure();
+            Container = DependencyConfig.Configure();
 
-            // Hauptfenster aufrufen
-            var mainWindow = _container.Resolve<MainWindow>();
+            var mainWindow = Container.Resolve<MainWindow>();
             mainWindow.Show();
         }
+
+        #endregion
     }
 
 }

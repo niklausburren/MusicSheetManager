@@ -3,10 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MusicSheetManager"
+        xmlns:viewModels="clr-namespace:MusicSheetManager.ViewModels"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:models="clr-namespace:MusicSheetManager.Models"
         mc:Ignorable="d"
-        Title="MusicSheetManager" Height="1024" Width="1920"
-        WindowStartupLocation="CenterScreen">
+        d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
+        Title="MusicSheetManager" Height="800" Width="1024"
+        WindowStartupLocation="CenterScreen"
+        Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,21 +23,80 @@
             <MenuItem Header="Edit">
                 <!-- Edit menu items can be added here -->
             </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
+                <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
+                <Separator />
+                <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}" />
+            </MenuItem>
             <MenuItem Header="Info">
                 <!-- Info menu items can be added here -->
             </MenuItem>
         </Menu>
         <TabControl Grid.Row="1">
             <TabItem Header="Music sheets">
-                <StackPanel>
-                    <Button Content="Import" Click="ImportButton_Click"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <Button Content="Import" Click="ImportButton_Click" Width="67" />
+                    </StackPanel>
+                    <TreeView ItemsSource="{Binding MusicSheetTab.MusicSheetFolders}" Grid.Row="1">
+                        <TreeView.Resources>
+                            <HierarchicalDataTemplate DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}">
+                                <TextBlock Text="{Binding Title}" />
+                            </HierarchicalDataTemplate>
+                            <DataTemplate DataType="{x:Type models:MusicSheet}">
+                                <TextBlock Text="{Binding Instrument.DisplayName}" />
+                            </DataTemplate>
+                        </TreeView.Resources>
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                    </TreeView>
+                </Grid>
             </TabItem>
             <TabItem Header="Playlists">
                 <!-- Content for Playlists tab -->
             </TabItem>
             <TabItem Header="Peoples">
-                <!-- Content for Peoples tab -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <ListView ItemsSource="{Binding PeopleTab.People}" SelectedItem="{Binding PeopleTab.SelectedPerson}" Grid.Column="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn DisplayMemberBinding="{Binding FirstName}" Width="120">
+                                    <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding LastName}" Width="120">
+                                    <GridViewColumnHeader Content="Lastname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding Instrument.DisplayName}" Width="180">
+                                    <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding Part.DisplayName}" Width="60">
+                                    <GridViewColumnHeader Content="Part" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding Clef.DisplayName}" Width="60">
+                                    <GridViewColumnHeader Content="Clef" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    
+                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+                    
+                    <xctk:PropertyGrid SelectedObject="{Binding PeopleTab.SelectedPerson}" Grid.Column="2" />
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

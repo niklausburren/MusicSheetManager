@@ -1,5 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Autofac;
 using Microsoft.Win32;
+using MusicSheetManager.Models;
+using MusicSheetManager.ViewModels;
 
 namespace MusicSheetManager.Views;
 
@@ -8,18 +14,44 @@ namespace MusicSheetManager.Views;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private ImportDialog ImportDialog { get; }
+    #region Constructors
 
-    public MainWindow(ImportDialog importDialog)
+    public MainWindow(MainWindowViewModel viewModel)
     {
-        this.ImportDialog = importDialog;
-        
-        InitializeComponent();
+        this.InitializeComponent();
+        this.DataContext = viewModel;
+    }
+
+    #endregion
+
+
+    #region Event Handlers
+
+    private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await ((MainWindowViewModel)this.DataContext).InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "MusicSheetManager", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
+    }
+
+    private void TreeViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is TreeViewItem item && item.DataContext is MusicSheetFolder folder)
+        {
+            e.Handled = true;
+            var assignmentsDialog = App.Container.Resolve<AssignmentsDialog>();
+            assignmentsDialog.ShowDialog(this, folder);
+        }
     }
 
     private void ImportButton_Click(object sender, RoutedEventArgs e)
@@ -30,11 +62,14 @@ public partial class MainWindow : Window
             Title = "Select a PDF file"
         };
 
-        if (openFileDialog.ShowDialog(this) == true)
+        if (openFileDialog.ShowDialog(this) != true)
         {
-            this.ImportDialog.FileName = openFileDialog.FileName;
-            this.ImportDialog.Owner = this;
-            this.ImportDialog.ShowDialog();
+            return;
         }
+
+        var importDialog = App.Container.Resolve<ImportDialog>();
+        importDialog.ShowDialog(this, openFileDialog.FileName);
     }
+
+    #endregion
 }
