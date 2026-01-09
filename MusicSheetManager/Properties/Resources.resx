@@ -138,8 +138,8 @@
   <data name="InstrumentInfo_Bassoon" xml:space="preserve">
     <value>Bassoon</value>
   </data>
-  <data name="InstrumentInfo_AltoClarinetBb" xml:space="preserve">
-    <value>Alto Clarinet Bb</value>
+  <data name="InstrumentInfo_AltoClarinetEb" xml:space="preserve">
+    <value>Alto Clarinet Eb</value>
   </data>
   <data name="InstrumentInfo_ClarinetEb" xml:space="preserve">
     <value>Clarinet Eb</value>
@@ -244,8 +244,35 @@
     <value>Baritone Saxophone Eb</value>
   </data>
   <data name="MissingMusicSheetException_Message" xml:space="preserve">
-	  <value>The following persons are missing at least one sheet of music: 
+    <value>The following persons are missing at least one sheet of music: 
 
 {0}</value>
+  </data>
+  <data name="InstrumentInfo_QuadToms" xml:space="preserve">
+    <value>Quad Toms</value>
+  </data>
+  <data name="InstrumentInfo_ElectricBass" xml:space="preserve">
+    <value>Electric Bass</value>
+  </data>
+  <data name="InstrumentInfo_FlugelhornEb" xml:space="preserve">
+    <value>Flugelhorn Eb</value>
+  </data>
+  <data name="InstrumentInfo_SleighBells" xml:space="preserve">
+    <value>Sleigh Bells</value>
+  </data>
+  <data name="InstrumentInfo_TubularBells" xml:space="preserve">
+    <value>Tubular Bells</value>
+  </data>
+  <data name="InstrumentInfo_EnglishHorn" xml:space="preserve">
+    <value>English Horn</value>
+  </data>
+  <data name="InstrumentInfo_TenorHornC" xml:space="preserve">
+    <value>Tenor Horn C</value>
+  </data>
+  <data name="InstrumentInfo_ContrabassClarinetBb" xml:space="preserve">
+    <value>Contrabass Clarinet Bb</value>
+  </data>
+  <data name="InstrumentInfo_BassTromboneC" xml:space="preserve">
+    <value>Bass Trombone C</value>
   </data>
 </root>

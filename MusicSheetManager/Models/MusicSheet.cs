@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using IronOcr;
@@ -140,6 +141,29 @@ public class MusicSheet : ObservableObject
         str += " - " + this.Clef.DisplayName;
 
         return str;
+    }
+
+    public void UpdateFileName()
+    {
+        if (HasNumberingInParentheses(this.FileName))
+        {
+            var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
+
+            if (newFileName != this.FileName)
+            {
+                File.Move(this.FileName, newFileName);
+                this.FileName = newFileName;
+            }
+        }
+    }
+
+    public static bool HasNumberingInParentheses(string fileName)
+    {
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+        if (Regex.IsMatch(fileNameWithoutExtension, @"\(\d+\)$"))
+            return true;
+
+        return false;
     }
 
     #endregion

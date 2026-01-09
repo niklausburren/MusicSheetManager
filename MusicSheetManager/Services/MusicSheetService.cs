@@ -86,9 +86,16 @@ internal class MusicSheetService : IMusicSheetService
     /// <inheritdoc />
     public void Import(MusicSheetFolderMetadata metadata, IEnumerable<MusicSheet> musicSheets)
     {
+        var sheets = musicSheets.ToList();
+
+        foreach (var sheet in sheets)
+        {
+            sheet.UpdateFileName();
+        }
+
         var folder = this.MusicSheetFolders.FirstOrDefault(f => f.Title == metadata.Title) ?? MusicSheetFolder.Create(metadata);
 
-        folder.ImportSheets(musicSheets.ToList());
+        folder.ImportSheets(sheets);
     }
 
     public void SplitPagesFromA3ToA4(string fileName)

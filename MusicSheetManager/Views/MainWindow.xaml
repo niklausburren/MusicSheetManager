@@ -28,6 +28,8 @@
                 <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
                 <Separator />
                 <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}" />
+                <Separator />
+                <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
             </MenuItem>
             <MenuItem Header="Info">
                 <!-- Info menu items can be added here -->
@@ -49,7 +51,7 @@
                                 <TextBlock Text="{Binding Title}" />
                             </HierarchicalDataTemplate>
                             <DataTemplate DataType="{x:Type models:MusicSheet}">
-                                <TextBlock Text="{Binding Instrument.DisplayName}" />
+                                <TextBlock Text="{Binding}" />
                             </DataTemplate>
                         </TreeView.Resources>
                         <TreeView.ItemContainerStyle>

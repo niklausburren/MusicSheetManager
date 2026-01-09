@@ -20,7 +20,7 @@ namespace MusicSheetManager.Utilities
 
         public static string MusicSheetFolder { get; } = Path.Combine(AppDataFolder, "sheets");
 
-        public static string DistributionFolder { get; } = "C:\\Users\\nikla\\OneDrive\\Desktop\\01_Stimmverteilung\\2025";
+        public static string DistributionFolder { get; } = "C:\\Users\\nikla\\01_Stimmverteilung\\2026";
 
         public static string ImportFolder { get; } = Path.Combine(TempFolder, "import");
 

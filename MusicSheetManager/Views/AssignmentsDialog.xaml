@@ -20,7 +20,7 @@
 
         <StackPanel Grid.Row="0" Margin="10">
             <Label Content="{Binding MusicSheetFolder.Title}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 0, 0, 5" Padding="0"/>
-            <Label Content="{Binding MusicSheetFolder.Composer}" FontSize="12" FontWeight="Regular" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" Padding="0"/>
+            <Label Content="{Binding MusicSheetFolder.Credits}" FontSize="12" FontWeight="Regular" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" Padding="0"/>
         </StackPanel>
 
         <ListView ItemsSource="{Binding People}" Grid.Row="1" Margin="10">

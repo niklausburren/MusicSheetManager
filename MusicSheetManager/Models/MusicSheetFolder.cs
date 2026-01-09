@@ -56,6 +56,32 @@ namespace MusicSheetManager.Models
 
         public string Arranger => this.Metadata.Arranger;
 
+        public string Credits
+        {
+            get
+            {
+                var credits = string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(this.Composer))
+                {
+                    credits += this.Composer;
+                }
+
+                if (!string.IsNullOrWhiteSpace(this.Arranger))
+                {
+                    if (!string.IsNullOrWhiteSpace(credits))
+                    {
+                        credits += ", ";
+                    }
+
+                    credits += $"arr. {this.Arranger}";
+                }
+
+                return credits;
+            }
+
+        }
+
         #endregion
 
 
@@ -85,7 +111,7 @@ namespace MusicSheetManager.Models
                 throw new ArgumentException("All music sheets must have a valid instrument.");
             }
 
-            if (sheets.Any(s => HasNumberingInParentheses(s.FileName)))
+            if (sheets.Any(s => MusicSheet.HasNumberingInParentheses(s.FileName)))
             {
                 throw new ArgumentException("All music sheets must have a unique file name. The wrong instrument, part or clef has been selected for at least one music sheet.");
             }
@@ -101,20 +127,6 @@ namespace MusicSheetManager.Models
                 sheet.MoveToFolder(this.Folder);
                 _sheets.Add(sheet);
             }
-        }
-
-        #endregion
-
-
-        #region Private Methods
-
-        private static bool HasNumberingInParentheses(string fileName)
-        {
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-            if (Regex.IsMatch(fileNameWithoutExtension, @"\(\d+\)$"))
-                return true;
-
-            return false;
         }
 
         #endregion

@@ -62,14 +62,20 @@ namespace MusicSheetManager.Models
                 instrument == InstrumentInfo.BassTromboneBb ||
                 instrument == InstrumentInfo.StringBass ||
                 instrument == InstrumentInfo.Timpani ||
-                instrument == InstrumentInfo.BassDrum)
+                instrument == InstrumentInfo.BassDrum ||
+                instrument == InstrumentInfo.TromboneC ||
+                instrument == InstrumentInfo.TenorHornC ||
+                instrument == InstrumentInfo.BaritoneHornC ||
+                instrument == InstrumentInfo.BassC)
             {
                 return BassClef;
             }
 
             if (instrument == InstrumentInfo.Percussion ||
                 instrument == InstrumentInfo.DrumSet ||
-                instrument == InstrumentInfo.SnareDrum)
+                instrument == InstrumentInfo.SnareDrum ||
+                instrument == InstrumentInfo.Cymbals ||
+                instrument == InstrumentInfo.Triangle)
             {
                 return PercussionClef;
             }
@@ -88,11 +94,11 @@ namespace MusicSheetManager.Models
                     continue;
                 }
 
-                foreach (var part in All)
+                foreach (var clef in All)
                 {
-                    if (part.Patterns.Any(partPattern => ContainsClef(text, instrumentPattern, partPattern, 10)))
+                    if (clef.Patterns.Any(clefPattern => ContainsClef(text, instrumentPattern, clefPattern, 10)))
                     {
-                        return part;
+                        return clef;
                     }
                 }
 

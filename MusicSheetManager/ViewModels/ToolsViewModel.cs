@@ -19,6 +19,7 @@ public class ToolsViewModel
         this.SplitA3ToA4Command = new RelayCommand(this.SplitPagesFromA3ToA4);
         this.RotatePagesCommand = new RelayCommand(this.RotatePages);
         this.DistributeSheetsCommand = new RelayCommand(this.DistributeSheets);
+        this.ExportPartDistributionCommand = new RelayCommand(this.ExportPartDistribution);
     }
 
     #endregion
@@ -35,6 +36,8 @@ public class ToolsViewModel
     public ICommand RotatePagesCommand { get; }
 
     public ICommand DistributeSheetsCommand { get; }
+
+    public ICommand ExportPartDistributionCommand { get; }
 
     #endregion
 
@@ -87,6 +90,18 @@ public class ToolsViewModel
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ExportPartDistribution()
+    {
+        try
+        {
+            this.DistributionService.ExportPartDistribution();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error exporting part distribution: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

@@ -48,11 +48,25 @@ namespace MusicSheetManager.Services
 
         public MusicSheet GetDefaultMusicSheet(MusicSheetFolder folder, Person person)
         {
-            var assignableMusicSheets = this.GetAssignableMusicSheets(folder, person).ToList();
-
-            foreach (var part in person.Part?.GetSelfAndHigherParts() ?? PartInfo.All)
+            foreach (var instrument in person.Instrument.GetSelfAndFallbacks())
             {
-                var musicSheet = assignableMusicSheets.FirstOrDefault(s => s.Parts.Contains(part) || !s.Parts.Any());
+                var assignableMusicSheets = folder.Sheets
+                    .Where(s => s.Instrument == instrument && s.Clef == person.Clef)
+                    .ToList();
+
+                MusicSheet musicSheet;
+
+                foreach (var part in person.Part?.GetSelfAndHigherParts() ?? PartInfo.All)
+                {
+                    musicSheet = assignableMusicSheets.FirstOrDefault(s => s.Parts.Contains(part));
+
+                    if (musicSheet != null)
+                    {
+                        return musicSheet;
+                    }
+                }
+
+                musicSheet = assignableMusicSheets.FirstOrDefault(s => !s.Parts.Any());
 
                 if (musicSheet != null)
                 {

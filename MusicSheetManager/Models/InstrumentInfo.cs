@@ -38,67 +38,109 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public static InstrumentInfo Oboe { get; } = new("Oboe", InstrumentCategory.Wood, "Oboe");
 
+    public static InstrumentInfo EnglishHorn { get; } = new("EnglishHorn", InstrumentCategory.Wood, "English Horn", "Englischhorn");
+
     public static InstrumentInfo Bassoon { get; } = new("Bassoon", InstrumentCategory.Wood, "Bassoon", "Fagott");
 
-    public static InstrumentInfo AltoClarinetBb { get; } = new("AltoClarinetBb", InstrumentCategory.Wood, "Eb Alto Clarinet", "Alto Clarinet", "Klarinette Alt B", "Klarinette Alt");
+    public static InstrumentInfo ClarinetBb { get; } = new("ClarinetBb", InstrumentCategory.Wood, "Bb Clarinet", "Clarinet Bb", "Clarinet in Bb", "Clarinet .{0,6}in Bb", "Bb Klarinette", "Klarinette Bb", "Klarinette in Bb", "Klarinette .{0,6}in Bb", "B Klarinette", "Klarinette B", "Klarinette in B", "Klarinette .{0,6}in B");
 
-    public static InstrumentInfo BassClarinetBb { get; } = new("BassClarinetBb", InstrumentCategory.Wood, "Bb Bass Clarinet", "Bass Clarinet in B", "Bass Clarinet", "Bass Klarinette B", "Bass Klarinette");
+    public static InstrumentInfo ClarinetEb { get; } = new("ClarinetEb", InstrumentCategory.Wood, "Eb Clarinet", "Clarinet Eb", "Clarinet in Eb", "Clarinet .{0,6}in Eb", "Eb Klarinette", "Klarinette Eb", "Klarinette in Eb", "Klarinette .{0,6}in Eb", "Es Klarinette", "Klarinette Es", "Klarinette in Es", "Klarinette .{0,6}in Es");
 
-    public static InstrumentInfo ClarinetEb { get; } = new("ClarinetEb", InstrumentCategory.Wood, "Eb Clarinet", "Clarinet .{0,6}in Eb", "Klarinette Es");
+    public static InstrumentInfo AltoClarinetEb { get; } = new("AltoClarinetEb", InstrumentCategory.Wood, "Eb Alto Clarinet", "Alto Clarinet Eb", "Alto Clarinet in Eb", "Eb Klarinette", "Klarinette Eb", "Klarinette in Eb", "Klarinette Alt Es", "Klarinette Alt", "Alt Klarinette");
 
-    public static InstrumentInfo ClarinetBb { get; } = new("ClarinetBb", InstrumentCategory.Wood, "Bb Clarinet", "Clarinet .{0,6}in B", "Clarinet", "Klarinette B", "Klarinette");
+    public static InstrumentInfo BassClarinetBb { get; } = new("BassClarinetBb", InstrumentCategory.Wood, "Bb Bass Clarinet", "Bass Clarinet Bb", "Bass Clarinet in Bb", "Bass Clarinet", "B Bass Klarinette", "Bass Klarinette B", "Bass Klarinette in B", "Bass Klarinette", "B Bassklarinette", "Bassklarinette B", "Bassklarinette in B", "Bassklarinette");
+
+    public static InstrumentInfo ContrabassClarinetBb { get; } = new("ContrabassClarinetBb", InstrumentCategory.Wood, "Bb Contrabass Clarinet", "Contrabass Clarinet Bb", "Contrabass Clarinet in Bb", "Contrabass Clarinet", "B Kontrabass Klarinette", "Kontrabass Klarinette B", "Kontrabass Klarinette in B", "Kontrabass Klarinette", "B Kontrabassklarinette", "Kontrabassklarinette B", "Kontrabassklarinette in B", "Kontrabassklarinette");
 
     public static InstrumentInfo SopranoSaxophoneBb { get; } = new("SopranoSaxophoneBb", InstrumentCategory.Wood, "Bb Soprano Saxophone", "Soprano Saxophon B", "Saxophon soprano in B");
 
-    public static InstrumentInfo AltoSaxophoneEb { get; } = new("AltoSaxophoneEb", InstrumentCategory.Wood, "Eb Alto Saxophone", "Alto Saxophon .{0,6}in Eb", "Alto Saxophone", "Saxophon Alt Es");
+    public static InstrumentInfo AltoSaxophoneEb { get; } = new("AltoSaxophoneEb", InstrumentCategory.Wood, "Eb Alto Saxophone", "Alto Saxophone Eb", "Alto Saxophone in Eb", "Alto Saxophon .{0,6}in Eb", "Alto Saxophone", "Eb Altsaxophon", "Altsaxophon Eb", "Altsaxophon in Eb", "Altsaxophon .{0,6}in Eb", "Altsaxophon", "Saxophon Alt Es");
 
-    public static InstrumentInfo TenorSaxophoneBb { get; } = new("TenorSaxophoneBb", InstrumentCategory.Wood, "Bb Tenor Saxophone", "Tenor Saxophon in B", "Tenor Saxophone", "Saxophon Tenor B");
+    public static InstrumentInfo TenorSaxophoneBb { get; } = new("TenorSaxophoneBb", InstrumentCategory.Wood, "Bb Tenor Saxophone", "Tenor Saxophon in Bb", "Tenor Saxophon .{0,6}in Bb", "Tenor Saxophone", "Bb Tenorsaxophon", "Tenorsaxophon Bb", "Tenorsaxophon in Bb", "Tenorsaxophon .{0,6}in Bb", "Tenorsaxophon", "Saxophon Tenor B");
 
-    public static InstrumentInfo BaritoneSaxophoneEb { get; } = new("BaritoneSaxophoneEb", InstrumentCategory.Wood, "Eb Baritone Saxophone", "Bariton Saxophon Eb", "Baritone Saxophone", "Saxophon Bariton Es");
+    public static InstrumentInfo BaritoneSaxophoneEb { get; } = new("BaritoneSaxophoneEb", InstrumentCategory.Wood, "Eb Baritone Saxophone", "Bariton Saxophon Eb", "Bariton Saxophon in Eb", "Baritone Saxophone", "Eb Baritonsaxophon", "Baritonsaxophon Eb", "Baritonsaxophon in Eb", "Baritonsaxophon", "Saxophon Bariton Es");
 
     public static InstrumentInfo CornetBb { get; } = new("CornetBb", InstrumentCategory.Brass, "Bb Cornet", "Cornet B", "Cornet");
 
-    public static InstrumentInfo FlugelhornBb { get; } = new("FlugelhornBb", InstrumentCategory.Brass, "Bb Flugelhorn", "Flugelhorn .{0,6}in B", "Flügelhorn B", "Flügelhorn");
-
     public static InstrumentInfo TrumpetBb { get; } = new("TrumpetBb", InstrumentCategory.Brass, "Bb Trumpet", "Trumpet .{0,6}in B", "Trumpet", "Trompete B", "Trompete");
 
-    public static InstrumentInfo HornF { get; } = new("HornF", InstrumentCategory.Brass, "F Horn", "Horn .{0,6}in F", "Horn F");
+    public static InstrumentInfo FlugelhornBb { get; } = new("FlugelhornBb", InstrumentCategory.Brass, "Bb Flugelhorn", "Flugelhorn .{0,6}in B", "Flügelhorn B");
 
-    public static InstrumentInfo HornEb { get; } = new("HornEb", InstrumentCategory.Brass, "Eb Horn", "Horn .{0,6}in Eb", "Horn Es");
+    public static InstrumentInfo FlugelhornEb { get; } = new("FlugelhornEb", InstrumentCategory.Brass, "Eb Flugelhorn", "Flugelhorn .{0,6}in Eb", "Flügelhorn Eb");
 
-    public static InstrumentInfo BassTromboneBb { get; } = new("BassTromboneBb", InstrumentCategory.Brass, "Bb Bass Trombone", "Bass Trombone", "Bass Posaune");
+    public static InstrumentInfo HornEb { get; } = new("HornEb", InstrumentCategory.Brass, "Eb Horn", "Horn Eb", "Horn in Eb", "Horn .{0,6}in Eb", "Es Horn", "Horn Es", "Horn in Es", "Horn .{0,6}in Es");
 
-    public static InstrumentInfo TromboneBb { get; } = new("TromboneBb", InstrumentCategory.Brass, "Bb Trombone", "Trombone .{0,6}in Bb", "C Trombone", "Trombone .{0,6}in C", "Trombone", "Posaune B", "Posaune");
+    public static InstrumentInfo HornF { get; } = new("HornF", InstrumentCategory.Brass, "F Horn", "Horn F", "Horn in F", "Horn .{0,6}in F");
 
-    public static InstrumentInfo BaritoneHornBb { get; } = new("BaritoneHornBb", InstrumentCategory.Brass, "Bb Baritone Horn", "Baritone in Bb", "Bariton B", "Bariton 5", "C Baritone Horn", "Baritone in C", "Bariton C", "Bariton");
+    public static InstrumentInfo TromboneBb { get; } = new("TromboneBb", InstrumentCategory.Brass, "Bb Trombone", "Trombone Bb", "Trombone in Bb", "Trombone .{0,6}in Bb", "Bb Posaune", "Posaune Bb", "Posaune in Bb", "Posaune .{0,6}in Bb", "B Posaune", "Posaune B", "Posaune in B", "Posaune .{0,6}in B");
 
-    public static InstrumentInfo TenorHornEb { get; } = new("TenorHornEb", InstrumentCategory.Brass, "Eb Tenor Horn", "Althorn Es");
+    public static InstrumentInfo TromboneC { get; } = new("TromboneC", InstrumentCategory.Brass, "C Trombone", "Trombone C", "Trombone in C", "Trombone .{0,6}in C", "C Posaune", "Posaune C", "Posaune in C", "Posaune .{0,6}in C");
 
-    public static InstrumentInfo TenorHornBb { get; } = new("TenorHornBb", InstrumentCategory.Brass, "Bb Tenor Horn", "Tenorhorn B");
+    public static InstrumentInfo BassTromboneBb { get; } = new("BassTromboneBb", InstrumentCategory.Brass, "Bb Bass Trombone", "Bass Trombone Bb", "Bass Trombone in Bb", "Bb Bass Posaune", "Bass Posaune Bb", "Bass Posaune in Bb", "Bb Bassposaune", "Bassposaune Bb", "Bassposaune in Bb");
 
-    public static InstrumentInfo EuphoniumBb { get; } = new("EuphoniumBb", InstrumentCategory.Brass, "Bb Euphonium", "Euphonium in Bb", "C Euphonium", "Euphonium in C", "Euphonium C", "Euphonium");
+    public static InstrumentInfo BassTromboneC { get; } = new("BassTromboneC", InstrumentCategory.Brass, "C Bass Trombone", "Bass Trombone C", "Bass Trombone in C", "C Bass Posaune", "Bass Posaune C", "Bass Posaune in C", "C Bassposaune", "Bassposaune C", "Bassposaune in C");
 
-    public static InstrumentInfo BassEb { get; } = new("BassEb", InstrumentCategory.Brass, "Eb Bass", "Bass in Eb", "Bass Es", "Bässe .{0,6}Eb");
+    public static InstrumentInfo BaritoneHornC { get; } = new("BaritoneHornC", InstrumentCategory.Brass, "C Baritone Horn", "Baritone Horn C", "Baritone Horn in C", "C Baritone", "Baritone C", "Baritone in C", "C Bariton", "Bariton C", "Bariton in C");
 
-    public static InstrumentInfo BassBb { get; } = new("BassBb", InstrumentCategory.Brass, "Bb Bass", "Bass in Bb", "Bass B", "Bässe .{0,6}Bb", "C Bass", "Bass C", "Bässe .{0,6}C", "Bb Tuba", "Tuba");
+    public static InstrumentInfo BaritoneHornBb { get; } = new("BaritoneHornBb", InstrumentCategory.Brass, "Bb Baritone Horn", "Baritone Horn Bb", "Baritone Horn in Bb", "Baritone Horn .{0,6}in Bb", "Bb Baritone", "Baritone Bb", "Baritone in Bb", "Baritone .{0,6}in Bb", "Bb Bariton", "Bariton Bb", "Bariton in Bb", "Bariton .{0,6}in Bb", "B Bariton", "Bariton B", "Bariton in B", "Bariton .{0,6}in B");
+
+    public static InstrumentInfo TenorHornBb { get; } = new("TenorHornBb", InstrumentCategory.Brass, "Bb Tenor Horn", "Tenor Horn Bb", "Tenor Horn in Bb", "Tenor Horn .{0,6}in Bb", "Bb Tenorhorn", "Tenorhorn Bb", "Tenorhorn in Bb", "Tenorhorn .{0,6}in Bb", "B Tenorhorn", "Tenorhorn B", "Tenorhorn in B", "Tenorhorn .{0,6}in B");
+
+    public static InstrumentInfo TenorHornC { get; } = new("TenorHornC", InstrumentCategory.Brass, "C Tenor Horn", "Tenor Horn C", "Tenor Horn in C", "Tenor Horn .{0,6}in C", "C Tenorhorn", "Tenorhorn C", "Tenorhorn in C", "Tenorhorn .{0,6}in C");
+
+    public static InstrumentInfo TenorHornEb { get; } = new("TenorHornEb", InstrumentCategory.Brass, "Eb Tenor Horn", "Tenor Horn Eb", "Tenor Horn in Eb", "Tenor Horn .{0,6}in Eb", "Eb Tenorhorn", "Tenorhorn Eb", "Tenorhorn in Eb", "Tenorhorn .{0,6}in Eb", "Althorn Es");
+
+    public static InstrumentInfo EuphoniumBb { get; } = new("EuphoniumBb", InstrumentCategory.Brass, "Bb Euphonium", "Euphonium Bb", "Euphonium in Bb", "Euphonium .{0,6}in Bb");
+
+    public static InstrumentInfo EuphoniumC { get; } = new("EuphoniumC", InstrumentCategory.Brass, "C Euphonium", "Euphonium C", "Euphonium in C", "Euphonium .{0,6}in C");
+
+    public static InstrumentInfo BassBb { get; } = new("BassBb", InstrumentCategory.Brass, "Bb Bass", "Bass Bb", "Bass in Bb", "Bass .{0,6}in Bb", "Bb Bass", "Bass Bb", "Bass in Bb", "Bass .{0,6}in Bb", "B Bass", "Bass B", "Bass in B", "Bass .{0,6}in B", "B Bässe", "Bässe B", "Bässe in B", "Bässe .{0,6}in B", "Bb Tuba", "Tuba Bb", "Tuba in Bb", "Tuba .{0,6}in Bb");
+
+    public static InstrumentInfo BassC { get; } = new("BassC", InstrumentCategory.Brass, "C Bass", "Bass C", "Bass in C", "Bass .{0,6}in C", "C Bässe", "Bässe C", "Bässe in C", "Bässe .{0,6}in C", "C Tuba", "Tuba C", "Tuba in C", "Tuba .{0,6}in C");
+
+    public static InstrumentInfo BassEb { get; } = new("BassEb", InstrumentCategory.Brass, "Eb Bass", "Bass Eb", "Bass in Eb", "Bass .{0,6}in Eb", "Es Bass", "Bass Es", "Bass in Es", "Bass .{0,6}in Es", "Eb Bässe", "Bässe Eb", "Bässe in Eb", "Bässe .{0,6}in Eb", "Eb Tuba", "Tuba Eb", "Tuba in Eb", "Tuba .{0,6}in Eb");
 
     public static InstrumentInfo Basses { get; } = new("Basses", InstrumentCategory.Brass, "Basses");
 
-    public static InstrumentInfo StringBass { get; } = new("StringBass", InstrumentCategory.Strings, "String Bass", "Basses", "Kontrabass");
+    public static InstrumentInfo Alphorn { get; } = new("Alphorn", InstrumentCategory.Brass, "Alphorn", "Alphörner");
 
-    public static InstrumentInfo DrumSet { get; } = new("DrumSet", InstrumentCategory.Percussion, "Drum Set");
+    public static InstrumentInfo Percussion { get; } = new("Percussion", InstrumentCategory.Percussion, "Percussion", "Perkussion");
+
+    public static InstrumentInfo DrumSet { get; } = new("DrumSet", InstrumentCategory.Percussion, "Drum Set", "Drums");
+
+    public static InstrumentInfo Cymbals { get; } = new("Cymbals", InstrumentCategory.Percussion, "Cymbals", "Becken");
 
     public static InstrumentInfo SnareDrum { get; } = new("SnareDrum", InstrumentCategory.Percussion, "Snare Drum", "Kleine Trommel");
 
     public static InstrumentInfo BassDrum { get; } = new("BassDrum", InstrumentCategory.Percussion, "Bass Drum", "Grosse Trommel");
 
+    public static InstrumentInfo QuadToms { get; } = new("QuadToms", InstrumentCategory.Percussion, "Quad Toms");
+
     public static InstrumentInfo Timpani { get; } = new("Timpani", InstrumentCategory.Percussion, "Timpani");
+
+    public static InstrumentInfo TubularBells { get; } = new("TubularBells", InstrumentCategory.Percussion, "Tubular Bells", "Chimes", "Röhrenglockenspiel");
+
+    public static InstrumentInfo Glockenspiel { get; } = new("Glockenspiel", InstrumentCategory.Percussion, "Glockenspiel");
 
     public static InstrumentInfo Mallets { get; } = new("Mallets", InstrumentCategory.Percussion, "Mallets", "Mallet Percussion");
 
     public static InstrumentInfo Lyra { get; } = new("Lyra", InstrumentCategory.Percussion, "Lyra");
 
-    public static InstrumentInfo Percussion { get; } = new("Percussion", InstrumentCategory.Percussion, "Percussion", "Perkussion");
+    public static InstrumentInfo Tambourine { get; } = new("Tambourine", InstrumentCategory.Percussion, "Tambourine", "Tamburin");
+
+    public static InstrumentInfo Triangle { get; } = new("Triangle", InstrumentCategory.Percussion, "Triangle", "Triangel");
+
+    public static InstrumentInfo SleighBells { get; } = new("SleighBells", InstrumentCategory.Percussion, "Sleigh Bells", "Schellen");
+
+    public static InstrumentInfo StringBass { get; } = new("StringBass", InstrumentCategory.Strings, "String Bass", "Basses", "Kontrabass");
+
+    public static InstrumentInfo ElectricBass { get; } = new("ElectricBass", InstrumentCategory.Strings, "Electric Bass", "E-Bass");
+
+    public static InstrumentInfo Guitar { get; } = new("Guitar", InstrumentCategory.Strings, "Guitar", "Gitarre");
+
+    public static InstrumentInfo Piano { get; } = new("Piano", InstrumentCategory.Keys, "Piano", "Klavier");
+
+    public static InstrumentInfo Keyboard { get; } = new("Keyboard", InstrumentCategory.Keys, "Keyboard");
 
     public static IEnumerable<InstrumentInfo> All => typeof(InstrumentInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
@@ -229,7 +271,8 @@ public enum InstrumentCategory
     Wood,
     Brass,
     Percussion,
-    Strings
+    Strings,
+    Keys
 }
 
 public static class InstrumentInfoExtensions
@@ -240,14 +283,19 @@ public static class InstrumentInfoExtensions
     {
         { InstrumentInfo.Piccolo, [InstrumentInfo.Flute] },
         { InstrumentInfo.Flute, [InstrumentInfo.Oboe] },
+        { InstrumentInfo.Oboe, [InstrumentInfo.Flute] },
         { InstrumentInfo.CornetBb, [InstrumentInfo.TrumpetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.TrumpetBb, [InstrumentInfo.CornetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.EuphoniumBb, [InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb] },
         { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb] },
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
-        { InstrumentInfo.Bassoon, [InstrumentInfo.BaritoneHornBb, InstrumentInfo.BassTromboneBb, InstrumentInfo.TromboneBb] },
+        { InstrumentInfo.Bassoon, [InstrumentInfo.BassC, InstrumentInfo.BassTromboneC, InstrumentInfo.StringBass, InstrumentInfo.TromboneC] },
+        { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
+        { InstrumentInfo.TenorSaxophoneBb, [InstrumentInfo.TenorHornBb] },
         { InstrumentInfo.BaritoneSaxophoneEb, [InstrumentInfo.BassEb] },
+        { InstrumentInfo.HornEb, [InstrumentInfo.TenorHornEb] },
         { InstrumentInfo.BassEb, [InstrumentInfo.BaritoneSaxophoneEb] },
+        { InstrumentInfo.TromboneC, [InstrumentInfo.Bassoon, InstrumentInfo.BassC] }
     };
 
     #endregion

@@ -85,5 +85,16 @@ namespace MusicSheetManager.Models
         public string FullName => $"{this.LastName} {this.FirstName}";
 
         #endregion
+
+
+        #region Public Methods
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"{this.FirstName} {this.LastName}";
+        }
+
+        #endregion
     }
 }

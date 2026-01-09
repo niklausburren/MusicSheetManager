@@ -8,6 +8,13 @@ namespace MusicSheetManager.ViewModels;
 
 public class MusicSheetTabViewModel : ObservableObject
 {
+    #region Fields
+
+    private MusicSheetFolder _selectedMusicSheetFolder;
+
+    #endregion
+
+
     #region Constructors
 
     public MusicSheetTabViewModel(IMusicSheetService musicSheetService, IMusicSheetAssignmentService musicSheetAssignmentService)
@@ -26,6 +33,12 @@ public class MusicSheetTabViewModel : ObservableObject
     private IMusicSheetAssignmentService MusicSheetAssignmentService { get; }
 
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders => this.MusicSheetService.MusicSheetFolders;
+
+    public MusicSheetFolder SelectedMusicSheetFolder
+    {
+        get => _selectedMusicSheetFolder;
+        set => this.SetProperty(ref _selectedMusicSheetFolder, value);
+    }
 
     #endregion
 
