@@ -1,8 +1,13 @@
 ﻿using System.Collections.ObjectModel;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MusicSheetManager.Models;
 using MusicSheetManager.Services;
+using MusicSheetManager.Views;
 
 namespace MusicSheetManager.ViewModels;
 
@@ -21,6 +26,26 @@ public class MusicSheetTabViewModel : ObservableObject
     {
         this.MusicSheetService = musicSheetService;
         this.MusicSheetAssignmentService = musicSheetAssignmentService;
+
+        this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
+        this.AssignMusicSheetsCommand = new RelayCommand<MusicSheetFolder>(this.AssignMusicSheets);
+    }
+
+    private void ImportSheets(MusicSheetFolder musicSheetFolder)
+    {
+        if (musicSheetFolder is null)
+        {
+            return;
+        }
+
+        var importDialog = App.Container.Resolve<ImportDialog>();
+        importDialog.Owner = System.Windows.Application.Current.MainWindow;
+        importDialog.ShowDialog();
+    }
+
+    private void AssignMusicSheets(MusicSheetFolder musicSheetFolder)
+    {
+        
     }
 
     #endregion
@@ -33,6 +58,10 @@ public class MusicSheetTabViewModel : ObservableObject
     private IMusicSheetAssignmentService MusicSheetAssignmentService { get; }
 
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders => this.MusicSheetService.MusicSheetFolders;
+
+    public ICommand ImportSheetsCommand { get; }
+
+    public ICommand AssignMusicSheetsCommand { get; }
 
     public MusicSheetFolder SelectedMusicSheetFolder
     {

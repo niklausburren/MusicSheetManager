@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Autofac;
 using Microsoft.Win32;
@@ -32,6 +34,13 @@ public partial class MainWindow : Window
         try
         {
             await ((MainWindowViewModel)this.DataContext).InitializeAsync();
+            
+            var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
+
+            if (cvs?.View is ListCollectionView listView)
+            {
+                listView.CustomSort = new MusicSheetFolderComparer();
+            }
         }
         catch (Exception ex)
         {
@@ -69,6 +78,24 @@ public partial class MainWindow : Window
 
         var importDialog = App.Container.Resolve<ImportDialog>();
         importDialog.ShowDialog(this, openFileDialog.FileName);
+    }
+
+    #endregion
+
+    #region Nested Types
+
+    private sealed class MusicSheetFolderComparer : IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            var titleX = (x as MusicSheetFolder)?.Title;
+            var titleY = (y as MusicSheetFolder)?.Title;
+
+            var sortKeyX = Converters.FirstLetterConverter.GetSortKey(titleX);
+            var sortKeyY = Converters.FirstLetterConverter.GetSortKey(titleY);
+
+            return string.Compare(sortKeyX, sortKeyY, StringComparison.Ordinal);
+        }
     }
 
     #endregion

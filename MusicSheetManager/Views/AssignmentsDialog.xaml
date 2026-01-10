@@ -8,9 +8,11 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:AssignmentsDialogViewModel}"
         Title="Assign music sheets to people"
-        Height="800"
+        Height="980"
         Width="600"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
     <Window.Resources>
         <CollectionViewSource x:Key="GroupedPeople" Source="{Binding People}">
             <CollectionViewSource.GroupDescriptions>
@@ -22,6 +24,10 @@
                 <componentModel:SortDescription PropertyName="Person.FullName" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        
+        <Style x:Key="HeaderlessGridViewColumnHeader" TargetType="GridViewColumnHeader">
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -35,7 +41,13 @@
             <Label Content="{Binding MusicSheetFolder.Credits}" FontSize="12" FontWeight="Regular" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" Padding="0"/>
         </StackPanel>
 
-        <ListView ItemsSource="{Binding Source={StaticResource GroupedPeople}}" Grid.Row="1" Margin="10">
+        <ListView x:Name="PeopleListView" ItemsSource="{Binding Source={StaticResource GroupedPeople}}" Grid.Row="1" Margin="10">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Expand all groups" Click="ExpandAllGroups_Click" />
+                    <MenuItem Header="Collapse all groups" Click="CollapseAllGroups_Click" />
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.ContainerStyle>
@@ -44,7 +56,8 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
                                         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,0.5" Padding="6">
-                                            <Expander IsExpanded="True">
+                                            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                            <Expander x:Name="GroupExpander" IsExpanded="True" Tag="{Binding Name.Key}">
                                                 <Expander.Header>
                                                     <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
                                                     <TextBlock Text="{Binding Name.DisplayName}" Padding="4" FontWeight="Bold"/>
@@ -61,20 +74,33 @@
             </ListView.GroupStyle>
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding SelectedMusicSheet}" Value="{x:Null}">
-                            <Setter Property="Background" Value="Yellow"/>
-                        </DataTrigger>
-                    </Style.Triggers>
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <Border x:Name="ItemBorder"
+                                        Background="Transparent" 
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <GridViewRowPresenter Content="{TemplateBinding Content}" Columns="{TemplateBinding GridView.ColumnCollection}" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedMusicSheet}" Value="{x:Null}">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="Yellow"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.View>
-                <GridView>
+                <GridView ColumnHeaderContainerStyle="{StaticResource HeaderlessGridViewColumnHeader}">
                     <GridViewColumn Width="200">
-                        <GridViewColumnHeader Content="Person" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
-                                <TextBlock>
+                                <TextBlock Margin="17,0,0,0">
                                     <Run Text="{Binding Person.FullName, Mode=OneWay}" />
                                     <Run Text="{Binding Person.Part.DisplayName, Mode=OneWay, StringFormat=' ({0})', TargetNullValue=''}" />
                                     <Run>
@@ -83,7 +109,7 @@
                                                 <Setter Property="Text" Value="" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Person.Dispensed}" Value="True">
-                                                        <Setter Property="Text" Value=" *" />
+                                                        <Setter Property="Text" Value="*" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -94,12 +120,9 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn>
-                        <GridViewColumnHeader Content="Music sheet" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
-                                <ComboBox ItemsSource="{Binding AssignableMusicSheets}"
-                                          SelectedItem="{Binding SelectedMusicSheet}"
-                                          Width="250" />
+                                <ComboBox ItemsSource="{Binding AssignableMusicSheets}" SelectedItem="{Binding SelectedMusicSheet}" Width="250" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

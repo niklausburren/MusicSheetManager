@@ -6,11 +6,51 @@
         xmlns:viewModels="clr-namespace:MusicSheetManager.ViewModels"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:models="clr-namespace:MusicSheetManager.Models"
+        xmlns:converters="clr-namespace:MusicSheetManager.Converters"
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
-        Title="MusicSheetManager" Height="800" Width="1024"
+        Title="MusicSheetManager" Height="1024" Width="1280"
         WindowStartupLocation="CenterScreen"
         Loaded="MainWindow_OnLoaded">
+    <Window.Resources>
+        <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
+        
+        <CollectionViewSource x:Key="GroupedMusicSheetFolders" Source="{Binding MusicSheetTab.MusicSheetFolders}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Title" Converter="{StaticResource FirstLetterConverter}" />
+            </CollectionViewSource.GroupDescriptions>
+            <CollectionViewSource.SortDescriptions>
+                <componentModel:SortDescription PropertyName="Title" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding}" Grid.Column="0" />
+            </Grid>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="MusicSheetFolderTemplate" DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}" ItemTemplate="{StaticResource MusicSheetTemplate}">
+            <Grid Margin="0,2,0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Title}" Grid.Column="0" FontWeight="SemiBold" Margin="0,0,20,0" />
+                <TextBlock x:Name="CreditsTextBlock" Text="{Binding Credits}" Grid.Column="1" Foreground="Gray" FontStyle="Italic" />
+            </Grid>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="True">
+                    <Setter TargetName="CreditsTextBlock" Property="Foreground" Value="White" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -45,18 +85,51 @@
                     <StackPanel Grid.Row="0">
                         <Button Content="Import" Click="ImportButton_Click" Width="67" />
                     </StackPanel>
-                    <TreeView ItemsSource="{Binding MusicSheetTab.MusicSheetFolders}" Grid.Row="1">
+                    <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}" 
+                              ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
+                              Grid.Row="1">
                         <TreeView.Resources>
-                            <HierarchicalDataTemplate DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}">
-                                <TextBlock Text="{Binding Title}" />
-                            </HierarchicalDataTemplate>
-                            <DataTemplate DataType="{x:Type models:MusicSheet}">
-                                <TextBlock Text="{Binding}" />
-                            </DataTemplate>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <Expander IsExpanded="True" Margin="0,0,0,10">
+                                                <Expander.Header>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                                                </Expander.Header>
+                                                <ItemsPresenter />
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
                         </TreeView.Resources>
+                        <TreeView.GroupStyle>
+                            <GroupStyle ContainerStyle="{StaticResource {x:Type GroupItem}}" />
+                        </TreeView.GroupStyle>
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem">
                                 <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"/>
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Import sheets" 
+                                                      Command="{Binding MusicSheetTab.ImportSheetsCommand}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                            <MenuItem Header="Assign sheets to people" 
+                                                      Command="{Binding MusicSheetTab.AssignMusicSheetsCommand}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                        <Setter Property="ContextMenu" Value="{x:Null}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Converter={x:Static converters:TypeToBooleanConverter.Instance}, ConverterParameter={x:Type models:MusicSheetFolder}}" Value="False">
+                                        <Setter Property="ContextMenu" Value="{x:Null}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
                             </Style>
                         </TreeView.ItemContainerStyle>
                     </TreeView>
