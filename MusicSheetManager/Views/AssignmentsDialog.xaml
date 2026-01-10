@@ -4,13 +4,25 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:MusicSheetManager.ViewModels"
-        xmlns:global1="clr-namespace:"
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:AssignmentsDialogViewModel}"
         Title="Assign music sheets to people"
         Height="800"
         Width="600"
         WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <CollectionViewSource x:Key="GroupedPeople" Source="{Binding People}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Person.Instrument" />
+            </CollectionViewSource.GroupDescriptions>
+            <CollectionViewSource.SortDescriptions>
+                <componentModel:SortDescription PropertyName="Person.Instrument.Index" />
+                <componentModel:SortDescription PropertyName="Person.Part.Index" />
+                <componentModel:SortDescription PropertyName="Person.FullName" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -23,7 +35,30 @@
             <Label Content="{Binding MusicSheetFolder.Credits}" FontSize="12" FontWeight="Regular" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" Padding="0"/>
         </StackPanel>
 
-        <ListView ItemsSource="{Binding People}" Grid.Row="1" Margin="10">
+        <ListView ItemsSource="{Binding Source={StaticResource GroupedPeople}}" Grid.Row="1" Margin="10">
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,0.5" Padding="6">
+                                            <Expander IsExpanded="True">
+                                                <Expander.Header>
+                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                    <TextBlock Text="{Binding Name.DisplayName}" Padding="4" FontWeight="Bold"/>
+                                                </Expander.Header>
+                                                <ItemsPresenter Margin="0,0,0,0" />
+                                            </Expander>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </ListView.GroupStyle>
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
@@ -35,13 +70,33 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding Person.FullName}" Width="200">
+                    <GridViewColumn Width="200">
                         <GridViewColumnHeader Content="Person" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
+                                <TextBlock>
+                                    <Run Text="{Binding Person.FullName, Mode=OneWay}" />
+                                    <Run Text="{Binding Person.Part.DisplayName, Mode=OneWay, StringFormat=' ({0})', TargetNullValue=''}" />
+                                    <Run>
+                                        <Run.Style>
+                                            <Style TargetType="Run">
+                                                <Setter Property="Text" Value="" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Person.Dispensed}" Value="True">
+                                                        <Setter Property="Text" Value=" *" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Run.Style>
+                                    </Run>
+                                </TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn>
                         <GridViewColumnHeader Content="Music sheet" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                         <GridViewColumn.CellTemplate>
-                            <DataTemplate DataType="global1:PersonInfo">
+                            <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
                                 <ComboBox ItemsSource="{Binding AssignableMusicSheets}"
                                           SelectedItem="{Binding SelectedMusicSheet}"
                                           Width="250" />
