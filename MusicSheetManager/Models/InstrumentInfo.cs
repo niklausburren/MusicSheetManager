@@ -60,7 +60,9 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public static InstrumentInfo BaritoneSaxophoneEb { get; } = new("BaritoneSaxophoneEb", InstrumentCategory.Wood, "Eb Baritone Saxophone", "Bariton Saxophon Eb", "Bariton Saxophon in Eb", "Baritone Saxophone", "Eb Baritonsaxophon", "Baritonsaxophon Eb", "Baritonsaxophon in Eb", "Baritonsaxophon", "Saxophon Bariton Es");
 
-    public static InstrumentInfo CornetBb { get; } = new("CornetBb", InstrumentCategory.Brass, "Bb Cornet", "Cornet B", "Cornet");
+    public static InstrumentInfo CornetBb { get; } = new("CornetBb", InstrumentCategory.Brass, "Bb Cornet", "Cornet Bb", "Cornet in Bb", "Cornet .{0,6}in Bb", "B Cornet", "Cornet B", "Cornet in B", "Cornet .{0,6}in B");
+
+    public static InstrumentInfo CornetEb { get; } = new("CornetEb", InstrumentCategory.Brass, "Eb Cornet", "Cornet Eb", "Cornet in Eb", "Cornet .{0,6}in Eb", "Es Cornet", "Cornet Es", "Cornet in Es", "Cornet .{0,6}in Es");
 
     public static InstrumentInfo TrumpetBb { get; } = new("TrumpetBb", InstrumentCategory.Brass, "Bb Trumpet", "Trumpet .{0,6}in B", "Trumpet", "Trompete B", "Trompete");
 
