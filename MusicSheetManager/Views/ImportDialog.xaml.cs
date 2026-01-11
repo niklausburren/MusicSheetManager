@@ -22,11 +22,18 @@ namespace MusicSheetManager.Views
 
         #region Public Methods
 
-        public void ShowDialog(Window owner, string fileName)
+        public void ShowDialog(Window owner, string fileName, MusicSheetFolder musicSheetFolder = null)
         {
             if (this.DataContext is ImportDialogViewModel viewModel)
             {
                 viewModel.FileName = fileName;
+
+                if (musicSheetFolder != null)
+                {
+                    viewModel.Metadata.Title = musicSheetFolder.Title;
+                    viewModel.Metadata.Composer = musicSheetFolder.Composer;
+                    viewModel.Metadata.Arranger = musicSheetFolder.Arranger;
+                }
             }
 
             this.Owner = owner;

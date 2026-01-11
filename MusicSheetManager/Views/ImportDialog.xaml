@@ -37,7 +37,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             
-            <Expander Header="MusicSheetFolderMetadata" VerticalAlignment="Top" IsExpanded="True" Grid.Row="0">
+            <Expander Header="Metadata" VerticalAlignment="Top" IsExpanded="True" Grid.Row="0">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontWeight="Bold" />

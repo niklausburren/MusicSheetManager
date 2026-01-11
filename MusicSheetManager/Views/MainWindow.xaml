@@ -9,6 +9,7 @@
         xmlns:converters="clr-namespace:MusicSheetManager.Converters"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
+        x:Name="MainWindowRoot"
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
         Title="MusicSheetManager" Height="1024" Width="1280"
         WindowStartupLocation="CenterScreen"
@@ -25,6 +26,17 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
+        <ContextMenu x:Key="MusicSheetFolderContextMenu">
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Import sheets" 
+                      Command="{Binding DataContext.MusicSheetTab.ImportSheetsCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Assign sheets to people" 
+                      Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        </ContextMenu>
+
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -36,7 +48,12 @@
         </HierarchicalDataTemplate>
 
         <HierarchicalDataTemplate x:Key="MusicSheetFolderTemplate" DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}" ItemTemplate="{StaticResource MusicSheetTemplate}">
-            <Grid Margin="0,2,0,2">
+            <Grid Margin="0,2,0,2" ContextMenu="{StaticResource MusicSheetFolderContextMenu}">
+                <Grid.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" 
+                                  Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, ElementName=MainWindowRoot}" 
+                                  CommandParameter="{Binding}" />
+                </Grid.InputBindings>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200" />
                     <ColumnDefinition Width="*" />
@@ -50,6 +67,7 @@
                 </DataTrigger>
             </HierarchicalDataTemplate.Triggers>
         </HierarchicalDataTemplate>
+
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -87,7 +105,8 @@
                     </StackPanel>
                     <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}" 
                               ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
-                              Grid.Row="1">
+                              Grid.Row="1"
+                              x:Name="MusicSheetTreeView">
                         <TreeView.Resources>
                             <Style TargetType="{x:Type GroupItem}">
                                 <Setter Property="Template">
@@ -95,6 +114,7 @@
                                         <ControlTemplate TargetType="{x:Type GroupItem}">
                                             <Expander IsExpanded="True" Margin="0,0,0,10">
                                                 <Expander.Header>
+                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
                                                 </Expander.Header>
                                                 <ItemsPresenter />
@@ -107,31 +127,6 @@
                         <TreeView.GroupStyle>
                             <GroupStyle ContainerStyle="{StaticResource {x:Type GroupItem}}" />
                         </TreeView.GroupStyle>
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"/>
-                                <Setter Property="ContextMenu">
-                                    <Setter.Value>
-                                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Import sheets" 
-                                                      Command="{Binding MusicSheetTab.ImportSheetsCommand}"
-                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                            <MenuItem Header="Assign sheets to people" 
-                                                      Command="{Binding MusicSheetTab.AssignMusicSheetsCommand}"
-                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                        </ContextMenu>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
-                                        <Setter Property="ContextMenu" Value="{x:Null}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Converter={x:Static converters:TypeToBooleanConverter.Instance}, ConverterParameter={x:Type models:MusicSheetFolder}}" Value="False">
-                                        <Setter Property="ContextMenu" Value="{x:Null}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
                     </TreeView>
                 </Grid>
             </TabItem>

@@ -8,7 +8,7 @@ namespace MusicSheetManager.Converters
     {
         #region Properties
 
-        public static TypeToBooleanConverter Instance { get; } = new TypeToBooleanConverter();
+        public static TypeToBooleanConverter Instance { get; } = new();
 
         #endregion
 
@@ -20,7 +20,10 @@ namespace MusicSheetManager.Converters
             if (value == null || parameter == null)
                 return false;
 
-            return value.GetType() == (Type)parameter;
+            var valueType = value.GetType();
+            var expectedType = parameter as Type;
+
+            return expectedType != null && expectedType.IsAssignableFrom(valueType);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

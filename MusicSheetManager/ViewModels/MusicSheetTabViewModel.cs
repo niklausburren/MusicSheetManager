@@ -1,25 +1,19 @@
-﻿using System.Collections.ObjectModel;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Autofac;
+﻿using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using MusicSheetManager.Models;
 using MusicSheetManager.Services;
 using MusicSheetManager.Views;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace MusicSheetManager.ViewModels;
 
 public class MusicSheetTabViewModel : ObservableObject
 {
-    #region Fields
-
-    private MusicSheetFolder _selectedMusicSheetFolder;
-
-    #endregion
-
-
     #region Constructors
 
     public MusicSheetTabViewModel(IMusicSheetService musicSheetService, IMusicSheetAssignmentService musicSheetAssignmentService)
@@ -29,23 +23,6 @@ public class MusicSheetTabViewModel : ObservableObject
 
         this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
         this.AssignMusicSheetsCommand = new RelayCommand<MusicSheetFolder>(this.AssignMusicSheets);
-    }
-
-    private void ImportSheets(MusicSheetFolder musicSheetFolder)
-    {
-        if (musicSheetFolder is null)
-        {
-            return;
-        }
-
-        var importDialog = App.Container.Resolve<ImportDialog>();
-        importDialog.Owner = System.Windows.Application.Current.MainWindow;
-        importDialog.ShowDialog();
-    }
-
-    private void AssignMusicSheets(MusicSheetFolder musicSheetFolder)
-    {
-        
     }
 
     #endregion
@@ -63,12 +40,6 @@ public class MusicSheetTabViewModel : ObservableObject
 
     public ICommand AssignMusicSheetsCommand { get; }
 
-    public MusicSheetFolder SelectedMusicSheetFolder
-    {
-        get => _selectedMusicSheetFolder;
-        set => this.SetProperty(ref _selectedMusicSheetFolder, value);
-    }
-
     #endregion
 
 
@@ -78,6 +49,49 @@ public class MusicSheetTabViewModel : ObservableObject
     {
         await this.MusicSheetService.LoadAsync();
         await this.MusicSheetAssignmentService.LoadAsync();
+    }
+
+    #endregion
+
+
+    #region Private Methods
+
+    private void ImportSheets(MusicSheetFolder musicSheetFolder)
+    {
+        if (musicSheetFolder is null)
+        {
+            return;
+        }
+
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "PDF files (*.pdf)|*.pdf",
+            Title = "Select a PDF file"
+        };
+
+        if (openFileDialog.ShowDialog(Application.Current.MainWindow) != true)
+        {
+            return;
+        }
+
+        var importDialog = App.Container.Resolve<ImportDialog>();
+        importDialog.ShowDialog(
+            Application.Current.MainWindow,
+            openFileDialog.FileName,
+            musicSheetFolder);
+    }
+
+    private void AssignMusicSheets(MusicSheetFolder musicSheetFolder)
+    {
+        if (musicSheetFolder is null)
+        {
+            return;
+        }
+
+        var assignmentsDialog = App.Container.Resolve<AssignmentsDialog>();
+        assignmentsDialog.ShowDialog(
+            Application.Current.MainWindow,
+            musicSheetFolder);
     }
 
     #endregion
