@@ -93,7 +93,13 @@ internal class MusicSheetService : IMusicSheetService
             sheet.UpdateFileName();
         }
 
-        var folder = this.MusicSheetFolders.FirstOrDefault(f => f.Title == metadata.Title) ?? MusicSheetFolder.Create(metadata);
+        var folder = this.MusicSheetFolders.FirstOrDefault(f => f.Title == metadata.Title);
+
+        if (folder == null)
+        {
+            folder = MusicSheetFolder.Create(metadata);
+            this.MusicSheetFolders.Add(folder);
+        }
 
         folder.ImportSheets(sheets);
     }

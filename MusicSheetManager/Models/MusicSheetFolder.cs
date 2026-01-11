@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using MusicSheetManager.Utilities;
 
 namespace MusicSheetManager.Models
 {
-    public class MusicSheetFolder
+    public class MusicSheetFolder : INotifyPropertyChanged
     {
         #region Fields
 
-        private readonly IList<MusicSheet> _sheets = new List<MusicSheet>();
+        private readonly ObservableCollection<MusicSheet> _sheets = new();
 
         #endregion
 
@@ -29,9 +31,14 @@ namespace MusicSheetManager.Models
         {
             this.Folder = folder;
 
-            _sheets = Directory.GetFiles(this.Folder, "*.pdf")
+            var sheets = Directory.GetFiles(this.Folder, "*.pdf")
                 .Select(MusicSheet.Load)
                 .ToList();
+
+            foreach (var sheet in sheets)
+            {
+                _sheets.Add(sheet);
+            }
 
             this.Id = this.Sheets[0].FolderId;
             this.Metadata = this.Sheets[0].Metadata;
@@ -48,7 +55,7 @@ namespace MusicSheetManager.Models
 
         private MusicSheetFolderMetadata Metadata { get; }
 
-        public IReadOnlyList<MusicSheet> Sheets => _sheets as IReadOnlyList<MusicSheet>;
+        public IReadOnlyList<MusicSheet> Sheets => _sheets;
 
         public string Title => this.Metadata.Title;
 
@@ -127,7 +134,26 @@ namespace MusicSheetManager.Models
                 sheet.MoveToFolder(this.Folder);
                 _sheets.Add(sheet);
             }
+
+            this.OnPropertyChanged(nameof(this.Sheets));
         }
+
+        #endregion
+
+
+        #region Protected Methods
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
     }
