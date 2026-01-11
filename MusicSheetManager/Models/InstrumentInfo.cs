@@ -283,20 +283,21 @@ public static class InstrumentInfoExtensions
 
     private static IDictionary<InstrumentInfo, IEnumerable<InstrumentInfo>> FallbackInstruments { get; } = new Dictionary<InstrumentInfo, IEnumerable<InstrumentInfo>>
     {
+        { InstrumentInfo.Score, [InstrumentInfo.ClarinetBb] },
         { InstrumentInfo.Piccolo, [InstrumentInfo.Flute] },
         { InstrumentInfo.Flute, [InstrumentInfo.Oboe] },
         { InstrumentInfo.Oboe, [InstrumentInfo.Flute] },
         { InstrumentInfo.CornetBb, [InstrumentInfo.TrumpetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.TrumpetBb, [InstrumentInfo.CornetBb, InstrumentInfo.FlugelhornBb ] },
-        { InstrumentInfo.EuphoniumBb, [InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb] },
+        { InstrumentInfo.EuphoniumBb, [InstrumentInfo.TenorHornBb, InstrumentInfo.BaritoneHornBb] },
         { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb] },
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
         { InstrumentInfo.Bassoon, [InstrumentInfo.BassC, InstrumentInfo.BassTromboneC, InstrumentInfo.StringBass, InstrumentInfo.TromboneC] },
         { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
         { InstrumentInfo.TenorSaxophoneBb, [InstrumentInfo.TenorHornBb] },
-        { InstrumentInfo.BaritoneSaxophoneEb, [InstrumentInfo.BassEb] },
+        { InstrumentInfo.BaritoneSaxophoneEb, [InstrumentInfo.BassEb, InstrumentInfo.HornEb] },
         { InstrumentInfo.HornEb, [InstrumentInfo.TenorHornEb] },
-        { InstrumentInfo.BassEb, [InstrumentInfo.BaritoneSaxophoneEb] },
+        { InstrumentInfo.BassEb, [InstrumentInfo.BaritoneSaxophoneEb, InstrumentInfo.HornEb] },
         { InstrumentInfo.TromboneC, [InstrumentInfo.Bassoon, InstrumentInfo.BassC] }
     };
 
