@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
@@ -6,6 +7,8 @@ using MusicSheetManager.Models;
 using MusicSheetManager.Services;
 using MusicSheetManager.Views;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -23,6 +26,8 @@ public class MusicSheetTabViewModel : ObservableObject
 
         this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
         this.AssignMusicSheetsCommand = new RelayCommand<MusicSheetFolder>(this.AssignMusicSheets);
+        this.OpenInExplorerCommand = new RelayCommand<MusicSheetFolder>(this.OpenInExplorer, this.CanOpenInExplorer);
+        this.CopyFolderIdCommand = new RelayCommand<MusicSheetFolder>(this.CopyFolderId, this.CanCopyFolderId);
     }
 
     #endregion
@@ -39,6 +44,10 @@ public class MusicSheetTabViewModel : ObservableObject
     public ICommand ImportSheetsCommand { get; }
 
     public ICommand AssignMusicSheetsCommand { get; }
+
+    public ICommand OpenInExplorerCommand { get; }
+
+    public ICommand CopyFolderIdCommand { get; }
 
     #endregion
 
@@ -92,6 +101,47 @@ public class MusicSheetTabViewModel : ObservableObject
         assignmentsDialog.ShowDialog(
             Application.Current.MainWindow,
             musicSheetFolder);
+    }
+
+    private bool CanOpenInExplorer(MusicSheetFolder musicSheetFolder)
+    {
+        return musicSheetFolder != null && !string.IsNullOrEmpty(musicSheetFolder.Folder) && Directory.Exists(musicSheetFolder.Folder);
+    }
+
+    private void OpenInExplorer(MusicSheetFolder musicSheetFolder)
+    {
+        try
+        {
+            if (Directory.Exists(musicSheetFolder.Folder))
+            {
+                Process.Start("explorer.exe", musicSheetFolder.Folder);
+            }
+            else
+            {
+                MessageBox.Show($"The directory '{musicSheetFolder.Folder}' does not exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error while opening explorer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private bool CanCopyFolderId(MusicSheetFolder musicSheetFolder)
+    {
+        return musicSheetFolder != null && musicSheetFolder.Id != Guid.Empty;
+    }
+
+    private void CopyFolderId(MusicSheetFolder musicSheetFolder)
+    {
+        try
+        {
+            Clipboard.SetText(musicSheetFolder.Id.ToString());
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error while copying to clipboard: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     #endregion

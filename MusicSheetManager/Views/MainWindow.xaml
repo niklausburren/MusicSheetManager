@@ -35,35 +35,40 @@
             <MenuItem Header="Assign sheets to people" 
                       Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Open in Windows Explorer" 
+                      Command="{Binding DataContext.MusicSheetTab.OpenInExplorerCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Copy music sheet folder ID" 
+                      Command="{Binding DataContext.MusicSheetTab.CopyFolderIdCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
         </ContextMenu>
 
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding}" Grid.Column="0" />
-            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
+                <Image Source="/Resources/music-sheet.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+            </StackPanel>
         </HierarchicalDataTemplate>
 
         <HierarchicalDataTemplate x:Key="MusicSheetFolderTemplate" DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}" ItemTemplate="{StaticResource MusicSheetTemplate}">
-            <Grid Margin="0,2,0,2" ContextMenu="{StaticResource MusicSheetFolderContextMenu}">
-                <Grid.InputBindings>
-                    <MouseBinding MouseAction="LeftDoubleClick" 
-                                  Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, ElementName=MainWindowRoot}" 
-                                  CommandParameter="{Binding}" />
-                </Grid.InputBindings>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding Title}" Grid.Column="0" FontWeight="SemiBold" Margin="0,0,20,0" />
-                <TextBlock x:Name="CreditsTextBlock" Text="{Binding Credits}" Grid.Column="1" Foreground="Gray" FontStyle="Italic" />
-            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2" ContextMenu="{StaticResource MusicSheetFolderContextMenu}">
+                <StackPanel.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, ElementName=MainWindowRoot}" CommandParameter="{Binding}" />
+                </StackPanel.InputBindings>
+                <Image x:Name="FolderIcon" Source="/Resources/folder.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Title}" Width="200" FontWeight="SemiBold" Margin="0,0,20,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="CreditsTextBlock" Text="{Binding Credits}" Foreground="Gray" FontStyle="Italic" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
             <HierarchicalDataTemplate.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="True">
                     <Setter TargetName="CreditsTextBlock" Property="Foreground" Value="White" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsExpanded}" Value="True">
+                    <Setter TargetName="FolderIcon" Property="Source" Value="/Resources/folder-open.png" />
                 </DataTrigger>
             </HierarchicalDataTemplate.Triggers>
         </HierarchicalDataTemplate>
@@ -72,10 +77,17 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Menu VerticalAlignment="Top" Grid.Row="0">
             <MenuItem Header="File">
+                <MenuItem Header="Import music sheets..." Click="ImportButton_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/import.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator />
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
@@ -93,20 +105,27 @@
                 <!-- Info menu items can be added here -->
             </MenuItem>
         </Menu>
-        <TabControl Grid.Row="1">
+        <ToolBarTray Grid.Row="1">
+            <ToolBar>
+                <Button Click="ImportButton_Click" ToolTip="Import music sheets">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/import.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Import" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <TabControl Grid.Row="2">
             <TabItem Header="Music sheets">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0">
-                        <Button Content="Import" Click="ImportButton_Click" Width="67" />
-                    </StackPanel>
                     <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}" 
                               ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
-                              Grid.Row="1"
-                              x:Name="MusicSheetTreeView">
+                              Grid.Row="0"
+                              x:Name="MusicSheetTreeView"
+                              PreviewMouseRightButtonDown="MusicSheetTreeView_OnPreviewMouseRightButtonDown">
                         <TreeView.Resources>
                             <Style TargetType="{x:Type GroupItem}">
                                 <Setter Property="Template">
@@ -117,7 +136,7 @@
                                                     <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
                                                 </Expander.Header>
-                                                <ItemsPresenter />
+                                                <ItemsPresenter Margin="17,0,0,0" />
                                             </Expander>
                                         </ControlTemplate>
                                     </Setter.Value>

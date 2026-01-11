@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using Autofac;
 using Microsoft.Win32;
 using MusicSheetManager.Models;
@@ -22,6 +23,21 @@ public partial class MainWindow : Window
     {
         this.InitializeComponent();
         this.DataContext = viewModel;
+    }
+
+    #endregion
+
+
+    #region Private Methods
+
+    private static TreeViewItem FindTreeViewItem(DependencyObject source)
+    {
+        while (source != null && source is not TreeViewItem)
+        {
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return source as TreeViewItem;
     }
 
     #endregion
@@ -53,16 +69,6 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    private void TreeViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is TreeViewItem item && item.DataContext is MusicSheetFolder folder)
-        {
-            e.Handled = true;
-            var assignmentsDialog = App.Container.Resolve<AssignmentsDialog>();
-            assignmentsDialog.ShowDialog(this, folder);
-        }
-    }
-
     private void ImportButton_Click(object sender, RoutedEventArgs e)
     {
         var openFileDialog = new OpenFileDialog
@@ -80,12 +86,27 @@ public partial class MainWindow : Window
         importDialog.ShowDialog(this, openFileDialog.FileName);
     }
 
+    private void MusicSheetTreeView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var treeViewItem = FindTreeViewItem(e.OriginalSource as DependencyObject);
+        
+        if (treeViewItem != null)
+        {
+            treeViewItem.Focus();
+            treeViewItem.IsSelected = true;
+            e.Handled = true;
+        }
+    }
+
     #endregion
 
-    #region Nested Types
+
+    #region Class MusicSheetFolderComparer
 
     private sealed class MusicSheetFolderComparer : IComparer
     {
+        #region IComparer Members
+
         public int Compare(object x, object y)
         {
             var titleX = (x as MusicSheetFolder)?.Title;
@@ -96,6 +117,8 @@ public partial class MainWindow : Window
 
             return string.Compare(sortKeyX, sortKeyY, StringComparison.Ordinal);
         }
+
+        #endregion
     }
 
     #endregion
