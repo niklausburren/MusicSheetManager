@@ -194,6 +194,9 @@ namespace MusicSheetManager.Services
                     range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
 
+                // Erste Spalte fixieren (Freeze Panes)
+                worksheet.View.FreezePanes(headerRow + 1, 2);
+
                 // Personen nach Instrument gruppiert auflisten (ohne Percussion)
                 var row = headerRow + 1;
                 var groupedPeople = this.PeopleService.People
