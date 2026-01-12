@@ -14,9 +14,8 @@ namespace MusicSheetManager.Services
     {
         #region Constructors
 
-        public MusicSheetDistributionService(IMusicSheetService musicSheetService, IMusicSheetAssignmentService musicSheetAssignmentService, IPeopleService peopleService, IPlaylistService playlistService)
+        public MusicSheetDistributionService(IMusicSheetAssignmentService musicSheetAssignmentService, IPeopleService peopleService, IPlaylistService playlistService)
         {
-            this.MusicSheetService = musicSheetService;
             this.MusicSheetAssignmentService = musicSheetAssignmentService;
             this.PeopleService = peopleService;
             this.PlaylistService = playlistService;
@@ -26,8 +25,6 @@ namespace MusicSheetManager.Services
 
 
         #region Properties
-
-        private IMusicSheetService MusicSheetService { get; }
 
         private IMusicSheetAssignmentService MusicSheetAssignmentService { get; }
 
@@ -88,25 +85,18 @@ namespace MusicSheetManager.Services
                     var personFolder = Path.Combine(Folders.DistributionFolder, $"{instrument.Index:D2} {instrument.DisplayName}", person.FullName);
                     Directory.CreateDirectory(personFolder);
 
-                    foreach (var playlist in this.PlaylistService.Playlists)
+                    foreach (var playlist in this.PlaylistService.Playlists.Where(p => p.Distribute))
                     {
                         var playlistFolder = Path.Combine(personFolder, playlist.SanitizedName);
                         Directory.CreateDirectory(playlistFolder);
 
-                        foreach (var musicSheetFolderId in playlist.MusicSheetFolderIds)
+                        foreach (var entry in playlist.Entries.Where(e => e.Distribute && e.MusicSheetFolder != null))
                         {
-                            if (musicSheetFolderId == Guid.Empty)
-                            {
-                                continue;
-                            }
-
-                            var number = playlist.MusicSheetFolderIds.IndexOf(musicSheetFolderId) + 1;
-                            var musicSheetFolder = this.MusicSheetService.MusicSheetFolders.SingleOrDefault(f => f.Id == musicSheetFolderId);
-                            var musicSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(musicSheetFolder, person);
+                            var musicSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(entry.MusicSheetFolder, person);
 
                             if (musicSheet != null)
                             {
-                                File.Copy(musicSheet.FileName, Path.Combine(playlistFolder, $"{number:D2} {Path.GetFileName(musicSheet.FileName)}"));
+                                File.Copy(musicSheet.FileName, Path.Combine(playlistFolder, $"{entry.Index + 1:D2} {Path.GetFileName(musicSheet.FileName)}"));
                             }
                             else
                             {
@@ -122,21 +112,14 @@ namespace MusicSheetManager.Services
                 var percussionFolder = Path.Combine(Folders.DistributionFolder, $"{InstrumentInfo.Percussion.Index:D2} {InstrumentInfo.Percussion.DisplayName}", playlist.SanitizedName);
                 Directory.CreateDirectory(percussionFolder);
 
-                foreach (var musicSheetFolderId in playlist.MusicSheetFolderIds)
+                foreach (var entry in playlist.Entries.Where(e => e.Distribute && e.MusicSheetFolder != null))
                 {
-                    if (musicSheetFolderId == Guid.Empty)
-                    {
-                        continue;
-                    }
-
-                    var number = playlist.MusicSheetFolderIds.IndexOf(musicSheetFolderId) + 1;
-                    var musicSheetFolder = this.MusicSheetService.MusicSheetFolders.Single(f => f.Id == musicSheetFolderId);
-                    var percussionSubFolder = Path.Combine(percussionFolder, $"{number:D2} {musicSheetFolder.Title}");
+                    var percussionSubFolder = Path.Combine(percussionFolder, $"{entry.Index + 1:D2} {entry.MusicSheetFolder.Title}");
                     Directory.CreateDirectory(percussionSubFolder);
 
-                    foreach (var musicSheet in musicSheetFolder.Sheets.Where(s => s.Instrument.Category == InstrumentCategory.Percussion))
+                    foreach (var musicSheet in entry.MusicSheetFolder.Sheets.Where(s => s.Instrument.Category == InstrumentCategory.Percussion))
                     {
-                        File.Copy(musicSheet.FileName, Path.Combine(percussionSubFolder, $"{number:D2} {Path.GetFileName(musicSheet.FileName)}"));
+                        File.Copy(musicSheet.FileName, Path.Combine(percussionSubFolder, $"{entry.Index + 1:D2} {Path.GetFileName(musicSheet.FileName)}"));
                     }
                 }
             }
@@ -171,18 +154,10 @@ namespace MusicSheetManager.Services
                 var column = 2;
                 var musicSheetFolders = new List<MusicSheetFolder>();
 
-                foreach (var musicSheetFolderId in playlist.MusicSheetFolderIds)
+                foreach (var entry in playlist.Entries.Where(e => e.MusicSheetFolder != null))
                 {
-                    if (musicSheetFolderId == Guid.Empty)
-                        continue;
-
-                    var musicSheetFolder = this.MusicSheetService.MusicSheetFolders
-                        .SingleOrDefault(f => f.Id == musicSheetFolderId);
-                    if (musicSheetFolder == null)
-                        continue;
-
-                    musicSheetFolders.Add(musicSheetFolder);
-                    worksheet.Cells[headerRow, column].Value = musicSheetFolder.Title;
+                    musicSheetFolders.Add(entry.MusicSheetFolder);
+                    worksheet.Cells[headerRow, column].Value = $"{entry.Index+1:D2} {entry.MusicSheetFolder.Title}";
                     column++;
                 }
 
