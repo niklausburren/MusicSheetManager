@@ -26,6 +26,7 @@ public class AssignmentsDialogViewModel : ObservableObject
         this.PeopleService = peopleService;
         this.MusicSheetAssignmentService = musicSheetAssignmentService;
         this.UpdateAssignments = new RelayCommand(this.OnUpdateAssignments);
+        this.RestoreDefaults = new RelayCommand(this.OnRestoreDefaults);
     }
 
     #endregion
@@ -34,6 +35,8 @@ public class AssignmentsDialogViewModel : ObservableObject
     #region Properties
 
     public ICommand UpdateAssignments { get; }
+
+    public ICommand RestoreDefaults { get; }
 
     private IPeopleService PeopleService { get; }
 
@@ -45,14 +48,19 @@ public class AssignmentsDialogViewModel : ObservableObject
         {
             if (_people == null)
             {
-                _people = new ObservableCollection<PersonInfo>();
+                _people = [];
 
                 foreach (var person in this.PeopleService.People.Where(p => p.Instrument.Category != InstrumentCategory.Percussion))
                 {
+                    var assignableMusicSheets = this.MusicSheetAssignmentService.GetAssignableMusicSheets(this.MusicSheetFolder, person);
+                    var defaultMusicSheet = this.MusicSheetAssignmentService.GetDefaultMusicSheet(this.MusicSheetFolder, person);
+                    var assignedMusicSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(this.MusicSheetFolder, person);
+
                     _people.Add(new PersonInfo(
                         person,
-                        this.MusicSheetAssignmentService.GetAssignableMusicSheets(this.MusicSheetFolder, person),
-                        this.MusicSheetAssignmentService.GetAssignedMusicSheet(this.MusicSheetFolder, person)));
+                        assignableMusicSheets,
+                        assignedMusicSheet,
+                        defaultMusicSheet));
                 }
             }
 
@@ -79,7 +87,7 @@ public class AssignmentsDialogViewModel : ObservableObject
         foreach (var personInfo in this.People)
         {
             if (personInfo.SelectedMusicSheet != null && 
-                personInfo.SelectedMusicSheet != this.MusicSheetAssignmentService.GetDefaultMusicSheet(this.MusicSheetFolder, personInfo.Person))
+                personInfo.SelectedMusicSheet != personInfo.DefaultMusicSheet)
             {
                 var assignment = new MusicSheetAssignment(
                     this.MusicSheetFolder.Id,
@@ -92,6 +100,14 @@ public class AssignmentsDialogViewModel : ObservableObject
 
         this.MusicSheetAssignmentService.SaveAsync();
         this.SetDialogResultAction.Invoke(true);
+    }
+
+    private void OnRestoreDefaults()
+    {
+        foreach (var personInfo in this.People)
+        {
+            personInfo.SelectedMusicSheet = personInfo.DefaultMusicSheet;
+        }
     }
 
     #endregion
@@ -109,10 +125,11 @@ public class PersonInfo : ObservableObject
 
     #region Constructors
 
-    public PersonInfo(Person person, IEnumerable<MusicSheet> assignableMusicSheets, MusicSheet selectedMusicSheet)
+    public PersonInfo(Person person, IEnumerable<MusicSheet> assignableMusicSheets, MusicSheet selectedMusicSheet, MusicSheet defaultMusicSheet)
     {
         this.Person = person;
         this.AssignableMusicSheets = assignableMusicSheets;
+        this.DefaultMusicSheet = defaultMusicSheet;
         _selectedMusicSheet = selectedMusicSheet;
     }
 
@@ -125,11 +142,21 @@ public class PersonInfo : ObservableObject
 
     public IEnumerable<MusicSheet> AssignableMusicSheets { get; }
 
+    public MusicSheet DefaultMusicSheet { get; }
+
     public MusicSheet SelectedMusicSheet
     {
         get => _selectedMusicSheet;
-        set => this.SetProperty(ref _selectedMusicSheet, value);
+        set
+        {
+            if (this.SetProperty(ref _selectedMusicSheet, value))
+            {
+                this.OnPropertyChanged(nameof(this.IsCustomAssignment));
+            }
+        }
     }
+
+    public bool IsCustomAssignment => this.SelectedMusicSheet != null && this.SelectedMusicSheet != this.DefaultMusicSheet;
 
     #endregion
 }

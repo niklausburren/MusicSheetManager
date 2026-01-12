@@ -89,6 +89,9 @@
                                     <DataTrigger Binding="{Binding SelectedMusicSheet}" Value="{x:Null}">
                                         <Setter TargetName="ItemBorder" Property="Background" Value="Yellow"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsCustomAssignment}" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#e6f7ff"/>
+                                    </DataTrigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
@@ -131,10 +134,19 @@
         </ListView>
 
         <Border Grid.Row="2" Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,1,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-                <Button Content="OK" Width="100" Margin="5" Command="{Binding UpdateAssignments}" />
-                <Button Content="Cancel" Width="100" Margin="5" Click="CancelButton_Click" />
-            </StackPanel>
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" Content="Restore defaults" Width="120" Margin="5" HorizontalAlignment="Left" Command="{Binding RestoreDefaults}" />
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="OK" Width="100" Margin="5" Command="{Binding UpdateAssignments}" />
+                    <Button Content="Cancel" Width="100" Margin="5" Click="CancelButton_Click" />
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

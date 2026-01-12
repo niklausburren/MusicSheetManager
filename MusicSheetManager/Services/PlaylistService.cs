@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MusicSheetManager.Converters;
 using MusicSheetManager.Models;
 using MusicSheetManager.Utilities;
 
@@ -13,8 +12,9 @@ namespace MusicSheetManager.Services
     {
         #region Constructors
 
-        public PlaylistService()
+        public PlaylistService(IMusicSheetService musicSheetService)
         {
+            this.MusicSheetService = musicSheetService;
             this.Options = new JsonSerializerOptions { WriteIndented = true };
         }
 
@@ -23,6 +23,8 @@ namespace MusicSheetManager.Services
 
         #region Properties
 
+        private IMusicSheetService MusicSheetService { get; }
+
         private JsonSerializerOptions Options { get; }
 
         private static string FilePath { get; } = Path.Combine(Folders.AppDataFolder, "playlists.json");
@@ -30,7 +32,7 @@ namespace MusicSheetManager.Services
         #endregion
 
 
-        #region IPeopleService Members
+        #region IPlaylistService Members
 
         public ObservableCollection<Playlist> Playlists { get; } = new();
 
@@ -44,6 +46,7 @@ namespace MusicSheetManager.Services
 
             foreach (var playlist in playlists)
             {
+                playlist.ResolveMusicSheetFolders(this.MusicSheetService);
                 this.Playlists.Add(playlist);
             }
         }
