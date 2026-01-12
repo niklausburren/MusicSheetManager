@@ -290,7 +290,7 @@ public static class InstrumentInfoExtensions
         { InstrumentInfo.CornetBb, [InstrumentInfo.TrumpetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.TrumpetBb, [InstrumentInfo.CornetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.EuphoniumBb, [InstrumentInfo.TenorHornBb, InstrumentInfo.BaritoneHornBb] },
-        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb] },
+        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb, InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb] },
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
         { InstrumentInfo.Bassoon, [InstrumentInfo.BassC, InstrumentInfo.BaritoneHornC, InstrumentInfo.BassTromboneC, InstrumentInfo.TromboneC] },
         { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
@@ -298,7 +298,7 @@ public static class InstrumentInfoExtensions
         { InstrumentInfo.BaritoneSaxophoneEb, [InstrumentInfo.BassEb, InstrumentInfo.HornEb] },
         { InstrumentInfo.HornEb, [InstrumentInfo.TenorHornEb] },
         { InstrumentInfo.BassEb, [InstrumentInfo.BaritoneSaxophoneEb, InstrumentInfo.HornEb] },
-        { InstrumentInfo.TromboneC, [InstrumentInfo.Bassoon, InstrumentInfo.BassC] }
+        { InstrumentInfo.TromboneC, [InstrumentInfo.BassTromboneC, InstrumentInfo.Bassoon, InstrumentInfo.BassC] }
     };
 
     #endregion
