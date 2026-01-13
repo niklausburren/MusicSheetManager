@@ -1,4 +1,10 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -6,12 +12,6 @@ using Microsoft.Win32;
 using MusicSheetManager.Models;
 using MusicSheetManager.Services;
 using MusicSheetManager.Views;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 
 namespace MusicSheetManager.ViewModels;
 
@@ -19,7 +19,9 @@ public class MusicSheetTabViewModel : ObservableObject
 {
     #region Constructors
 
-    public MusicSheetTabViewModel(IMusicSheetService musicSheetService, IMusicSheetAssignmentService musicSheetAssignmentService)
+    public MusicSheetTabViewModel(
+        IMusicSheetService musicSheetService,
+        IMusicSheetAssignmentService musicSheetAssignmentService)
     {
         this.MusicSheetService = musicSheetService;
         this.MusicSheetAssignmentService = musicSheetAssignmentService;

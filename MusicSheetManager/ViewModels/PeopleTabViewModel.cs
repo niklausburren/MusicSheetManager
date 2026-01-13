@@ -8,13 +8,6 @@ namespace MusicSheetManager.ViewModels;
 
 public class PeopleTabViewModel : ObservableObject
 {
-    #region Fields
-
-    private Person _selectedPerson;
-
-    #endregion
-
-
     #region Constructors
 
     public PeopleTabViewModel(IPeopleService peopleService)
@@ -30,12 +23,6 @@ public class PeopleTabViewModel : ObservableObject
     private IPeopleService PeopleService { get; }
 
     public ObservableCollection<Person> People => this.PeopleService.People;
-
-    public Person SelectedPerson
-    {
-        get => _selectedPerson;
-        set => this.SetProperty(ref _selectedPerson, value);
-    }
 
     #endregion
 

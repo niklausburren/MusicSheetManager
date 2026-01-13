@@ -6,6 +6,13 @@ namespace MusicSheetManager.ViewModels
 {
     public class MainWindowViewModel : ObservableObject
     {
+        #region Fields
+
+        private object _selectedObject;
+
+        #endregion
+
+
         #region Constructors
 
         public MainWindowViewModel()
@@ -14,7 +21,6 @@ namespace MusicSheetManager.ViewModels
             this.PeopleTab = App.Container.Resolve<PeopleTabViewModel>();
             this.PlaylistTab = App.Container.Resolve<PlaylistTabViewModel>();
             this.Tools = App.Container.Resolve<ToolsViewModel>();
-            
         }
 
         #endregion
@@ -29,6 +35,12 @@ namespace MusicSheetManager.ViewModels
         public PlaylistTabViewModel PlaylistTab { get; }
 
         public ToolsViewModel Tools { get; }
+
+        public object SelectedObject
+        {
+            get => _selectedObject;
+            set => this.SetProperty(ref _selectedObject, value);
+        }
 
         #endregion
 

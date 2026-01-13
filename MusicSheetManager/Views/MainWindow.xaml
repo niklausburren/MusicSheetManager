@@ -8,6 +8,7 @@
         xmlns:models="clr-namespace:MusicSheetManager.Models"
         xmlns:converters="clr-namespace:MusicSheetManager.Converters"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:ad="https://github.com/Dirkster99/AvalonDock"
         mc:Ignorable="d"
         x:Name="MainWindowRoot"
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
@@ -16,7 +17,6 @@
         Loaded="MainWindow_OnLoaded">
     <Window.Resources>
         <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
-        
         <CollectionViewSource x:Key="GroupedMusicSheetFolders" Source="{Binding MusicSheetTab.MusicSheetFolders}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="Title" Converter="{StaticResource FirstLetterConverter}" />
@@ -72,14 +72,15 @@
                 </DataTrigger>
             </HierarchicalDataTemplate.Triggers>
         </HierarchicalDataTemplate>
-
     </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
         <Menu VerticalAlignment="Top" Grid.Row="0">
             <MenuItem Header="File">
                 <MenuItem Header="Import music sheets..." Click="ImportButton_Click">
@@ -90,9 +91,7 @@
                 <Separator />
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="Edit">
-                <!-- Edit menu items can be added here -->
-            </MenuItem>
+            <MenuItem Header="Edit"/>
             <MenuItem Header="Tools">
                 <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
                 <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
@@ -101,10 +100,9 @@
                 <Separator />
                 <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
             </MenuItem>
-            <MenuItem Header="Info">
-                <!-- Info menu items can be added here -->
-            </MenuItem>
+            <MenuItem Header="Info"/>
         </Menu>
+
         <ToolBarTray Grid.Row="1">
             <ToolBar>
                 <Button Click="ImportButton_Click" ToolTip="Import music sheets">
@@ -115,78 +113,92 @@
                 </Button>
             </ToolBar>
         </ToolBarTray>
-        <TabControl Grid.Row="2">
-            <TabItem Header="Music sheets">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}" 
-                              ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
-                              Grid.Row="0"
-                              x:Name="MusicSheetTreeView"
-                              PreviewMouseRightButtonDown="MusicSheetTreeView_OnPreviewMouseRightButtonDown">
-                        <TreeView.Resources>
-                            <Style TargetType="{x:Type GroupItem}">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type GroupItem}">
-                                            <Expander IsExpanded="True" Margin="0,0,0,10">
-                                                <Expander.Header>
-                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
-                                                </Expander.Header>
-                                                <ItemsPresenter Margin="17,0,0,0" />
-                                            </Expander>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TreeView.Resources>
-                        <TreeView.GroupStyle>
-                            <GroupStyle ContainerStyle="{StaticResource {x:Type GroupItem}}" />
-                        </TreeView.GroupStyle>
-                    </TreeView>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Playlists">
-                <!-- Content for Playlists tab -->
-            </TabItem>
-            <TabItem Header="Peoples">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="300" />
-                    </Grid.ColumnDefinitions>
-                    
-                    <ListView ItemsSource="{Binding PeopleTab.People}" SelectedItem="{Binding PeopleTab.SelectedPerson}" Grid.Column="0">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn DisplayMemberBinding="{Binding FirstName}" Width="120">
-                                    <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding LastName}" Width="120">
-                                    <GridViewColumnHeader Content="Lastname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding Instrument.DisplayName}" Width="180">
-                                    <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding Part.DisplayName}" Width="60">
-                                    <GridViewColumnHeader Content="Part" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding Clef.DisplayName}" Width="60">
-                                    <GridViewColumnHeader Content="Clef" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                    
-                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
-                    
-                    <xctk:PropertyGrid SelectedObject="{Binding PeopleTab.SelectedPerson}" Grid.Column="2" />
-                </Grid>
-            </TabItem>
-        </TabControl>
+
+        <ad:DockingManager Grid.Row="2">
+            <DockingManager.Theme>
+                <ad:Vs2013BlueTheme />
+            </DockingManager.Theme>
+            <ad:LayoutRoot>
+                <ad:LayoutPanel Orientation="Horizontal">
+                    <ad:LayoutDocumentPaneGroup>
+                        <ad:LayoutDocumentPane>
+                            <ad:LayoutDocument Title="Music sheets" CanClose="False">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}"
+                                              ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
+                                              Grid.Row="0"
+                                              x:Name="MusicSheetTreeView"
+                                              SelectedItemChanged="MusicSheetTreeView_OnSelectedItemChanged"
+                                              PreviewMouseRightButtonDown="MusicSheetTreeView_OnPreviewMouseRightButtonDown">
+                                        <TreeView.Resources>
+                                            <Style TargetType="{x:Type GroupItem}">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                            <Expander IsExpanded="True" Margin="0,0,0,10">
+                                                                <Expander.Header>
+                                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                                                                </Expander.Header>
+                                                                <ItemsPresenter Margin="17,0,0,0" />
+                                                            </Expander>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TreeView.Resources>
+                                        <TreeView.GroupStyle>
+                                            <GroupStyle ContainerStyle="{StaticResource {x:Type GroupItem}}" />
+                                        </TreeView.GroupStyle>
+                                    </TreeView>
+                                </Grid>
+                            </ad:LayoutDocument>
+
+                            <ad:LayoutDocument Title="Playlists" CanClose="False">
+                                <Grid/>
+                            </ad:LayoutDocument>
+
+                            <ad:LayoutDocument Title="Peoples" CanClose="False">
+                                <Grid>
+                                    <ListView ItemsSource="{Binding PeopleTab.People}"
+                                              SelectionChanged="PeopleListView_OnSelectionChanged">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn DisplayMemberBinding="{Binding FirstName}" Width="120">
+                                                    <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding LastName}" Width="120">
+                                                    <GridViewColumnHeader Content="Lastname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Instrument.DisplayName}" Width="180">
+                                                    <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Part.DisplayName}" Width="60">
+                                                    <GridViewColumnHeader Content="Part" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Clef.DisplayName}" Width="60">
+                                                    <GridViewColumnHeader Content="Clef" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </ad:LayoutDocument>
+                        </ad:LayoutDocumentPane>
+                    </ad:LayoutDocumentPaneGroup>
+
+                    <ad:LayoutAnchorablePaneGroup DockWidth="300">
+                        <ad:LayoutAnchorablePane>
+                            <ad:LayoutAnchorable Title="Properties" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                                <xctk:PropertyGrid SelectedObject="{Binding SelectedObject}" />
+                            </ad:LayoutAnchorable>
+                        </ad:LayoutAnchorablePane>
+                    </ad:LayoutAnchorablePaneGroup>
+                </ad:LayoutPanel>
+            </ad:LayoutRoot>
+        </ad:DockingManager>
     </Grid>
 </Window>

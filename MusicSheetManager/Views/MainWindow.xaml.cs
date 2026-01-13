@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,6 +29,13 @@ public partial class MainWindow : Window
     #endregion
 
 
+    #region Properties
+
+    private MainWindowViewModel ViewModel => (MainWindowViewModel)this.DataContext;
+
+    #endregion
+
+
     #region Private Methods
 
     private static TreeViewItem FindTreeViewItem(DependencyObject source)
@@ -49,7 +57,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            await ((MainWindowViewModel)this.DataContext).InitializeAsync();
+            await this.ViewModel.InitializeAsync();
             
             var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
 
@@ -71,17 +79,13 @@ public partial class MainWindow : Window
 
     private void ImportButton_Click(object sender, RoutedEventArgs e)
     {
-        var openFileDialog = new OpenFileDialog
-        {
-            Filter = "PDF files (*.pdf)|*.pdf",
-            Title = "Select a PDF file"
-        };
-
+        var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
+        
         if (openFileDialog.ShowDialog(this) != true)
         {
             return;
         }
-
+        
         var importDialog = App.Container.Resolve<ImportDialog>();
         importDialog.ShowDialog(this, openFileDialog.FileName);
     }
@@ -89,13 +93,34 @@ public partial class MainWindow : Window
     private void MusicSheetTreeView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         var treeViewItem = FindTreeViewItem(e.OriginalSource as DependencyObject);
-        
+
         if (treeViewItem != null)
         {
             treeViewItem.Focus();
             treeViewItem.IsSelected = true;
             e.Handled = true;
         }
+    }
+
+    private void MusicSheetTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        switch (e.NewValue)
+        {
+            case MusicSheetFolder musicSheetFolder:
+                this.ViewModel.SelectedObject = musicSheetFolder;
+                break;
+            case MusicSheet musicSheet:
+                this.ViewModel.SelectedObject = musicSheet;
+                break;
+            default:
+                this.ViewModel.SelectedObject = null;
+                break;
+        }
+    }
+
+    private void PeopleListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        this.ViewModel.SelectedObject = e.AddedItems.OfType<Person>().FirstOrDefault();
     }
 
     #endregion

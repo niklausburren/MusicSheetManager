@@ -16,7 +16,7 @@ namespace MusicSheetManager.Utilities
 
         public static string TempFolder { get; } = Path.Combine(Path.GetTempPath(), APP_NAME);
 
-        public static string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), APP_NAME);
+        public static string AppDataFolder { get; } = "C:\\Users\\BurrNik1\\OneDrive\\Dokumente\\MusicSheetManager"; // Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), APP_NAME);
 
         public static string MusicSheetFolder { get; } = Path.Combine(AppDataFolder, "sheets");
 
