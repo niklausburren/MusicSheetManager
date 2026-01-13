@@ -37,7 +37,7 @@ public sealed class PartsEditor : ITypeEditor
         {
             editor.SelectedItemsOverride = musicSheet.Parts;
 
-            editor.ItemSelectionChanged += (_, e) =>
+            editor.ItemSelectionChanged += (_, _) =>
             {
                 propertyItem.Value = new ObservableCollection<PartInfo>(editor.SelectedItems.OfType<PartInfo>());
             };
