@@ -51,7 +51,7 @@
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
             <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
                 <Image Source="/Resources/music-sheet.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
             </StackPanel>
         </HierarchicalDataTemplate>
 
@@ -115,7 +115,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <ad:DockingManager Grid.Row="2">
+        <ad:DockingManager x:Name="DockManager" Grid.Row="2">
             <DockingManager.Theme>
                 <ad:Vs2013BlueTheme />
             </DockingManager.Theme>
@@ -123,7 +123,7 @@
                 <ad:LayoutPanel Orientation="Horizontal">
                     <ad:LayoutDocumentPaneGroup>
                         <ad:LayoutDocumentPane>
-                            <ad:LayoutDocument Title="Music sheets" CanFloat="False" CanClose="False">
+                            <ad:LayoutDocument Title="Music sheets" CanClose="False">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
@@ -158,11 +158,11 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Playlists" CanFloat="False" CanClose="False">
+                            <ad:LayoutDocument Title="Playlists" CanClose="False">
                                 <Grid/>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Peoples" CanFloat="False" CanClose="False">
+                            <ad:LayoutDocument Title="Peoples" CanClose="False">
                                 <Grid>
                                     <ListView ItemsSource="{Binding PeopleTab.People}"
                                               SelectionChanged="PeopleListView_OnSelectionChanged">
@@ -193,10 +193,10 @@
 
                     <ad:LayoutAnchorablePaneGroup DockWidth="400">
                         <ad:LayoutAnchorablePane>
-                            <ad:LayoutAnchorable Title="Properties" CanFloat="False" CanClose="False" CanHide="True" AutoHideMinWidth="200">
-                                <xctk:PropertyGrid SelectedObject="{Binding SelectedObject}" />
+                            <ad:LayoutAnchorable Title="Properties" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                                <xctk:PropertyGrid ShowTitle="False" ShowSearchBox="False" ShowSortOptions="False" SelectedObject="{Binding SelectedObject}" />
                             </ad:LayoutAnchorable>
-                            <ad:LayoutAnchorable Title="PDF Viewer" CanFloat="False" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                            <ad:LayoutAnchorable Title="PDF Viewer" CanClose="False" CanHide="True" AutoHideMinWidth="200">
                                 <Grid Background="#333333">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />

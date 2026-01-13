@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MusicSheetManager.Converters;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Models
 {
@@ -48,40 +49,47 @@ namespace MusicSheetManager.Models
         /// Gets the first name of the person.
         /// </summary>
         [DisplayName("Firstname")]
+        [PropertyOrder(1)]
         public string FirstName { get; }
 
         /// <summary>
         /// Gets the last name of the person.
         /// </summary>
         [DisplayName("Lastname")]
+        [PropertyOrder(2)]
         public string LastName { get; }
 
         /// <summary>
         /// Gets the instrument associated with the person.
         /// </summary>
         [JsonConverter(typeof(InstrumentInfoConverter))]
+        [PropertyOrder(3)]
         public InstrumentInfo Instrument { get; }
 
         /// <summary>
         /// Gets the parts associated with the person.
         /// </summary>
         [JsonConverter(typeof(PartInfoConverter))]
+        [PropertyOrder(4)]
         public PartInfo Part { get; }
 
         /// <summary>
         /// Gets the clef associated with the person.
         /// </summary>
         [JsonConverter(typeof(ClefInfoConverter))]
+        [PropertyOrder(5)]
         public ClefInfo Clef { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the person is dispensed.
         /// </summary>
+        [PropertyOrder(6)]
         public bool Dispensed { get; set; }
 
         /// <summary>
         /// Gets the full name of the person.
         /// </summary>
+        [Browsable(false)]
         public string FullName => $"{this.LastName} {this.FirstName}";
 
         #endregion

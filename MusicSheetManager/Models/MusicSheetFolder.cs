@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using MusicSheetManager.Utilities;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Models
 {
@@ -49,20 +50,27 @@ namespace MusicSheetManager.Models
 
         #region Properties
 
+        [PropertyOrder(1)]
         public Guid Id { get; }
 
+        [Browsable(false)]
         public string Folder { get; }
 
         private MusicSheetFolderMetadata Metadata { get; }
 
+        [Browsable(false)]
         public IReadOnlyList<MusicSheet> Sheets => _sheets;
 
+        [PropertyOrder(2)]
         public string Title => this.Metadata.Title;
 
+        [PropertyOrder(3)]
         public string Composer => this.Metadata.Composer;
 
+        [PropertyOrder(4)]
         public string Arranger => this.Metadata.Arranger;
 
+        [Browsable(false)]
         public string Credits
         {
             get

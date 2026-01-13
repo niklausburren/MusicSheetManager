@@ -144,10 +144,11 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public static InstrumentInfo Keyboard { get; } = new("Keyboard", InstrumentCategory.Keys, "Keyboard");
 
-    public static IEnumerable<InstrumentInfo> All => typeof(InstrumentInfo)
+    public static IReadOnlyList<InstrumentInfo> All { get; } = typeof(InstrumentInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
         .Select(pi => pi.GetValue(null))
-        .OfType<InstrumentInfo>();
+        .OfType<InstrumentInfo>()
+        .ToList();
 
     public string Key { get; }
 

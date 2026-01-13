@@ -41,10 +41,11 @@ public class PartInfo : IEquatable<PartInfo>
 
     public static PartInfo Part5 { get; } = new("Part5", "Part 5");
 
-    public static IEnumerable<PartInfo> All => typeof(PartInfo)
+    public static IReadOnlyList<PartInfo> All { get; } = typeof(PartInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
         .Select(pi => pi.GetValue(null))
-        .OfType<PartInfo>();
+        .OfType<PartInfo>()
+        .ToList();
 
     public string Key { get; }
 

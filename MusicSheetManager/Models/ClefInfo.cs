@@ -29,10 +29,11 @@ namespace MusicSheetManager.Models
 
         public static ClefInfo PercussionClef { get; } = new("PercussionClef", "Perc", "Perc.");
 
-        public static IEnumerable<ClefInfo> All => typeof(ClefInfo)
+        public static IReadOnlyList<ClefInfo> All { get; } = typeof(ClefInfo)
             .GetProperties(BindingFlags.Static | BindingFlags.Public)
             .Select(pi => pi.GetValue(null))
-            .OfType<ClefInfo>();
+            .OfType<ClefInfo>()
+            .ToList();
 
         public string Key { get; }
 

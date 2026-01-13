@@ -1,3 +1,7 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using IronOcr;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Pdf.IO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,10 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using IronOcr;
-using PdfSharpCore.Pdf;
-using PdfSharpCore.Pdf.IO;
+using MusicSheetManager.Editors;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
+using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace MusicSheetManager.Models;
 
@@ -56,37 +59,71 @@ public class MusicSheet : ObservableObject
 
     #region Properties
 
+    [PropertyOrder(1)]
     public Guid Id { get; private set; }
 
+    [Browsable(false)]
     public Guid FolderId { get; set; }
 
+    [Browsable(false)]
     public string FileName { get; private set; }
 
+    [Browsable(false)]
     public MusicSheetFolderMetadata Metadata { get; }
 
+    [Browsable(false)]
     public string Title => this.Metadata.Title;
 
+    [Browsable(false)]
     public string Composer => this.Metadata.Composer;
 
+    [Browsable(false)]
     public string Arranger => this.Metadata.Arranger;
 
+    [PropertyOrder(2)]
+    [ItemsSource(typeof(InstrumentItemsSource))]
     public InstrumentInfo Instrument
     {
         get => _instrument;
-        set => this.SetProperty(ref _instrument, value);
+        set
+        {
+            if (this.SetProperty(ref _instrument, value))
+            {
+                this.OnPropertyChanged(nameof(this.DisplayName));
+            }
+        }
     }
 
+    [PropertyOrder(3)]
+    [Editor(typeof(PartsEditor), typeof(ITypeEditor))]
     public ObservableCollection<PartInfo> Parts
     {
         get => _parts;
-        set => this.SetProperty(ref _parts, value);
+        set
+        {
+            if (this.SetProperty(ref _parts, value))
+            {
+                this.OnPropertyChanged(nameof(this.DisplayName));
+            }
+        }
     }
 
+    [PropertyOrder(4)]
+    [ItemsSource(typeof(ClefItemsSource))]
     public ClefInfo Clef
     {
         get => _clef;
-        set => this.SetProperty(ref _clef, value);
+        set
+        {
+            if (this.SetProperty(ref _clef, value))
+            {
+                this.OnPropertyChanged(nameof(this.DisplayName));
+            }
+        }
     }
+
+    [Browsable(false)]
+    public string DisplayName => this.ToString();
 
     #endregion
 
@@ -145,15 +182,12 @@ public class MusicSheet : ObservableObject
 
     public void UpdateFileName()
     {
-        if (HasNumberingInParentheses(this.FileName))
-        {
-            var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
+        var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
 
-            if (newFileName != this.FileName)
-            {
-                File.Move(this.FileName, newFileName);
-                this.FileName = newFileName;
-            }
+        if (newFileName != this.FileName)
+        {
+            File.Move(this.FileName, newFileName);
+            this.FileName = newFileName;
         }
     }
 
@@ -175,6 +209,14 @@ public class MusicSheet : ObservableObject
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
+
+        if (e.PropertyName != nameof(this.Title) && 
+            e.PropertyName != nameof(this.Instrument) && 
+            e.PropertyName != nameof(this.Parts) &&
+            e.PropertyName != nameof(this.Clef))
+        {
+            return;
+        }
 
         this.SaveMetadata();
 

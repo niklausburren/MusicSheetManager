@@ -58,9 +58,8 @@ public partial class MainWindow : Window
         try
         {
             await this.ViewModel.InitializeAsync();
-            
-            var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
 
+            var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
             if (cvs?.View is ListCollectionView listView)
             {
                 listView.CustomSort = new MusicSheetFolderComparer();
