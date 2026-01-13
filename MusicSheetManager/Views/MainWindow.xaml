@@ -9,6 +9,7 @@
         xmlns:converters="clr-namespace:MusicSheetManager.Converters"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:ad="https://github.com/Dirkster99/AvalonDock"
+        xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         x:Name="MainWindowRoot"
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
@@ -122,7 +123,7 @@
                 <ad:LayoutPanel Orientation="Horizontal">
                     <ad:LayoutDocumentPaneGroup>
                         <ad:LayoutDocumentPane>
-                            <ad:LayoutDocument Title="Music sheets" CanClose="False">
+                            <ad:LayoutDocument Title="Music sheets" CanFloat="False" CanClose="False">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
@@ -157,11 +158,11 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Playlists" CanClose="False">
+                            <ad:LayoutDocument Title="Playlists" CanFloat="False" CanClose="False">
                                 <Grid/>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Peoples" CanClose="False">
+                            <ad:LayoutDocument Title="Peoples" CanFloat="False" CanClose="False">
                                 <Grid>
                                     <ListView ItemsSource="{Binding PeopleTab.People}"
                                               SelectionChanged="PeopleListView_OnSelectionChanged">
@@ -190,10 +191,18 @@
                         </ad:LayoutDocumentPane>
                     </ad:LayoutDocumentPaneGroup>
 
-                    <ad:LayoutAnchorablePaneGroup DockWidth="300">
+                    <ad:LayoutAnchorablePaneGroup DockWidth="400">
                         <ad:LayoutAnchorablePane>
-                            <ad:LayoutAnchorable Title="Properties" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                            <ad:LayoutAnchorable Title="Properties" CanFloat="False" CanClose="False" CanHide="True" AutoHideMinWidth="200">
                                 <xctk:PropertyGrid SelectedObject="{Binding SelectedObject}" />
+                            </ad:LayoutAnchorable>
+                            <ad:LayoutAnchorable Title="PDF Viewer" CanFloat="False" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                                <Grid Background="#333333">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <wpf:WebView2 x:Name="PdfViewer" Grid.Row="0" />
+                                </Grid>
                             </ad:LayoutAnchorable>
                         </ad:LayoutAnchorablePane>
                     </ad:LayoutAnchorablePaneGroup>

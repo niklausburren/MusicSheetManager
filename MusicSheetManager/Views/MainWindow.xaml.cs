@@ -104,12 +104,15 @@ public partial class MainWindow : Window
 
     private void MusicSheetTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
+        PdfViewer.Source = new Uri("about:blank");
+
         switch (e.NewValue)
         {
             case MusicSheetFolder musicSheetFolder:
                 this.ViewModel.SelectedObject = musicSheetFolder;
                 break;
             case MusicSheet musicSheet:
+                PdfViewer.Source = new Uri(musicSheet.FileName, UriKind.Absolute);
                 this.ViewModel.SelectedObject = musicSheet;
                 break;
             default:
@@ -120,6 +123,7 @@ public partial class MainWindow : Window
 
     private void PeopleListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        PdfViewer.Source = new Uri("about:blank");
         this.ViewModel.SelectedObject = e.AddedItems.OfType<Person>().FirstOrDefault();
     }
 
