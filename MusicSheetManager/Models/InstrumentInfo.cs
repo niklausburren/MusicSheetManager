@@ -291,7 +291,7 @@ public static class InstrumentInfoExtensions
         { InstrumentInfo.CornetBb, [InstrumentInfo.TrumpetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.TrumpetBb, [InstrumentInfo.CornetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.EuphoniumBb, [InstrumentInfo.TenorHornBb, InstrumentInfo.BaritoneHornBb] },
-        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb, InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb] },
+        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb, InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb, InstrumentInfo.TromboneBb] },
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
         { InstrumentInfo.Bassoon, [InstrumentInfo.BassC, InstrumentInfo.BaritoneHornC, InstrumentInfo.BassTromboneC, InstrumentInfo.TromboneC] },
         { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
