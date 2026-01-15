@@ -68,6 +68,17 @@
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
         </ContextMenu>
 
+        <ContextMenu x:Key="PlaylistTreeViewContextMenu">
+            <MenuItem Header="Move up"
+                      Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryUpCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Page Up" />
+            <MenuItem Header="Move down"
+                      Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryDownCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Page Down" />
+        </ContextMenu>
+
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
             <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
                 <Image Source="/Resources/music-sheet.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
@@ -96,7 +107,7 @@
 
         <HierarchicalDataTemplate x:Key="PlaylistEntryTemplate" DataType="{x:Type models:PlaylistEntry}">
             <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
-                <Image Source="/Resources/music-sheet.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <Image Source="/Resources/playlist-entry.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding Number}" Width="30" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding MusicSheetFolder.Title}" VerticalAlignment="Center" />
             </StackPanel>
@@ -104,14 +115,9 @@
 
         <HierarchicalDataTemplate x:Key="PlaylistTemplate" DataType="{x:Type models:Playlist}" ItemsSource="{Binding Entries}" ItemTemplate="{StaticResource PlaylistEntryTemplate}">
             <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
-                <Image x:Name="PlaylistFolderIcon" Source="/Resources/folder.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <Image x:Name="PlaylistFolderIcon" Source="/Resources/playlist.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
-            <HierarchicalDataTemplate.Triggers>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsExpanded}" Value="True">
-                    <Setter TargetName="PlaylistFolderIcon" Property="Source" Value="/Resources/folder-open.png" />
-                </DataTrigger>
-            </HierarchicalDataTemplate.Triggers>
         </HierarchicalDataTemplate>
     </Window.Resources>
 
@@ -132,7 +138,20 @@
                 <Separator />
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="Edit"/>
+            <MenuItem Header="Edit">
+                <MenuItem Header="Move playlist entry up"
+                          Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}"
+                          CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
+                          InputGestureText="Page Up"/>
+                <MenuItem Header="Move playlist entry down"
+                          Command="{Binding PlaylistTab.MovePlaylistEntryDownCommand}"
+                          CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
+                          InputGestureText="Page Down"/>
+                <Separator />
+                <MenuItem Header="Delete"
+                          Command="{Binding DeleteSelectedItemCommand}"
+                          InputGestureText="Del"/>
+            </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
                 <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
@@ -155,7 +174,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <ad:DockingManager x:Name="DockManager" Grid.Row="2">
+        <ad:DockingManager x:Name="DockManager" Grid.Row="2" ActiveContent="{Binding ActiveDocument, Mode=TwoWay}">
             <DockingManager.Theme>
                 <ad:Vs2013BlueTheme />
             </DockingManager.Theme>
@@ -163,15 +182,11 @@
                 <ad:LayoutPanel Orientation="Horizontal">
                     <ad:LayoutDocumentPaneGroup>
                         <ad:LayoutDocumentPane>
-                            <ad:LayoutDocument Title="Music sheets" CanClose="False">
+                            <ad:LayoutDocument x:Name="MusicSheetsDocument" Title="Music sheets" CanClose="False" IsActiveChanged="Document_IsActiveChanged">
                                 <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <TreeView ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}"
+                                    <TreeView x:Name="MusicSheetTreeView"
+                                              ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}"
                                               ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
-                                              Grid.Row="0"
-                                              x:Name="MusicSheetTreeView"
                                               SelectedItemChanged="MusicSheetTreeView_OnSelectedItemChanged"
                                               PreviewMouseRightButtonDown="MusicSheetTreeView_OnPreviewMouseRightButtonDown">
                                         <TreeView.Resources>
@@ -198,24 +213,46 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Playlists" CanClose="False">
+                            <ad:LayoutDocument x:Name="PlaylistsDocument" Title="Playlists" CanFloat="False" CanClose="False" IsActiveChanged="Document_IsActiveChanged">
                                 <Grid>
-                                    <TreeView ItemsSource="{Binding PlaylistTab.Playlists}"
+                                    <TreeView x:Name="PlaylistsTreeView"
+                                              ItemsSource="{Binding PlaylistTab.Playlists}"
                                               ItemTemplate="{StaticResource PlaylistTemplate}"
-                                              x:Name="PlaylistTreeView">
+                                              SelectedItemChanged="PlaylistsTreeView_OnSelectedItemChanged"
+                                              PreviewMouseRightButtonDown="PlaylistsTreeView_OnPreviewMouseRightButtonDown">
+                                        <TreeView.InputBindings>
+                                            <KeyBinding Key="PageUp" Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}" CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}" />
+                                            <KeyBinding Key="PageDown" Command="{Binding PlaylistTab.MovePlaylistEntryDownCommand}" CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}" />
+                                        </TreeView.InputBindings>
+                                        <TreeView.ItemContainerStyle>
+                                            <Style TargetType="TreeViewItem">
+                                                <Setter Property="ContextMenu" Value="{StaticResource PlaylistTreeViewContextMenu}" />
+                                            </Style>
+                                        </TreeView.ItemContainerStyle>
                                     </TreeView>
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument Title="Peoples" CanClose="False">
+                            <ad:LayoutDocument x:Name="PeoplesDocument" Title="Peoples" CanClose="False" IsActiveChanged="Document_IsActiveChanged">
                                 <Grid>
                                     <ListView ItemsSource="{Binding PeopleTab.People}"
                                               SelectionChanged="PeopleListView_OnSelectionChanged">
                                         <ListView.View>
                                             <GridView>
-                                                <GridViewColumn DisplayMemberBinding="{Binding FirstName}" Width="120">
+                                                <!-- First column: icon + firstname -->
+                                                <GridViewColumn Width="180">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                                                                <Image Source="/Resources/person.png" Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
                                                     <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                                 </GridViewColumn>
+
+                                                <!-- keep other columns as before -->
                                                 <GridViewColumn DisplayMemberBinding="{Binding LastName}" Width="120">
                                                     <GridViewColumnHeader Content="Lastname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                                 </GridViewColumn>

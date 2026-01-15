@@ -1,6 +1,9 @@
 ﻿using System.Threading.Tasks;
+using System.Windows.Input;
 using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MusicSheetManager.Models;
 
 namespace MusicSheetManager.ViewModels
 {
@@ -9,6 +12,7 @@ namespace MusicSheetManager.ViewModels
         #region Fields
 
         private object _selectedObject;
+        private object _activeDocument;
 
         #endregion
 
@@ -21,6 +25,8 @@ namespace MusicSheetManager.ViewModels
             this.PeopleTab = App.Container.Resolve<PeopleTabViewModel>();
             this.PlaylistTab = App.Container.Resolve<PlaylistTabViewModel>();
             this.Tools = App.Container.Resolve<ToolsViewModel>();
+
+            this.DeleteSelectedItemCommand = new RelayCommand(this.DeleteSelectedItem, this.CanDeleteSelectedItem);
         }
 
         #endregion
@@ -39,7 +45,21 @@ namespace MusicSheetManager.ViewModels
         public object SelectedObject
         {
             get => _selectedObject;
-            set => this.SetProperty(ref _selectedObject, value);
+            set
+            {
+                if (this.SetProperty(ref _selectedObject, value))
+                {
+                    this.NotifyDeleteCommandChanged();
+                }
+            }
+        }
+
+        public ICommand DeleteSelectedItemCommand { get; }
+
+        public object ActiveDocument
+        {
+            get => _activeDocument;
+            set => this.SetProperty(ref _activeDocument, value);
         }
 
         #endregion
@@ -52,6 +72,47 @@ namespace MusicSheetManager.ViewModels
             await this.MusicSheetTab.InitializeAsync();
             await this.PeopleTab.InitializeAsync();
             await this.PlaylistTab.InitializeAsync();
+        }
+
+        #endregion
+
+
+        #region Private Methods
+
+        private void DeleteSelectedItem()
+        {
+            switch (this.SelectedObject)
+            {
+                case Person person when this.PeopleTab.IsFocused:
+                    this.PeopleTab.DeletePerson(person);
+                    break;
+                case Playlist playlist when this.PlaylistTab.IsFocused:
+                    this.PlaylistTab.DeletePlaylist(playlist);
+                    break;
+                case PlaylistEntry playlistEntry when this.PlaylistTab.IsFocused:
+                    this.PlaylistTab.DeletePlaylistEntry(playlistEntry);
+                    break;
+            }
+
+            this.NotifyDeleteCommandChanged();
+        }
+
+        private bool CanDeleteSelectedItem()
+        {
+            return this.SelectedObject switch
+            {
+                Person _ => this.PeopleTab.IsFocused,
+                Playlist _ or PlaylistEntry _ => this.PlaylistTab.IsFocused,
+                _ => false
+            };
+        }
+
+        private void NotifyDeleteCommandChanged()
+        {
+            if (this.DeleteSelectedItemCommand is RelayCommand rc)
+            {
+                rc.NotifyCanExecuteChanged();
+            }
         }
 
         #endregion

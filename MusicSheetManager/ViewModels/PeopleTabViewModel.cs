@@ -8,6 +8,13 @@ namespace MusicSheetManager.ViewModels;
 
 public class PeopleTabViewModel : ObservableObject
 {
+    #region Fields
+
+    private bool _isFocused;
+
+    #endregion
+
+
     #region Constructors
 
     public PeopleTabViewModel(IPeopleService peopleService)
@@ -24,6 +31,12 @@ public class PeopleTabViewModel : ObservableObject
 
     public ObservableCollection<Person> People => this.PeopleService.People;
 
+    public bool IsFocused
+    {
+        get => _isFocused;
+        set => this.SetProperty(ref _isFocused, value);
+    }
+
     #endregion
 
 
@@ -35,4 +48,11 @@ public class PeopleTabViewModel : ObservableObject
     }
 
     #endregion
+
+
+    public void DeletePerson(Person person)
+    {
+        this.PeopleService.People.Remove(person);
+        this.PeopleService.SaveAsync();
+    }
 }

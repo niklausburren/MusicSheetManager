@@ -19,10 +19,11 @@ namespace MusicSheetManager.Models
             this.Id = id;
             this.Name = name;
             this.Entries = entries;
-            this.InitializeIndices();
+            this.UpdateIndices();
         }
 
         #endregion
+
 
         #region Properties
 
@@ -49,15 +50,8 @@ namespace MusicSheetManager.Models
 
         #endregion
 
-        #region Methods
 
-        private void InitializeIndices()
-        {
-            for (var i = 0; i < this.Entries.Count; i++)
-            {
-                this.Entries[i].Index = i;
-            }
-        }
+        #region Public Methods
 
         public void ResolveMusicSheetFolders(IMusicSheetService musicSheetService)
         {
@@ -69,6 +63,14 @@ namespace MusicSheetManager.Models
                 {
                     entry.MusicSheetFolder = folder;
                 }
+            }
+        }
+
+        public void UpdateIndices()
+        {
+            for (var i = 0; i < this.Entries.Count; i++)
+            {
+                this.Entries[i].Index = i;
             }
         }
 

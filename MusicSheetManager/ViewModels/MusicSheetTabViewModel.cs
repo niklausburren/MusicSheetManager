@@ -17,6 +17,13 @@ namespace MusicSheetManager.ViewModels;
 
 public class MusicSheetTabViewModel : ObservableObject
 {
+    #region Fields
+
+    private bool _isFocused;
+
+    #endregion
+
+
     #region Constructors
 
     public MusicSheetTabViewModel(
@@ -42,6 +49,12 @@ public class MusicSheetTabViewModel : ObservableObject
     private IMusicSheetAssignmentService MusicSheetAssignmentService { get; }
 
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders => this.MusicSheetService.MusicSheetFolders;
+
+    public bool IsFocused
+    {
+        get => _isFocused;
+        set => this.SetProperty(ref _isFocused, value);
+    }
 
     public ICommand ImportSheetsCommand { get; }
 

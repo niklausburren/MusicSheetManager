@@ -71,6 +71,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Document_IsActiveChanged(object sender, EventArgs e)
+    {
+        this.SyncDocumentActivityToViewModels();
+    }
+
+    private void SyncDocumentActivityToViewModels()
+    {
+        if (this.DataContext is MainWindowViewModel vm)
+        {
+            vm.MusicSheetTab.IsFocused = MusicSheetsDocument.IsActive;
+            vm.PlaylistTab.IsFocused = PlaylistsDocument.IsActive;
+            vm.PeopleTab.IsFocused = PeoplesDocument.IsActive;
+        }
+    }
+
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
@@ -124,6 +139,23 @@ public partial class MainWindow : Window
     {
         PdfViewer.Source = new Uri("about:blank");
         this.ViewModel.SelectedObject = e.AddedItems.OfType<Person>().FirstOrDefault();
+    }
+
+    private void PlaylistsTreeView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var treeViewItem = FindTreeViewItem(e.OriginalSource as DependencyObject);
+        
+        if (treeViewItem != null)
+        {
+            treeViewItem.Focus();
+            treeViewItem.IsSelected = true;
+            e.Handled = true;
+        }
+    }
+
+    private void PlaylistsTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        this.ViewModel.SelectedObject = e.NewValue;
     }
 
     #endregion
