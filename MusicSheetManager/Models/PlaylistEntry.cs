@@ -21,13 +21,16 @@ public class PlaylistEntry
 
     public Guid MusicSheetFolderId { get; }
 
-    [JsonIgnore]
-    public MusicSheetFolder MusicSheetFolder { get; internal set; }
-
     public bool Distribute { get; }
 
     [JsonIgnore]
     public int Index { get; internal set; }
+
+    [JsonIgnore]
+    public string Number => $"{this.Index + 1:D2}.";
+
+    [JsonIgnore]
+    public MusicSheetFolder MusicSheetFolder { get; internal set; }
 
     #endregion
 }

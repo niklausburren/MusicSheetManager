@@ -96,7 +96,7 @@ namespace MusicSheetManager.Services
 
                             if (musicSheet != null)
                             {
-                                File.Copy(musicSheet.FileName, Path.Combine(playlistFolder, $"{entry.Index + 1:D2} {Path.GetFileName(musicSheet.FileName)}"));
+                                File.Copy(musicSheet.FileName, Path.Combine(playlistFolder, $"{entry.Number} {Path.GetFileName(musicSheet.FileName)}"));
                             }
                             else
                             {
@@ -107,19 +107,19 @@ namespace MusicSheetManager.Services
                 }
             }
 
-            foreach (var playlist in this.PlaylistService.Playlists)
+            foreach (var playlist in this.PlaylistService.Playlists.Where(p => p.Distribute))
             {
                 var percussionFolder = Path.Combine(Folders.DistributionFolder, $"{InstrumentInfo.Percussion.Index:D2} {InstrumentInfo.Percussion.DisplayName}", playlist.SanitizedName);
                 Directory.CreateDirectory(percussionFolder);
 
                 foreach (var entry in playlist.Entries.Where(e => e.Distribute && e.MusicSheetFolder != null))
                 {
-                    var percussionSubFolder = Path.Combine(percussionFolder, $"{entry.Index + 1:D2} {entry.MusicSheetFolder.Title}");
+                    var percussionSubFolder = Path.Combine(percussionFolder, $"{entry.Number} {entry.MusicSheetFolder.Title}");
                     Directory.CreateDirectory(percussionSubFolder);
 
                     foreach (var musicSheet in entry.MusicSheetFolder.Sheets.Where(s => s.Instrument.Category == InstrumentCategory.Percussion))
                     {
-                        File.Copy(musicSheet.FileName, Path.Combine(percussionSubFolder, $"{entry.Index + 1:D2} {Path.GetFileName(musicSheet.FileName)}"));
+                        File.Copy(musicSheet.FileName, Path.Combine(percussionSubFolder, $"{entry.Number} {Path.GetFileName(musicSheet.FileName)}"));
                     }
                 }
             }

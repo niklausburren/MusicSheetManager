@@ -18,6 +18,8 @@
         Loaded="MainWindow_OnLoaded">
     <Window.Resources>
         <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
+        <converters:AddToPlaylistParameterConverter x:Key="AddToPlaylistParameterConverter" />
+
         <CollectionViewSource x:Key="GroupedMusicSheetFolders" Source="{Binding MusicSheetTab.MusicSheetFolders}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="Title" Converter="{StaticResource FirstLetterConverter}" />
@@ -36,6 +38,24 @@
             <MenuItem Header="Assign sheets to people" 
                       Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Add to playlist" ItemsSource="{Binding DataContext.PlaylistTab.Playlists, Source={x:Reference MainWindowRoot}}">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding Name}" />
+                        <Setter Property="Command" Value="{Binding DataContext.PlaylistTab.AddToPlaylistCommand, Source={x:Reference MainWindowRoot}}" />
+                        <Setter Property="CommandParameter">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource AddToPlaylistParameterConverter}">
+                                    <Binding />
+                                    <Binding Path="PlacementTarget.DataContext" RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
             <Separator />
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Open in Windows Explorer" 
@@ -70,6 +90,26 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsExpanded}" Value="True">
                     <Setter TargetName="FolderIcon" Property="Source" Value="/Resources/folder-open.png" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="PlaylistEntryTemplate" DataType="{x:Type models:PlaylistEntry}">
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
+                <Image Source="/Resources/music-sheet.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Number}" Width="30" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding MusicSheetFolder.Title}" VerticalAlignment="Center" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="PlaylistTemplate" DataType="{x:Type models:Playlist}" ItemsSource="{Binding Entries}" ItemTemplate="{StaticResource PlaylistEntryTemplate}">
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
+                <Image x:Name="PlaylistFolderIcon" Source="/Resources/folder.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsExpanded}" Value="True">
+                    <Setter TargetName="PlaylistFolderIcon" Property="Source" Value="/Resources/folder-open.png" />
                 </DataTrigger>
             </HierarchicalDataTemplate.Triggers>
         </HierarchicalDataTemplate>
@@ -159,7 +199,12 @@
                             </ad:LayoutDocument>
 
                             <ad:LayoutDocument Title="Playlists" CanClose="False">
-                                <Grid/>
+                                <Grid>
+                                    <TreeView ItemsSource="{Binding PlaylistTab.Playlists}"
+                                              ItemTemplate="{StaticResource PlaylistTemplate}"
+                                              x:Name="PlaylistTreeView">
+                                    </TreeView>
+                                </Grid>
                             </ad:LayoutDocument>
 
                             <ad:LayoutDocument Title="Peoples" CanClose="False">

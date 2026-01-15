@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MusicSheetManager.Services;
 
 namespace MusicSheetManager.Models
 {
-    public class Playlist
+    public class Playlist : ObservableObject
     {
         #region Constructors
 
         [JsonConstructor]
-        public Playlist(Guid id, string name, IList<PlaylistEntry> entries)
+        public Playlist(Guid id, string name, ObservableCollection<PlaylistEntry> entries)
         {
             this.Id = id;
             this.Name = name;
@@ -44,7 +45,7 @@ namespace MusicSheetManager.Models
         [JsonIgnore]
         public bool Distribute => this.Entries.Any(e => e.Distribute);
 
-        public IList<PlaylistEntry> Entries { get; }
+        public ObservableCollection<PlaylistEntry> Entries { get; }
 
         #endregion
 
