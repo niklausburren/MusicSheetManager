@@ -47,12 +47,11 @@ public class PeopleTabViewModel : ObservableObject
         await this.PeopleService.LoadAsync();
     }
 
-    #endregion
-
-
     public void DeletePerson(Person person)
     {
         this.PeopleService.People.Remove(person);
         this.PeopleService.SaveAsync();
     }
+
+    #endregion
 }

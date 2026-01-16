@@ -56,7 +56,7 @@ namespace MusicSheetManager.Services
 
                 MusicSheet musicSheet;
 
-                foreach (var part in person.Part?.GetSelfAndHigherParts() ?? PartInfo.Part5.GetSelfAndHigherParts())
+                foreach (var part in person.Part?.GetSelfAndHigherParts() ?? PartInfo.Fourth.GetSelfAndHigherParts())
                 {
                     musicSheet = assignableMusicSheets.FirstOrDefault(s => s.Parts.Contains(part));
 

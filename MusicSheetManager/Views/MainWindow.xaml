@@ -110,7 +110,7 @@
         <HierarchicalDataTemplate x:Key="PlaylistEntryTemplate" DataType="{x:Type models:PlaylistEntry}">
             <StackPanel Orientation="Horizontal" Margin="0,2,10,2">
                 <Image Source="/Resources/playlist-entry.png" Width="22" Height="22" Margin="0,0,4,0" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding Number}" Width="30" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Number}" Width="20" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding MusicSheetFolder.Title}" VerticalAlignment="Center" />
             </StackPanel>
         </HierarchicalDataTemplate>
@@ -122,11 +122,16 @@
             </StackPanel>
         </HierarchicalDataTemplate>
 
-        <DataTemplate x:Key="FirstNameCellTemplate" DataType="{x:Type models:Person}" >
+        <DataTemplate x:Key="NameCellTemplate" DataType="{x:Type models:Person}" >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                <Image Source="/Resources/person.png" Width="22" Height="22" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center"/>
+                <Image x:Name="PersonIcon" Source="/Resources/person.png" Width="22" Height="22" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding FullName}" VerticalAlignment="Center"/>
             </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Dispensed}" Value="True">
+                    <Setter TargetName="PersonIcon" Property="Source" Value="/Resources/person-dispensed.png" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </Window.Resources>
 
@@ -248,14 +253,8 @@
                                               SelectionChanged="PeopleListView_OnSelectionChanged">
                                         <ListView.View>
                                             <GridView>
-                                                <!-- First column: icon + firstname -->
-                                                <GridViewColumn Width="180" CellTemplate="{StaticResource FirstNameCellTemplate}">
-                                                    <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
-                                                </GridViewColumn>
-
-                                                <!-- keep other columns as before -->
-                                                <GridViewColumn DisplayMemberBinding="{Binding LastName}" Width="120">
-                                                    <GridViewColumnHeader Content="Lastname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                <GridViewColumn Width="180" CellTemplate="{StaticResource NameCellTemplate}">
+                                                    <GridViewColumnHeader Content="Name" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                                 </GridViewColumn>
                                                 <GridViewColumn DisplayMemberBinding="{Binding Instrument.DisplayName}" Width="180">
                                                     <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />

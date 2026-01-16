@@ -8,9 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\person-dispensed.png" />
     <None Remove="Resources\person.png" />
+    <None Remove="Resources\playlist-add.png" />
     <None Remove="Resources\playlist-entry.png" />
     <None Remove="Resources\playlist.png" />
+    <None Remove="Resources\user-add.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,13 +46,22 @@
 	<Resource Include="Resources\music-sheet.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
+	<Resource Include="Resources\person-dispensed.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
 	<Resource Include="Resources\person.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\playlist-add.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\playlist-entry.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\playlist.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\user-add.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
   </ItemGroup>

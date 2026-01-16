@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MusicSheetManager.Converters;
+using MusicSheetManager.Editors;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Models
@@ -12,6 +13,23 @@ namespace MusicSheetManager.Models
     /// </summary>
     public class Person : ObservableObject
     {
+        #region Fields
+
+        private string _firstName;
+
+        private string _lastName;
+
+        private InstrumentInfo _instrument;
+
+        private PartInfo _part;
+
+        private ClefInfo _clef;
+
+        private bool _dispensed;
+
+        #endregion
+
+
         #region Constructors
 
         /// <summary>
@@ -27,11 +45,11 @@ namespace MusicSheetManager.Models
         public Person(Guid id, string firstName, string lastName, InstrumentInfo instrument, PartInfo part, ClefInfo clef)
         {
             this.Id = id;
-            this.FirstName = firstName;
-            this.LastName = lastName;
-            this.Instrument = instrument;
-            this.Part = part;
-            this.Clef = clef;
+            _firstName = firstName;
+            _lastName = lastName;
+            _instrument = instrument;
+            _part = part;
+            _clef = clef;
         }
 
         #endregion
@@ -50,46 +68,86 @@ namespace MusicSheetManager.Models
         /// </summary>
         [DisplayName("Firstname")]
         [PropertyOrder(1)]
-        public string FirstName { get; }
+        public string FirstName
+        {
+            get => _firstName;
+            set
+            {
+                if (this.SetProperty(ref _firstName, value))
+                {
+                    this.OnPropertyChanged(nameof(this.FullName));
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the last name of the person.
         /// </summary>
         [DisplayName("Lastname")]
         [PropertyOrder(2)]
-        public string LastName { get; }
+        public string LastName
+        {
+            get => _lastName;
+            set
+            {
+                if (this.SetProperty(ref _lastName, value))
+                {
+                    this.OnPropertyChanged(nameof(this.FullName));
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the instrument associated with the person.
         /// </summary>
         [JsonConverter(typeof(InstrumentInfoConverter))]
+        [ItemsSource(typeof(InstrumentItemsSource))]
         [PropertyOrder(3)]
-        public InstrumentInfo Instrument { get; }
+        public InstrumentInfo Instrument
+        {
+            get => _instrument;
+            set => this.SetProperty(ref _instrument, value);
+        }
 
         /// <summary>
         /// Gets the parts associated with the person.
         /// </summary>
         [JsonConverter(typeof(PartInfoConverter))]
+        [ItemsSource(typeof(PartItemsSource))]
         [PropertyOrder(4)]
-        public PartInfo Part { get; }
+        public PartInfo Part
+        {
+            get => _part;
+            set => this.SetProperty(ref _part, value);
+        }
 
         /// <summary>
         /// Gets the clef associated with the person.
         /// </summary>
         [JsonConverter(typeof(ClefInfoConverter))]
+        [ItemsSource(typeof(ClefItemsSource))]
         [PropertyOrder(5)]
-        public ClefInfo Clef { get; }
+        public ClefInfo Clef
+        {
+            get => _clef;
+            set => this.SetProperty(ref _clef, value);
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the person is dispensed.
         /// </summary>
         [PropertyOrder(6)]
-        public bool Dispensed { get; set; }
+        public bool Dispensed
+        {
+            get => _dispensed;
+            set => this.SetProperty(ref _dispensed, value);
+        }
 
         /// <summary>
         /// Gets the full name of the person.
         /// </summary>
         [Browsable(false)]
+        [JsonIgnore]
         public string FullName => $"{this.LastName} {this.FirstName}";
 
         #endregion

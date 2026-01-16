@@ -31,16 +31,6 @@ public class PartInfo : IEquatable<PartInfo>
 
     public static PartInfo Fourth { get; } = new("Fourth", "4th", "4");
 
-    public static PartInfo Part1 { get; } = new("Part1", "Part 1");
-
-    public static PartInfo Part2 { get; } = new("Part2", "Part 2");
-
-    public static PartInfo Part3 { get; } = new("Part3", "Part 3");
-
-    public static PartInfo Part4 { get; } = new("Part4", "Part 4");
-
-    public static PartInfo Part5 { get; } = new("Part5", "Part 5");
-
     public static IReadOnlyList<PartInfo> All { get; } = typeof(PartInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
         .Select(pi => pi.GetValue(null))
