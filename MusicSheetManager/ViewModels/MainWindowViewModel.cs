@@ -56,12 +56,6 @@ namespace MusicSheetManager.ViewModels
 
         public ICommand DeleteSelectedItemCommand { get; }
 
-        public object ActiveDocument
-        {
-            get => _activeDocument;
-            set => this.SetProperty(ref _activeDocument, value);
-        }
-
         #endregion
 
 

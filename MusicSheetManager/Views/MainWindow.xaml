@@ -69,10 +69,12 @@
         </ContextMenu>
 
         <ContextMenu x:Key="PlaylistTreeViewContextMenu">
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Move up"
                       Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryUpCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                       InputGestureText="Page Up" />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Move down"
                       Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryDownCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -119,6 +121,13 @@
                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
         </HierarchicalDataTemplate>
+
+        <DataTemplate x:Key="FirstNameCellTemplate" DataType="{x:Type models:Person}" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                <Image Source="/Resources/person.png" Width="22" Height="22" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -174,7 +183,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <ad:DockingManager x:Name="DockManager" Grid.Row="2" ActiveContent="{Binding ActiveDocument, Mode=TwoWay}">
+        <ad:DockingManager x:Name="DockManager" Grid.Row="2">
             <DockingManager.Theme>
                 <ad:Vs2013BlueTheme />
             </DockingManager.Theme>
@@ -240,15 +249,7 @@
                                         <ListView.View>
                                             <GridView>
                                                 <!-- First column: icon + firstname -->
-                                                <GridViewColumn Width="180">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                                                                <Image Source="/Resources/person.png" Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center"/>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
+                                                <GridViewColumn Width="180" CellTemplate="{StaticResource FirstNameCellTemplate}">
                                                     <GridViewColumnHeader Content="Firstname" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                                 </GridViewColumn>
 
