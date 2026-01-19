@@ -41,10 +41,7 @@ public class PlaylistTabViewModel : ObservableObject
 
     private IPlaylistService PlaylistService { get; }
 
-    public ObservableCollection<Playlist> Playlists
-    {
-        get { return this.PlaylistService.Playlists; }
-    }
+    public ObservableCollection<Playlist> Playlists => this.PlaylistService.Playlists;
 
     public ICommand CreatePlaylistCommand { get; }
 

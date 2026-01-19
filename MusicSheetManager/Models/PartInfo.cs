@@ -43,17 +43,11 @@ public class PartInfo : IEquatable<PartInfo>
 
     public string Key { get; }
 
-    public int Index
-    {
-        get { return All.ToList().IndexOf(this); }
-    }
+    public int Index => All.ToList().IndexOf(this);
 
     public string[] Patterns { get; }
 
-    public string DisplayName
-    {
-        get { return this.Patterns.First(); }
-    }
+    public string DisplayName => this.Patterns.First();
 
     #endregion
 

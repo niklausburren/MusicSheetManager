@@ -71,7 +71,7 @@ namespace MusicSheetManager.Models
         [PropertyOrder(2)]
         public string FirstName
         {
-            get { return _firstName; }
+            get => _firstName;
             set
             {
                 if (this.SetProperty(ref _firstName, value))
@@ -88,7 +88,7 @@ namespace MusicSheetManager.Models
         [PropertyOrder(3)]
         public string LastName
         {
-            get { return _lastName; }
+            get => _lastName;
             set
             {
                 if (this.SetProperty(ref _lastName, value))
@@ -106,8 +106,8 @@ namespace MusicSheetManager.Models
         [PropertyOrder(4)]
         public InstrumentInfo Instrument
         {
-            get { return _instrument; }
-            set { this.SetProperty(ref _instrument, value); }
+            get => _instrument;
+            set => this.SetProperty(ref _instrument, value);
         }
 
         /// <summary>
@@ -118,8 +118,8 @@ namespace MusicSheetManager.Models
         [PropertyOrder(5)]
         public PartInfo Part
         {
-            get { return _part; }
-            set { this.SetProperty(ref _part, value); }
+            get => _part;
+            set => this.SetProperty(ref _part, value);
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace MusicSheetManager.Models
         [PropertyOrder(6)]
         public ClefInfo Clef
         {
-            get { return _clef; }
-            set { this.SetProperty(ref _clef, value); }
+            get => _clef;
+            set => this.SetProperty(ref _clef, value);
         }
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace MusicSheetManager.Models
         [PropertyOrder(7)]
         public bool Dispensed
         {
-            get { return _dispensed; }
-            set { this.SetProperty(ref _dispensed, value); }
+            get => _dispensed;
+            set => this.SetProperty(ref _dispensed, value);
         }
 
         /// <summary>
@@ -149,10 +149,7 @@ namespace MusicSheetManager.Models
         /// </summary>
         [Browsable(false)]
         [JsonIgnore]
-        public string FullName
-        {
-            get { return $"{this.LastName} {this.FirstName}"; }
-        }
+        public string FullName => $"{this.LastName} {this.FirstName}";
 
         #endregion
 

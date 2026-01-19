@@ -43,7 +43,7 @@ namespace MusicSheetManager.ViewModels
 
         public object SelectedObject
         {
-            get { return _selectedObject; }
+            get => _selectedObject;
             set
             {
                 if (this.SetProperty(ref _selectedObject, value))

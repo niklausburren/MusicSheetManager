@@ -30,32 +30,29 @@ namespace MusicSheetManager.Models
 
         public bool IsSelected
         {
-            get { return _isSelected; }
-            set { this.SetProperty(ref _isSelected, value); }
+            get => _isSelected;
+            set => this.SetProperty(ref _isSelected, value);
         }
 
         public InstrumentInfo Instrument
         {
-            get { return this.Sheet.Instrument; }
-            set { this.Sheet.Instrument = value; }
+            get => this.Sheet.Instrument;
+            set => this.Sheet.Instrument = value;
         }
 
         public ObservableCollection<PartInfo> Parts
         {
-            get { return this.Sheet.Parts; }
-            set { this.Sheet.Parts = value; }
+            get => this.Sheet.Parts;
+            set => this.Sheet.Parts = value;
         }
 
         public ClefInfo Clef
         {
-            get { return this.Sheet.Clef; }
-            set { this.Sheet.Clef = value; }
+            get => this.Sheet.Clef;
+            set => this.Sheet.Clef = value;
         }
 
-        public string FileName
-        {
-            get { return this.Sheet.FileName; }
-        }
+        public string FileName => this.Sheet.FileName;
 
         #endregion
     }

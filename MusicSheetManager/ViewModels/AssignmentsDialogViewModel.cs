@@ -146,7 +146,7 @@ public class PersonInfo : ObservableObject
 
     public MusicSheet SelectedMusicSheet
     {
-        get { return _selectedMusicSheet; }
+        get => _selectedMusicSheet;
         set
         {
             if (this.SetProperty(ref _selectedMusicSheet, value))
@@ -156,10 +156,7 @@ public class PersonInfo : ObservableObject
         }
     }
 
-    public bool IsCustomAssignment
-    {
-        get { return this.SelectedMusicSheet != null && this.SelectedMusicSheet != this.DefaultMusicSheet; }
-    }
+    public bool IsCustomAssignment => this.SelectedMusicSheet != null && this.SelectedMusicSheet != this.DefaultMusicSheet;
 
     #endregion
 }

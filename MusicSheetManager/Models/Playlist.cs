@@ -51,7 +51,7 @@ namespace MusicSheetManager.Models
         [PropertyOrder(2)]
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 if (this.SetProperty(ref _name, value))

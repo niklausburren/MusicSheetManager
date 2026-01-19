@@ -32,10 +32,7 @@ public partial class MainWindow : Window
 
     #region Properties
 
-    private MainWindowViewModel ViewModel
-    {
-        get { return (MainWindowViewModel)this.DataContext; }
-    }
+    private MainWindowViewModel ViewModel => (MainWindowViewModel)this.DataContext;
 
     #endregion
 

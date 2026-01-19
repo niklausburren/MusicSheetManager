@@ -40,31 +40,25 @@ public class PlaylistEntry : ObservableObject
 
     [PropertyOrder(2)]
     [ReadOnly(true)]
-    public string Title
-    {
-        get { return this.MusicSheetFolder?.Title ?? "Placeholder"; }
-    }
+    public string Title => this.MusicSheetFolder?.Title ?? "Placeholder";
 
     [JsonIgnore]
     [PropertyOrder(3)]
     [ReadOnly(true)]
-    public string Number
-    {
-        get { return $"{this.Index + 1:D2}"; }
-    }
+    public string Number => $"{this.Index + 1:D2}";
 
     [PropertyOrder(4)]
     public bool Distribute
     {
-        get { return _distribute && this.MusicSheetFolder != null; }
-        set { this.SetProperty(ref _distribute, value); }
+        get => _distribute && this.MusicSheetFolder != null;
+        set => this.SetProperty(ref _distribute, value);
     }
 
     [Browsable(false)]
     [JsonIgnore]
     public MusicSheetFolder MusicSheetFolder
     {
-        get { return _musicSheetFolder; }
+        get => _musicSheetFolder;
         set
         {
             if (this.SetProperty(ref _musicSheetFolder, value))
@@ -78,7 +72,7 @@ public class PlaylistEntry : ObservableObject
     [JsonIgnore]
     public int Index
     {
-        get { return _index; }
+        get => _index;
         internal set
         {
             if (this.SetProperty(ref _index, value))
