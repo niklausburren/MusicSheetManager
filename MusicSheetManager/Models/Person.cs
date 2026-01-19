@@ -60,17 +60,18 @@ namespace MusicSheetManager.Models
         /// <summary>
         /// Gets the unique identifier for the person.
         /// </summary>
-        [Browsable(false)]
+        [PropertyOrder(1)]
+        [ReadOnly(true)]
         public Guid Id { get; }
 
         /// <summary>
         /// Gets the first name of the person.
         /// </summary>
         [DisplayName("Firstname")]
-        [PropertyOrder(1)]
+        [PropertyOrder(2)]
         public string FirstName
         {
-            get => _firstName;
+            get { return _firstName; }
             set
             {
                 if (this.SetProperty(ref _firstName, value))
@@ -84,10 +85,10 @@ namespace MusicSheetManager.Models
         /// Gets the last name of the person.
         /// </summary>
         [DisplayName("Lastname")]
-        [PropertyOrder(2)]
+        [PropertyOrder(3)]
         public string LastName
         {
-            get => _lastName;
+            get { return _lastName; }
             set
             {
                 if (this.SetProperty(ref _lastName, value))
@@ -102,11 +103,11 @@ namespace MusicSheetManager.Models
         /// </summary>
         [JsonConverter(typeof(InstrumentInfoConverter))]
         [ItemsSource(typeof(InstrumentItemsSource))]
-        [PropertyOrder(3)]
+        [PropertyOrder(4)]
         public InstrumentInfo Instrument
         {
-            get => _instrument;
-            set => this.SetProperty(ref _instrument, value);
+            get { return _instrument; }
+            set { this.SetProperty(ref _instrument, value); }
         }
 
         /// <summary>
@@ -114,11 +115,11 @@ namespace MusicSheetManager.Models
         /// </summary>
         [JsonConverter(typeof(PartInfoConverter))]
         [ItemsSource(typeof(PartItemsSource))]
-        [PropertyOrder(4)]
+        [PropertyOrder(5)]
         public PartInfo Part
         {
-            get => _part;
-            set => this.SetProperty(ref _part, value);
+            get { return _part; }
+            set { this.SetProperty(ref _part, value); }
         }
 
         /// <summary>
@@ -126,21 +127,21 @@ namespace MusicSheetManager.Models
         /// </summary>
         [JsonConverter(typeof(ClefInfoConverter))]
         [ItemsSource(typeof(ClefItemsSource))]
-        [PropertyOrder(5)]
+        [PropertyOrder(6)]
         public ClefInfo Clef
         {
-            get => _clef;
-            set => this.SetProperty(ref _clef, value);
+            get { return _clef; }
+            set { this.SetProperty(ref _clef, value); }
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether the person is dispensed.
         /// </summary>
-        [PropertyOrder(6)]
+        [PropertyOrder(7)]
         public bool Dispensed
         {
-            get => _dispensed;
-            set => this.SetProperty(ref _dispensed, value);
+            get { return _dispensed; }
+            set { this.SetProperty(ref _dispensed, value); }
         }
 
         /// <summary>
@@ -148,7 +149,10 @@ namespace MusicSheetManager.Models
         /// </summary>
         [Browsable(false)]
         [JsonIgnore]
-        public string FullName => $"{this.LastName} {this.FirstName}";
+        public string FullName
+        {
+            get { return $"{this.LastName} {this.FirstName}"; }
+        }
 
         #endregion
 

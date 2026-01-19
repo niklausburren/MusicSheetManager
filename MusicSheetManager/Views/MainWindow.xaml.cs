@@ -9,6 +9,7 @@ using System.Windows.Media;
 using Autofac;
 using Microsoft.Win32;
 using MusicSheetManager.Models;
+using MusicSheetManager.Utilities;
 using MusicSheetManager.ViewModels;
 
 namespace MusicSheetManager.Views;
@@ -31,7 +32,10 @@ public partial class MainWindow : Window
 
     #region Properties
 
-    private MainWindowViewModel ViewModel => (MainWindowViewModel)this.DataContext;
+    private MainWindowViewModel ViewModel
+    {
+        get { return (MainWindowViewModel)this.DataContext; }
+    }
 
     #endregion
 
@@ -60,29 +64,34 @@ public partial class MainWindow : Window
             await this.ViewModel.InitializeAsync();
 
             var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
+
             if (cvs?.View is ListCollectionView listView)
             {
                 listView.CustomSort = new MusicSheetFolderComparer();
             }
+
+            this.ViewModel.MusicSheetTab.FocusRequested += () =>
+            {
+                MusicSheetsDocument.IsActive = true;
+            };
+
+            this.ViewModel.PlaylistTab.FocusRequested += args => 
+            { 
+                PlaylistsDocument.IsActive = true;
+                PlaylistsTreeView.SetSelectedItem(args.SelectedObject);
+                PlaylistsTreeView.ScrollIntoView(args.SelectedObject);
+            };
+
+            this.ViewModel.PeopleTab.FocusRequested += args =>
+            {
+                PeoplesDocument.IsActive = true;
+                PeopleListView.SelectedItem = args.SelectedObject;
+                PeopleListView.ScrollIntoView(args.SelectedObject);
+            };
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "MusicSheetManager", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void Document_IsActiveChanged(object sender, EventArgs e)
-    {
-        this.SyncDocumentActivityToViewModels();
-    }
-
-    private void SyncDocumentActivityToViewModels()
-    {
-        if (this.DataContext is MainWindowViewModel vm)
-        {
-            vm.MusicSheetTab.IsFocused = MusicSheetsDocument.IsActive;
-            vm.PlaylistTab.IsFocused = PlaylistsDocument.IsActive;
-            vm.PeopleTab.IsFocused = PeoplesDocument.IsActive;
         }
     }
 

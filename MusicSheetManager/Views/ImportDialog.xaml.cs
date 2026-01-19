@@ -48,9 +48,9 @@ namespace MusicSheetManager.Views
 
         private void MusicSheetListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (MusicSheetListView.SelectedItem is MusicSheet selectedMusicSheet)
+            if (MusicSheetListView.SelectedItem is MusicSheetInfo musicSheet)
             {
-                PdfViewer.Source = new Uri(selectedMusicSheet.FileName);
+                PdfViewer.Source = new Uri(musicSheet.FileName);
             }
         }
 

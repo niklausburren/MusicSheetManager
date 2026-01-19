@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using IronOcr;
+using MusicSheetManager.Editors;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
 using System;
@@ -10,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using MusicSheetManager.Editors;
+using System.Windows;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
@@ -25,6 +26,8 @@ public class MusicSheet : ObservableObject
     private ObservableCollection<PartInfo> _parts;
 
     private ClefInfo _clef;
+
+    private bool _hasConflict;
 
     #endregion
 
@@ -72,13 +75,52 @@ public class MusicSheet : ObservableObject
     public MusicSheetFolderMetadata Metadata { get; }
 
     [Browsable(false)]
-    public string Title => this.Metadata.Title;
+    public string Title
+    {
+        get => this.Metadata.Title;
+        set
+        {
+            if (this.Metadata.Title == value)
+            {
+                return;
+            }
+
+            this.Metadata.Title = value;
+            this.OnPropertyChanged();
+        }
+    }
 
     [Browsable(false)]
-    public string Composer => this.Metadata.Composer;
+    public string Composer
+    {
+        get => this.Metadata.Composer;
+        set
+        {
+            if (this.Metadata.Composer == value)
+            {
+                return;
+            }
+
+            this.Metadata.Composer = value;
+            this.OnPropertyChanged();
+        }
+    }
 
     [Browsable(false)]
-    public string Arranger => this.Metadata.Arranger;
+    public string Arranger
+    {
+        get => this.Metadata.Arranger;
+        set
+        {
+            if (this.Metadata.Arranger == value)
+            {
+                return;
+            }
+
+            this.Metadata.Arranger = value;
+            this.OnPropertyChanged();
+        }
+    }
 
     [PropertyOrder(2)]
     [ItemsSource(typeof(InstrumentItemsSource))]
@@ -125,6 +167,13 @@ public class MusicSheet : ObservableObject
     [Browsable(false)]
     public string DisplayName => this.ToString();
 
+    [Browsable(false)]
+    public bool HasConflict
+    {
+        get => _hasConflict;
+        set => this.SetProperty(ref _hasConflict, value);
+    }
+
     #endregion
 
 
@@ -160,8 +209,24 @@ public class MusicSheet : ObservableObject
     {
         this.SaveMetadata();
         
-        var newFileName = BuildFilename(folder, this.Title, this.Instrument, this.Parts, this.Clef);
-        File.Move(this.FileName, newFileName, true);
+        var newFileName = BuildFilename(folder, this.Title, this.Instrument, this.Parts, this.Clef, false);
+
+        if (File.Exists(newFileName))
+        {
+            var result = MessageBox.Show(
+                Application.Current.MainWindow!,
+                $"The file \"{Path.GetFileName(newFileName)}\" already exists. Do you want to replace it?",
+                "File Exists",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+            {
+                return;
+            }   
+        }
+        
+        File.Move(this.FileName, newFileName!, true);
         this.FileName = newFileName;
     }
 
@@ -172,32 +237,35 @@ public class MusicSheet : ObservableObject
 
         if (this.Parts.Any())
         {
-            str += " - " + string.Join(" & ", this.Parts.Select(p => p.DisplayName));
+            str += $" - {string.Join(" & ", this.Parts.OrderBy(p => p.Index).Select(p => p.DisplayName))}";
         }
 
-        str += " - " + this.Clef.DisplayName;
+        str += $" - {this.Clef.DisplayName}";
 
         return str;
     }
 
-    public void UpdateFileName()
+    public void UpdateFolder(string newFolder)
     {
-        var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
-
-        if (newFileName != this.FileName)
-        {
-            File.Move(this.FileName, newFileName);
-            this.FileName = newFileName;
-        }
+        this.FileName = Path.Combine(newFolder, Path.GetFileName(this.FileName)!);
     }
 
-    public static bool HasNumberingInParentheses(string fileName)
+    public void UpdateFileName(bool onlyIfNumbered = false)
     {
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-        if (Regex.IsMatch(fileNameWithoutExtension, @"\(\d+\)$"))
-            return true;
+        if (onlyIfNumbered && !HasNumberedSuffix(this.FileName))
+        {
+            return;
+        }
 
-        return false;
+        var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
+
+        if (newFileName == this.FileName)
+        {
+            return;
+        }
+
+        File.Move(this.FileName, newFileName);
+        this.FileName = newFileName;
     }
 
     #endregion
@@ -210,7 +278,9 @@ public class MusicSheet : ObservableObject
     {
         base.OnPropertyChanged(e);
 
-        if (e.PropertyName != nameof(this.Title) && 
+        if (e.PropertyName != nameof(this.Title) &&
+            e.PropertyName != nameof(this.Composer) &&
+            e.PropertyName != nameof(this.Arranger) &&
             e.PropertyName != nameof(this.Instrument) && 
             e.PropertyName != nameof(this.Parts) &&
             e.PropertyName != nameof(this.Clef))
@@ -220,13 +290,16 @@ public class MusicSheet : ObservableObject
 
         this.SaveMetadata();
 
-        var newFileName = BuildFilename(Path.GetDirectoryName(this.FileName), this.Title, this.Instrument, this.Parts, this.Clef);
-
-        if (this.FileName != newFileName)
+        if (e.PropertyName != nameof(this.Title) &&
+            e.PropertyName != nameof(this.Instrument) &&
+            e.PropertyName != nameof(this.Parts) &&
+            e.PropertyName != nameof(this.Clef))
         {
-            File.Move(this.FileName, newFileName);
-            this.FileName = newFileName;
+            return;
         }
+
+        this.OnPropertyChanged(nameof(this.DisplayName));
+        this.UpdateFileName();
     }
 
     #endregion
@@ -265,16 +338,21 @@ public class MusicSheet : ObservableObject
         return (instrument, parts, clef);
     }
 
-    private static string BuildFilename(string folder, string name, InstrumentInfo instrument, IReadOnlyList<PartInfo> parts, ClefInfo clef)
+    private static string BuildFilename(string folder, string name, InstrumentInfo instrument, IReadOnlyList<PartInfo> parts, ClefInfo clef, bool unique = true)
     {
         var fileName = $"{name} - {instrument.DisplayName}";
 
         if (parts.Any())
         {
-            fileName += $" - {string.Join(" & ", parts.Select(v => v.DisplayName))}";
+            fileName += $" - {string.Join(" & ", parts.OrderBy(p => p.Index).Select(v => v.DisplayName))}";
         }
 
         fileName += $" - {clef.DisplayName}";
+
+        if (!unique)
+        {
+            return Path.Combine(folder, $"{fileName}.pdf");
+        }
 
         var uniqueFileName = fileName;
         var index = 1;
@@ -319,6 +397,12 @@ public class MusicSheet : ObservableObject
         _parts.CollectionChanged += (_, _) => this.OnPropertyChanged(nameof(this.Parts));
 
         _clef = ClefInfo.GetByKey(document.GetInfoElement(nameof(this.Clef)));
+    }
+
+    private static bool HasNumberedSuffix(string path)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+        return !string.IsNullOrEmpty(name) && Regex.IsMatch(name, @"\s\(\d+\)$");
     }
 
     #endregion

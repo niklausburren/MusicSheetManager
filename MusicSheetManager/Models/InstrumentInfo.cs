@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Windows;
 using JetBrains.Annotations;
 using MusicSheetManager.Properties;
 
@@ -160,6 +162,23 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public string DisplayName => Resources.ResourceManager.GetString($"{nameof(InstrumentInfo)}_{this.Key}") ?? this.Key;
 
+    // Icon-Dateinamen-Lookup (lazy initialisiert)
+    private static IDictionary<string, string> IconUris { get; set; }
+
+    public string Icon
+    {
+        get
+        {
+            EnsureIconFileNames();
+
+            var fallbackUri = new Uri("pack://application:,,,/Resources/music-sheet.png", UriKind.Absolute);
+
+            return IconUris.TryGetValue(this.Key, out var iconUri)
+                ? iconUri
+                : fallbackUri.ToString();
+        }
+    }
+
     #endregion
 
 
@@ -241,6 +260,54 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
         return this.Key != null
             ? this.Key.GetHashCode()
             : 0;
+    }
+
+    #endregion
+
+
+    #region Private Methods
+
+    private static void EnsureIconFileNames()
+    {
+        if (IconUris != null)
+        {
+            return;
+        }
+
+        var map = new Dictionary<string, string>(ReferenceEqualityComparer.Instance);
+
+        foreach (var instrument in All)
+        {
+            var fileName = $"{ToLowerKebabCase(instrument.Key)}.png";
+            var candidateUri = new Uri($"pack://application:,,,/Resources/{fileName}", UriKind.Absolute);
+
+            try
+            {
+                var streamInfo = Application.GetResourceStream(candidateUri);
+
+                if (streamInfo is not null)
+                {
+                    map[instrument.Key] = candidateUri.ToString();
+                }   
+            }
+            catch (IOException)
+            {
+                // ignore and use fallback
+            }
+        }
+
+        IconUris = map;
+    }
+
+    private static string ToLowerKebabCase(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return string.Empty;
+        }
+
+        var withHyphens = Regex.Replace(input, "(?<!^)([A-Z])", "-$1");
+        return withHyphens.ToLowerInvariant();
     }
 
     #endregion

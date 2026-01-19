@@ -16,7 +16,7 @@ public sealed class PartsEditor : ITypeEditor
 
         var editor = new CheckComboBox
         {
-            ItemsSource = PartInfo.All,
+            ItemsSource = PartInfo.All.OrderBy(p => p.Index).Where(p => p != PartInfo.None),
             DisplayMemberPath = "DisplayName",
             Delimiter = ", ",
             HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -36,11 +36,6 @@ public sealed class PartsEditor : ITypeEditor
         editor.Loaded += (_, _) =>
         {
             editor.SelectedItemsOverride = musicSheet.Parts;
-
-            editor.ItemSelectionChanged += (_, _) =>
-            {
-                propertyItem.Value = new ObservableCollection<PartInfo>(editor.SelectedItems.OfType<PartInfo>());
-            };
         };
 
         return editor;

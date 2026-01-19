@@ -12,7 +12,6 @@ namespace MusicSheetManager.ViewModels
         #region Fields
 
         private object _selectedObject;
-        private object _activeDocument;
 
         #endregion
 
@@ -26,7 +25,7 @@ namespace MusicSheetManager.ViewModels
             this.PlaylistTab = App.Container.Resolve<PlaylistTabViewModel>();
             this.Tools = App.Container.Resolve<ToolsViewModel>();
 
-            this.DeleteSelectedItemCommand = new RelayCommand(this.DeleteSelectedItem, this.CanDeleteSelectedItem);
+            this.DeleteSelectedItemCommand = new AsyncRelayCommand(this.DeleteSelectedItem, this.CanDeleteSelectedItem);
         }
 
         #endregion
@@ -44,7 +43,7 @@ namespace MusicSheetManager.ViewModels
 
         public object SelectedObject
         {
-            get => _selectedObject;
+            get { return _selectedObject; }
             set
             {
                 if (this.SetProperty(ref _selectedObject, value))
@@ -73,18 +72,24 @@ namespace MusicSheetManager.ViewModels
 
         #region Private Methods
 
-        private void DeleteSelectedItem()
+        private async Task DeleteSelectedItem()
         {
             switch (this.SelectedObject)
             {
-                case Person person when this.PeopleTab.IsFocused:
-                    this.PeopleTab.DeletePerson(person);
+                case MusicSheetFolder musicSheetFolder:
+                    await this.MusicSheetTab.DeleteMusicSheetFolderAsync(musicSheetFolder);
                     break;
-                case Playlist playlist when this.PlaylistTab.IsFocused:
-                    this.PlaylistTab.DeletePlaylist(playlist);
+                case MusicSheet musicSheet:
+                    await this.MusicSheetTab.DeleteMusicSheetAsync(musicSheet);
                     break;
-                case PlaylistEntry playlistEntry when this.PlaylistTab.IsFocused:
-                    this.PlaylistTab.DeletePlaylistEntry(playlistEntry);
+                case Person person:
+                    await this.PeopleTab.DeletePersonAsync(person);
+                    break;
+                case Playlist playlist:
+                    await this.PlaylistTab.DeletePlaylistAsync(playlist);
+                    break;
+                case PlaylistEntry playlistEntry:
+                    await this.PlaylistTab.DeletePlaylistEntryAsync(playlistEntry);
                     break;
             }
 
@@ -93,12 +98,7 @@ namespace MusicSheetManager.ViewModels
 
         private bool CanDeleteSelectedItem()
         {
-            return this.SelectedObject switch
-            {
-                Person _ => this.PeopleTab.IsFocused,
-                Playlist _ or PlaylistEntry _ => this.PlaylistTab.IsFocused,
-                _ => false
-            };
+            return this.SelectedObject is MusicSheetFolder or MusicSheet or Playlist or PlaylistEntry or Person;
         }
 
         private void NotifyDeleteCommandChanged()

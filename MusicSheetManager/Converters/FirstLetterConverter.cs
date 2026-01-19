@@ -16,7 +16,7 @@ public class FirstLetterConverter : IValueConverter
 
     #region Public Methods
 
-    public static string GetSortKey(string? text)
+    public static string GetSortKey(string text)
     {
         var normalizedText = NormalizeText(text);
         
@@ -33,7 +33,7 @@ public class FirstLetterConverter : IValueConverter
 
     #region Private Methods
 
-    private static string NormalizeText(string? text)
+    private static string NormalizeText(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
         {

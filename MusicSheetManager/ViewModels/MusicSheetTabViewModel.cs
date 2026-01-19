@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -11,15 +12,16 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using MusicSheetManager.Models;
 using MusicSheetManager.Services;
+using MusicSheetManager.Utilities;
 using MusicSheetManager.Views;
 
 namespace MusicSheetManager.ViewModels;
 
 public class MusicSheetTabViewModel : ObservableObject
 {
-    #region Fields
+    #region Events
 
-    private bool _isFocused;
+    public event Action FocusRequested;
 
     #endregion
 
@@ -36,7 +38,6 @@ public class MusicSheetTabViewModel : ObservableObject
         this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
         this.AssignMusicSheetsCommand = new RelayCommand<MusicSheetFolder>(this.AssignMusicSheets);
         this.OpenInExplorerCommand = new RelayCommand<MusicSheetFolder>(this.OpenInExplorer, this.CanOpenInExplorer);
-        this.CopyFolderIdCommand = new RelayCommand<MusicSheetFolder>(this.CopyFolderId, this.CanCopyFolderId);
     }
 
     #endregion
@@ -50,19 +51,11 @@ public class MusicSheetTabViewModel : ObservableObject
 
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders => this.MusicSheetService.MusicSheetFolders;
 
-    public bool IsFocused
-    {
-        get => _isFocused;
-        set => this.SetProperty(ref _isFocused, value);
-    }
-
     public ICommand ImportSheetsCommand { get; }
 
     public ICommand AssignMusicSheetsCommand { get; }
 
     public ICommand OpenInExplorerCommand { get; }
-
-    public ICommand CopyFolderIdCommand { get; }
 
     #endregion
 
@@ -73,6 +66,58 @@ public class MusicSheetTabViewModel : ObservableObject
     {
         await this.MusicSheetService.LoadAsync();
         await this.MusicSheetAssignmentService.LoadAsync();
+    }
+
+    public async Task DeleteMusicSheetFolderAsync(MusicSheetFolder musicSheetFolder)
+    {
+        if (musicSheetFolder is null)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            Application.Current.MainWindow!,
+            $"Do you want to delete the music sheet folder \"{musicSheetFolder.Title}\" and all its contents?",
+            "Confirm Deletion",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        if (await FileSystemHelper.TryDeleteFolderAsync(musicSheetFolder.Folder))
+        {
+            this.MusicSheetService.MusicSheetFolders.Remove(musicSheetFolder);
+        }
+    }
+
+    public async Task DeleteMusicSheetAsync(MusicSheet musicSheet)
+    {
+        if (musicSheet is null)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            Application.Current.MainWindow!,
+            $"Do you want to delete the music sheet \"{musicSheet.DisplayName}\"?",
+            "Confirm Deletion",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var folder = this.MusicSheetService.MusicSheetFolders.First(m => m.Id == musicSheet.FolderId);
+
+        if (await FileSystemHelper.TryDeleteFileAsync(musicSheet.FileName))
+        {
+            folder.Sheets.Remove(musicSheet);
+        }
     }
 
     #endregion
@@ -139,23 +184,6 @@ public class MusicSheetTabViewModel : ObservableObject
         catch (Exception ex)
         {
             MessageBox.Show($"Error while opening explorer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private bool CanCopyFolderId(MusicSheetFolder musicSheetFolder)
-    {
-        return musicSheetFolder != null && musicSheetFolder.Id != Guid.Empty;
-    }
-
-    private void CopyFolderId(MusicSheetFolder musicSheetFolder)
-    {
-        try
-        {
-            Clipboard.SetText(musicSheetFolder.Id.ToString());
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error while copying to clipboard: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

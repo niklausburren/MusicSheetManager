@@ -59,8 +59,23 @@
                                             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
                                             <Expander x:Name="GroupExpander" IsExpanded="True" Tag="{Binding Name.Key}">
                                                 <Expander.Header>
-                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-                                                    <TextBlock Text="{Binding Name.DisplayName}" Padding="4" FontWeight="Bold"/>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Border Width="32" Height="32"
+                                                                BorderBrush="LightGray"
+                                                                BorderThickness="1"
+                                                                CornerRadius="3"
+                                                                Margin="2,0,4,0"
+                                                                Background="Transparent"
+                                                                SnapsToDevicePixels="True">
+                                                            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                            <Image Width="26" Height="26"
+                                                                   Stretch="Uniform"
+                                                                   Margin="2"
+                                                                   Source="{Binding Name.Icon}"/>
+                                                        </Border>
+                                                        <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                        <TextBlock Text="{Binding Name.DisplayName}" Padding="4" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </StackPanel>
                                                 </Expander.Header>
                                                 <ItemsPresenter Margin="0,0,0,0" />
                                             </Expander>
@@ -105,7 +120,18 @@
                             <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
                                 <TextBlock Margin="17,0,0,0">
                                     <Run Text="{Binding Person.FullName, Mode=OneWay}" />
-                                    <Run Text="{Binding Person.Part.DisplayName, Mode=OneWay, StringFormat=' ({0})', TargetNullValue=''}" />
+                                    <Run>
+                                        <Run.Style>
+                                            <Style TargetType="Run">
+                                                <Setter Property="Text" Value="{Binding Person.Part.DisplayName, Mode=OneWay, StringFormat=' ({0})'}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Person.Part.Key}" Value="None">
+                                                        <Setter Property="Text" Value="" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Run.Style>
+                                    </Run>
                                     <Run>
                                         <Run.Style>
                                             <Style TargetType="Run">

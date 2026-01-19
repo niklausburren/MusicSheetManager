@@ -123,7 +123,10 @@ namespace MusicSheetManager.Views
 
         private IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {
-            if (depObj == null) yield break;
+            if (depObj == null)
+            {
+                yield break;
+            }
 
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
             {

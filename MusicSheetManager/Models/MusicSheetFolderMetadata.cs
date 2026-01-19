@@ -36,4 +36,19 @@ public class MusicSheetFolderMetadata : ObservableObject
     }
 
     #endregion
+
+
+    #region Public Methods
+
+    public MusicSheetFolderMetadata Clone()
+    {
+        return new MusicSheetFolderMetadata
+        {
+            Title = this.Title,
+            Composer = this.Composer,
+            Arranger = this.Arranger
+        };
+    }
+
+    #endregion
 }

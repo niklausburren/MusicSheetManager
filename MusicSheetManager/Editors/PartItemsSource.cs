@@ -12,10 +12,7 @@ public sealed class PartItemsSource : IItemsSource
     {
         var items = new ItemCollection();
 
-        var parts = PartInfo.All
-            .OrderBy(i => i.DisplayName);
-
-        foreach (var part in parts)
+        foreach (var part in PartInfo.All.OrderBy(i => i.DisplayName))
         {
             items.Add(part);
         }

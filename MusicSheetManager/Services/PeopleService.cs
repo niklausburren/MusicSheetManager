@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using MusicSheetManager.Converters;
 using MusicSheetManager.Models;
@@ -16,8 +17,11 @@ namespace MusicSheetManager.Services
     {
         #region Fields
 
-        // Skip auto-save while loading
         private bool _disableAutoSave;
+
+        private Task _saveQueue = Task.CompletedTask;
+
+        private readonly SemaphoreSlim _ioLock = new(1, 1);
 
         #endregion
 
@@ -45,9 +49,36 @@ namespace MusicSheetManager.Services
         #endregion
 
 
+        #region Private Methods
+
+        private void EnqueueSave()
+        {
+            lock (_saveQueue)
+            {
+                _saveQueue = _saveQueue.ContinueWith(
+                    async _ =>
+                    {
+                        try
+                        {
+                            await this.SaveAsync().ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // Optional: Logging einbauen
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Default).Unwrap();
+            }
+        }
+
+        #endregion
+
+
         #region Event Handlers
 
-        private void People_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void People_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.NewItems != null)
             {
@@ -70,23 +101,16 @@ namespace MusicSheetManager.Services
                     }
                 }
             }
-
-            if (_disableAutoSave)
-            {
-                return;
-            }
-
-            _ = this.SaveAsync();
         }
 
-        private void Person_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void Person_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (_disableAutoSave)
             {
                 return;
             }
 
-            _ = this.SaveAsync();
+            this.EnqueueSave();
         }
 
         #endregion
@@ -100,21 +124,37 @@ namespace MusicSheetManager.Services
         {
             _disableAutoSave = true;
 
+            await _ioLock.WaitAsync().ConfigureAwait(false);
+
             try
             {
-                await using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
-                var people = await JsonSerializer.DeserializeAsync<List<Person>>(stream, this.Options);
+                if (!File.Exists(FilePath))
+                {
+                    var directory = Path.GetDirectoryName(FilePath);
+
+                    if (directory != null && !Directory.Exists(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    this.People.Clear();
+                    return;
+                }
+
+                await using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var people = await JsonSerializer.DeserializeAsync<List<Person>>(stream, this.Options) ?? [];
 
                 this.People.Clear();
 
                 foreach (var person in people.OrderBy(p => p.FullName))
                 {
-                    this.People.Add(person); // hooks added via CollectionChanged
+                    this.People.Add(person);
                 }
             }
             finally
             {
                 _disableAutoSave = false;
+                _ioLock.Release();
             }
         }
 
@@ -122,13 +162,23 @@ namespace MusicSheetManager.Services
         {
             var directory = Path.GetDirectoryName(FilePath);
 
-            if (directory != null && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            await _ioLock.WaitAsync().ConfigureAwait(false);
 
-            await using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(stream, this.People, this.Options);
+            try
+            {
+                if (directory != null && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // FileShare.None verhindert parallelen Zugriff anderer Prozesse während des Schreibens
+                await using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await JsonSerializer.SerializeAsync(stream, this.People, this.Options).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ioLock.Release();
+            }
         }
 
         #endregion

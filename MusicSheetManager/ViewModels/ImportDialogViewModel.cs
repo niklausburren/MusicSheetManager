@@ -1,6 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -27,8 +30,6 @@ namespace MusicSheetManager.ViewModels
 
         private bool _isSplitting;
 
-        private ObservableCollection<MusicSheet> _musicSheets;
-
         #endregion
 
 
@@ -39,10 +40,12 @@ namespace MusicSheetManager.ViewModels
             _musicSheetService = importService ?? throw new ArgumentNullException(nameof(importService));
 
             this.Metadata = new MusicSheetFolderMetadata();
+
             this.SplitOptions = new SplitOptions();
             this.SplitCommand = new AsyncRelayCommand(this.ExecuteSplitAsync, this.CanExecuteSplit);
-            this.MusicSheets = new ObservableCollection<MusicSheet>();
             this.ImportCommand = new RelayCommand(this.ExecuteImport, this.CanExecuteImport);
+
+            this.MusicSheets.CollectionChanged += this.OnMusicSheetsCollectionChanged;
         }
 
         #endregion
@@ -88,15 +91,13 @@ namespace MusicSheetManager.ViewModels
             set => this.SetProperty(ref _isSplitting, value);
         }
 
-        public ObservableCollection<MusicSheet> MusicSheets
-        {
-            get => _musicSheets;
-            set => this.SetProperty(ref _musicSheets, value);
-        }
+        public ObservableCollection<MusicSheetInfo> MusicSheets { get; } = [];
 
         public ICommand ImportCommand { get; }
 
         public Action<bool?> SetDialogResultAction { get; set; }
+
+        public bool IsMetadataReadOnly => this.MusicSheets?.Count > 0;
 
         #endregion
 
@@ -113,7 +114,14 @@ namespace MusicSheetManager.ViewModels
 
         private async Task ExecuteSplitAsync()
         {
+            if (string.IsNullOrWhiteSpace(this.Metadata.Title))
+            {
+                MessageBox.Show("Please enter a title under Metadata.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             this.IsSplitting = true;
+
             try
             {
                 this.Progress = 0;
@@ -122,8 +130,15 @@ namespace MusicSheetManager.ViewModels
                 var progress = new Progress<(MusicSheet, int)>(report =>
                 {
                     var (musicSheet, totalSheets) = report;
-                    this.MusicSheets.Add(musicSheet);
+                    var info = new MusicSheetInfo(musicSheet);
+                    this.SubscribeToItem(info);
+                    this.MusicSheets.Add(info);
                     this.Progress = this.MusicSheets.Count * 100 / totalSheets;
+
+                    this.CalculateConflicts();
+
+                    ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
+                    this.OnPropertyChanged(nameof(this.IsMetadataReadOnly));
                 });
 
                 await _musicSheetService.SplitAsync(this.FileName, this.Metadata, this.SplitOptions, progress).ConfigureAwait(false);
@@ -136,20 +151,104 @@ namespace MusicSheetManager.ViewModels
 
         private bool CanExecuteImport()
         {
-            return true;
+            var selected = this.MusicSheets.Where(msi => msi.IsSelected).ToList();
+
+            if (selected.Count == 0)
+            {
+                return false;
+            }
+
+            return selected.All(msi =>
+                msi.Instrument != InstrumentInfo.Unknown &&
+                !msi.Sheet.HasConflict);
         }
 
         private void ExecuteImport()
         {
             try
             {
-                _musicSheetService.Import(this.Metadata, this.MusicSheets);
+                var selectedSheets = this.MusicSheets
+                    .Where(msi => msi.IsSelected)
+                    .Select(msi => msi.Sheet)
+                    .ToList();
+
+                _musicSheetService.Import(this.Metadata, selectedSheets);
                 this.SetDialogResultAction?.Invoke(true);
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void SubscribeToItem(MusicSheetInfo item)
+        {
+            item.PropertyChanged -= this.OnMusicSheetInfoPropertyChanged;
+            item.PropertyChanged += this.OnMusicSheetInfoPropertyChanged;
+
+            if (item.Parts != null)
+            {
+                item.Parts.CollectionChanged -= this.OnPartsCollectionChanged;
+                item.Parts.CollectionChanged += this.OnPartsCollectionChanged;
+            }
+        }
+
+        private void CalculateConflicts()
+        {
+            MusicSheetFolder.CalculateConflicts(this.MusicSheets.Where(m => m.IsSelected).Select(i => i.Sheet).ToList());
+        }
+
+        #endregion
+
+
+        #region Event Handlers
+
+        private void OnMusicSheetsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<MusicSheetInfo>())
+                {
+                    this.SubscribeToItem(item);
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<MusicSheetInfo>())
+                {
+                    item.PropertyChanged -= this.OnMusicSheetInfoPropertyChanged;
+                    if (item.Parts != null)
+                    {
+                        item.Parts.CollectionChanged -= this.OnPartsCollectionChanged;
+                    }
+                }
+            }
+
+            this.CalculateConflicts();
+            
+            ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
+            this.OnPropertyChanged(nameof(this.IsMetadataReadOnly));
+        }
+
+        private void OnMusicSheetInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // Relevante Eigenschaften beeinflussen sowohl Konfliktstatus als auch Import-Bedingung
+            if (e.PropertyName is 
+                nameof(MusicSheetInfo.IsSelected) or 
+                nameof(MusicSheetInfo.Instrument) or 
+                nameof(MusicSheetInfo.Clef) or 
+                nameof(MusicSheetInfo.Parts))
+            {
+                this.CalculateConflicts();
+                ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
+            }
+        }
+
+        private void OnPartsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            this.CalculateConflicts();
+            ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
         }
 
         #endregion
@@ -205,10 +304,15 @@ namespace MusicSheetManager.ViewModels
 
     public enum PagesPerSheet
     {
+        [System.ComponentModel.DataAnnotations.Display(Name = "1 page")]
         OnePage,
+        [System.ComponentModel.DataAnnotations.Display(Name = "2 pages")]
         TwoPages,
+        [System.ComponentModel.DataAnnotations.Display(Name = "3 pages")]
         ThreePages,
+        [System.ComponentModel.DataAnnotations.Display(Name = "4 pages")]
         FourPages,
+        [System.ComponentModel.DataAnnotations.Display(Name = "All pages")]
         AllPages
     }
 }

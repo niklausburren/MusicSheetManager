@@ -1,6 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,9 +13,9 @@ namespace MusicSheetManager.ViewModels;
 
 public class PlaylistTabViewModel : ObservableObject
 {
-    #region Fields
+    #region Events
 
-    private bool _isFocused;
+    public event Action<FocusRequestedEventArgs> FocusRequested;
 
     #endregion
 
@@ -23,11 +25,14 @@ public class PlaylistTabViewModel : ObservableObject
     public PlaylistTabViewModel(IPlaylistService playlistService)
     {
         this.PlaylistService = playlistService;
-        this.AddToPlaylistCommand = new RelayCommand<(Playlist playlist, MusicSheetFolder folder)>(this.OnAddToPlaylist);
 
-        this.MovePlaylistEntryUpCommand = new RelayCommand<PlaylistEntry>(this.MoveUp, this.CanMoveUp);
-        this.MovePlaylistEntryDownCommand = new RelayCommand<PlaylistEntry>(this.MoveDown, this.CanMoveDown);
+        this.AddToPlaylistCommand = new AsyncRelayCommand<(Playlist playlist, MusicSheetFolder folder)>(this.AddToPlaylistAsync);
+        this.CreatePlaylistCommand = new AsyncRelayCommand(this.CreatePlaylistAsync);
+        this.MovePlaylistEntryUpCommand = new AsyncRelayCommand<PlaylistEntry>(this.MoveUpAsync, this.CanMoveUp);
+        this.MovePlaylistEntryDownCommand = new AsyncRelayCommand<PlaylistEntry>(this.MoveDownAsync, this.CanMoveDown);
+        this.AddPlaceholderCommand = new AsyncRelayCommand<Playlist>(this.AddPlaceholderAsync, this.CanAddPlaceholder);
     }
+
 
     #endregion
 
@@ -36,19 +41,20 @@ public class PlaylistTabViewModel : ObservableObject
 
     private IPlaylistService PlaylistService { get; }
 
-    public ObservableCollection<Playlist> Playlists => this.PlaylistService.Playlists;
-
-    public bool IsFocused
+    public ObservableCollection<Playlist> Playlists
     {
-        get => _isFocused;
-        set => this.SetProperty(ref _isFocused, value);
+        get { return this.PlaylistService.Playlists; }
     }
+
+    public ICommand CreatePlaylistCommand { get; }
 
     public ICommand AddToPlaylistCommand { get; }
 
     public ICommand MovePlaylistEntryUpCommand { get; }
 
     public ICommand MovePlaylistEntryDownCommand { get; }
+
+    public ICommand AddPlaceholderCommand { get; }
 
     #endregion
 
@@ -60,14 +66,30 @@ public class PlaylistTabViewModel : ObservableObject
         await this.PlaylistService.LoadAsync();
     }
 
-    public void DeletePlaylist(Playlist playlist)
+    public async Task DeletePlaylistAsync(Playlist playlist)
     {
+        this.FocusRequested?.Invoke(FocusRequestedEventArgs.Empty);
+
+        var result = MessageBox.Show(
+            Application.Current.MainWindow!,
+            $"Do you really want to delete playlist \"{playlist.Name}\"?",
+            "Delete Person",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.No)
+        {
+            return;
+        }
+
         this.Playlists.Remove(playlist);
-        this.PlaylistService.SaveAsync();
+        await this.PlaylistService.SaveAsync();
     }
 
-    public void DeletePlaylistEntry(PlaylistEntry playlistEntry)
+    public async Task DeletePlaylistEntryAsync(PlaylistEntry playlistEntry)
     {
+        this.FocusRequested?.Invoke(FocusRequestedEventArgs.Empty);
+
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(playlistEntry));
 
         if (playlist == null)
@@ -77,7 +99,7 @@ public class PlaylistTabViewModel : ObservableObject
 
         playlist.Entries.Remove(playlistEntry);
         playlist.UpdateIndices();
-        this.PlaylistService.SaveAsync();
+        await this.PlaylistService.SaveAsync();
     }
 
     #endregion
@@ -85,7 +107,16 @@ public class PlaylistTabViewModel : ObservableObject
 
     #region Private Methods
 
-    private void OnAddToPlaylist((Playlist playlist, MusicSheetFolder folder) parameter)
+    private async Task CreatePlaylistAsync()
+    {
+        var playlist = new Playlist(Guid.NewGuid(), "New Playlist", []);
+        this.PlaylistService.Playlists.Add(playlist);
+        await this.PlaylistService.SaveAsync();
+
+        this.FocusRequested?.Invoke(new FocusRequestedEventArgs(playlist));
+    }
+
+    private async Task AddToPlaylistAsync((Playlist playlist, MusicSheetFolder folder) parameter)
     {
         if (parameter.playlist == null || parameter.folder == null)
         {
@@ -105,10 +136,32 @@ public class PlaylistTabViewModel : ObservableObject
 
         parameter.playlist.Entries.Add(newEntry);
         parameter.playlist.UpdateIndices();
-        this.PlaylistService.SaveAsync();
+        await this.PlaylistService.SaveAsync();
     }
 
-    private void MoveUp(PlaylistEntry entry)
+    private async Task AddPlaceholderAsync(Playlist playlist)
+    {
+        if (playlist == null)
+        {
+            return;
+        }
+
+        var placeholder = new PlaylistEntry(Guid.Empty, distribute: false)
+        {
+            Index = playlist.Entries.Count,
+            MusicSheetFolder = null
+        };
+
+        playlist.Entries.Add(placeholder);
+        await this.PlaylistService.SaveAsync();
+    }
+
+    private bool CanAddPlaceholder(Playlist playlist)
+    {
+        return playlist != null;
+    }
+
+    private async Task MoveUpAsync(PlaylistEntry entry)
     {
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(entry));
         
@@ -123,7 +176,7 @@ public class PlaylistTabViewModel : ObservableObject
         {
             playlist.Entries.Move(index, index - 1);
             playlist.UpdateIndices();
-            this.PlaylistService.SaveAsync();
+            await this.PlaylistService.SaveAsync();
         }
     }
 
@@ -140,7 +193,7 @@ public class PlaylistTabViewModel : ObservableObject
         return index > 0;
     }
 
-    private void MoveDown(PlaylistEntry entry)
+    private async Task MoveDownAsync(PlaylistEntry entry)
     {
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(entry));
 
@@ -155,12 +208,17 @@ public class PlaylistTabViewModel : ObservableObject
         {
             playlist.Entries.Move(index, index + 1);
             playlist.UpdateIndices();
-            this.PlaylistService.SaveAsync();
+            await this.PlaylistService.SaveAsync();
         }
     }
 
     private bool CanMoveDown(PlaylistEntry entry)
     {
+        if (entry == null)
+        {
+            return false;
+        }
+
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(entry));
 
         if (playlist == null)

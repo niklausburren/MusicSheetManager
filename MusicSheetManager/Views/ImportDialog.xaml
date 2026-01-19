@@ -7,7 +7,8 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:converters="clr-namespace:MusicSheetManager.Converters"
-        xmlns:viewmodels="clr-namespace:MusicSheetManager.ViewModels" 
+        xmlns:viewmodels="clr-namespace:MusicSheetManager.ViewModels"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ImportDialogViewModel}"
         Title="Import Music Sheets"
@@ -15,8 +16,14 @@
         Width="1024"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
-        <converters:RowNumberConverter x:Key="RowNumberConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:RowNumberConverter x:Key="RowNumberConverter" />
+        <converters:EnumDisplayNameConverter x:Key="EnumDisplayNameConverter" />
+        <ObjectDataProvider x:Key="PagesPerSheetValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="viewmodels:PagesPerSheet"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -45,11 +52,11 @@
                 </Expander.HeaderTemplate>
                 <StackPanel>
                     <Label Content="Title" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="TitleTextBox" Text="{Binding Metadata.Title}" />
+                    <TextBox Name="TitleTextBox" Text="{Binding Metadata.Title}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
                     <Label Content="Composer" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="ComposerTextBox" Text="{Binding Metadata.Composer}" />
+                    <TextBox Name="ComposerTextBox" Text="{Binding Metadata.Composer}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
                     <Label Content="Arranger" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="ArrangerTextBox" Text="{Binding Metadata.Arranger}" />
+                    <TextBox Name="ArrangerTextBox" Text="{Binding Metadata.Arranger}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
                 </StackPanel>
             </Expander>
 
@@ -61,13 +68,17 @@
                 </Expander.HeaderTemplate>
                 <StackPanel>
                     <Label Content="Pages per Sheet" Margin="-5, 0, 0, 0" />
-                    <ComboBox Name="PagesPerSheetComboBox" SelectedValue="{Binding SplitOptions.PagesPerSheet}" SelectedValuePath="Content">
-                        <ComboBoxItem Content="OnePage" />
-                        <ComboBoxItem Content="TwoPages" />
-                        <ComboBoxItem Content="ThreePages" />
-                        <ComboBoxItem Content="FourPages" />
-                        <ComboBoxItem Content="AllPages" />
-                    </ComboBox>
+                    <ComboBox Name="PagesPerSheetComboBox"
+                          ItemsSource="{Binding Source={StaticResource PagesPerSheetValues}}"
+                          SelectedValue="{Binding SplitOptions.PagesPerSheet}"
+                          SelectedValuePath="."
+                          Height="22">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource EnumDisplayNameConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                     <CheckBox Content="Split A3 to A4" Name="SplitA3ToA4CheckBox" IsChecked="{Binding SplitOptions.SplitA3ToA4}" Margin="0,10,0,0" />
                     <CheckBox Content="Rotate" Name="RotateCheckBox" IsChecked="{Binding SplitOptions.Rotate}" Margin="0,10,0,0" />
                 </StackPanel>
@@ -84,13 +95,22 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ListView Name="MusicSheetListView" Margin="0,10,0,0" ItemsSource="{Binding MusicSheets}" VerticalAlignment="Stretch" Grid.Row="0" SelectionChanged="MusicSheetListView_SelectionChanged" AlternationCount="1">
+                    <ListView Name="MusicSheetListView"
+                              Margin="0,10,0,0"
+                              ItemsSource="{Binding MusicSheets}"
+                              VerticalAlignment="Stretch"
+                              Grid.Row="0"
+                              SelectionChanged="MusicSheetListView_SelectionChanged"
+                              AlternationCount="1">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Instrument}" Value="{x:Static models:InstrumentInfo.Unknown}">
                                         <Setter Property="Background" Value="Yellow"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Sheet.HasConflict}" Value="True">
+                                        <Setter Property="Background" Value="#FFFFC0C0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -100,14 +120,26 @@
                                 <GridViewColumn Header="#" Width="30">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Converter={StaticResource RowNumberConverter}}" TextAlignment="Center" />
+                                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Converter={StaticResource RowNumberConverter}}"
+                                                       TextAlignment="Center" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="170">
+
+                                <GridViewColumn Header="" Width="30">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type models:MusicSheetInfo}">
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Width="152">
                                     <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                     <GridViewColumn.CellTemplate>
-                                        <DataTemplate DataType="models:MusicSheet">
+                                        <DataTemplate DataType="{x:Type models:MusicSheetInfo}">
                                             <ComboBox
                                                 ItemsSource="{x:Static models:InstrumentInfo.All}" 
                                                 SelectedItem="{Binding Instrument, Mode=TwoWay}" 
@@ -116,12 +148,13 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
                                 <GridViewColumn Width="80">
                                     <GridViewColumnHeader Content="Part" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                     <GridViewColumn.CellTemplate>
-                                        <DataTemplate DataType="models:MusicSheet">
+                                        <DataTemplate DataType="{x:Type models:MusicSheetInfo}">
                                             <xctk:CheckComboBox 
-                                                ItemsSource="{x:Static models:PartInfo.All}" 
+                                                ItemsSource="{x:Static models:PartInfo.AllWithoutNone}"     
                                                 SelectedItemsOverride="{Binding Parts, Mode=TwoWay}" 
                                                 DisplayMemberPath="DisplayName"
                                                 Delimiter=", "
@@ -137,10 +170,11 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
                                 <GridViewColumn Width="60">
                                     <GridViewColumnHeader Content="Clef" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                     <GridViewColumn.CellTemplate>
-                                        <DataTemplate DataType="models:MusicSheet">
+                                        <DataTemplate DataType="{x:Type models:MusicSheetInfo}">
                                             <ComboBox
                                                 ItemsSource="{x:Static models:ClefInfo.All}" 
                                                 SelectedItem="{Binding Clef, Mode=TwoWay}" 

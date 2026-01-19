@@ -23,6 +23,8 @@ public class PartInfo : IEquatable<PartInfo>
 
     #region Properties
 
+    public static PartInfo None { get; } = new("None", "(None)");
+
     public static PartInfo First { get; } = new("First", "1st", "Ist", "lst", "1");
 
     public static PartInfo Second { get; } = new("Second", "2nd", "2");
@@ -37,13 +39,21 @@ public class PartInfo : IEquatable<PartInfo>
         .OfType<PartInfo>()
         .ToList();
 
+    public static IReadOnlyList<PartInfo> AllWithoutNone { get; } = All.Where(p => p != None).ToList();
+
     public string Key { get; }
 
-    public int Index => All.ToList().IndexOf(this);
+    public int Index
+    {
+        get { return All.ToList().IndexOf(this); }
+    }
 
     public string[] Patterns { get; }
 
-    public string DisplayName => this.Patterns.First();
+    public string DisplayName
+    {
+        get { return this.Patterns.First(); }
+    }
 
     #endregion
 

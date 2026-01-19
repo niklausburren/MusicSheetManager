@@ -1,31 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MusicSheetManager.Utilities;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Models
 {
-    public class MusicSheetFolder : INotifyPropertyChanged
+    public class MusicSheetFolder : ObservableObject
     {
-        #region Fields
-
-        private readonly ObservableCollection<MusicSheet> _sheets = new();
-
-        #endregion
-
-
         #region Constructors
 
         public MusicSheetFolder(MusicSheetFolderMetadata metadata)
         {
             this.Id = Guid.NewGuid();
             this.Metadata = metadata;
-            this.Folder = Path.Combine(Folders.MusicSheetFolder, this.Metadata.Title);
+
+            this.Folder = Path.Combine(Folders.MusicSheetFolder, SanitizeFolderName(this.Metadata.Title));
         }
 
         public MusicSheetFolder(string folder)
@@ -38,11 +34,16 @@ namespace MusicSheetManager.Models
 
             foreach (var sheet in sheets)
             {
-                _sheets.Add(sheet);
+                this.Sheets.Add(sheet);
+                this.SubscribeToSheet(sheet);
             }
 
-            this.Id = this.Sheets[0].FolderId;
-            this.Metadata = this.Sheets[0].Metadata;
+            var firstSheet = this.Sheets.First();
+
+            this.Id = firstSheet.FolderId;
+            this.Metadata = firstSheet.Metadata.Clone();
+
+            CalculateConflicts(this.Sheets);
         }
 
         #endregion
@@ -54,21 +55,96 @@ namespace MusicSheetManager.Models
         public Guid Id { get; }
 
         [Browsable(false)]
-        public string Folder { get; }
+        public string Folder { get; private set; }
 
         private MusicSheetFolderMetadata Metadata { get; }
 
         [Browsable(false)]
-        public IReadOnlyList<MusicSheet> Sheets => _sheets;
+        public ObservableCollection<MusicSheet> Sheets { get; } = [];
 
         [PropertyOrder(2)]
-        public string Title => this.Metadata.Title;
+        public string Title
+        {
+            get => this.Metadata.Title;
+            set
+            {
+                if (this.Metadata.Title == value)
+                {
+                    return;
+                }
+
+                var newFolder = Path.Combine(Folders.MusicSheetFolder, SanitizeFolderName(value));
+                
+                if (Directory.Exists(newFolder))
+                {
+                    MessageBox.Show(
+                        "A folder with the same name already exists.",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                Directory.Move(this.Folder, newFolder);
+
+                this.Metadata.Title = value;
+
+                foreach (var sheet in this.Sheets)
+                {
+                    sheet.UpdateFolder(newFolder);
+                    sheet.Title = value;
+                }
+
+                this.Folder = newFolder;
+                this.OnPropertyChanged();
+            }
+        }
 
         [PropertyOrder(3)]
-        public string Composer => this.Metadata.Composer;
+        public string Composer
+        {
+            get => this.Metadata.Composer;
+            set
+            {
+                if (this.Metadata.Composer == value)
+                {
+                    return;
+                }
+
+                this.Metadata.Composer = value;
+
+                foreach (var sheet in this.Sheets)
+                {
+                    sheet.Composer = value;
+                }
+
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.Credits));
+            }
+        }
 
         [PropertyOrder(4)]
-        public string Arranger => this.Metadata.Arranger;
+        public string Arranger
+        {
+            get => this.Metadata.Arranger;
+            set
+            {
+                if (this.Metadata.Arranger == value)
+                {
+                    return;
+                }
+
+                this.Metadata.Arranger = value;
+
+                foreach (var sheet in this.Sheets)
+                {
+                    sheet.Arranger = value;
+                }
+
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.Credits));
+            }
+        }
 
         [Browsable(false)]
         public string Credits
@@ -109,7 +185,7 @@ namespace MusicSheetManager.Models
 
         public static MusicSheetFolder TryLoad(string folder)
         {
-            return Directory.Exists(folder)
+            return Directory.Exists(folder) && Directory.GetFiles(folder, "*.pdf").Length > 0
                 ? new MusicSheetFolder(folder)
                 : null;
         }
@@ -126,11 +202,6 @@ namespace MusicSheetManager.Models
                 throw new ArgumentException("All music sheets must have a valid instrument.");
             }
 
-            if (sheets.Any(s => MusicSheet.HasNumberingInParentheses(s.FileName)))
-            {
-                throw new ArgumentException("All music sheets must have a unique file name. The wrong instrument, part or clef has been selected for at least one music sheet.");
-            }
-
             if (!Directory.Exists(this.Folder))
             {
                 Directory.CreateDirectory(this.Folder);
@@ -140,28 +211,84 @@ namespace MusicSheetManager.Models
             {
                 sheet.FolderId = this.Id;
                 sheet.MoveToFolder(this.Folder);
-                _sheets.Add(sheet);
+                this.Sheets.Add(sheet);
+                this.SubscribeToSheet(sheet);
             }
+
+            CalculateConflicts(this.Sheets);
 
             this.OnPropertyChanged(nameof(this.Sheets));
         }
 
-        #endregion
-
-
-        #region Protected Methods
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public static void CalculateConflicts(IReadOnlyList<MusicSheet> musicSheets)
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (musicSheets == null ||
+                musicSheets.Count == 0)
+            {
+                return;
+            }
+
+            var groups = musicSheets
+                .GroupBy(GetKeyOf)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            foreach (var musicSheet in musicSheets)
+            {
+                var key = GetKeyOf(musicSheet);
+                var hasConflict = groups.TryGetValue(key, out var count) && count > 1;
+                musicSheet.HasConflict = hasConflict;
+            }
+
+            foreach (var musicSheet in musicSheets.Where(s => !s.HasConflict))
+            {
+                musicSheet.UpdateFileName(onlyIfNumbered: true);
+            }
         }
 
         #endregion
 
 
-        #region INotifyPropertyChanged Members
+        #region Private Methods
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private static string SanitizeFolderName(string name)
+        {
+            var sanitized = (name ?? string.Empty).Trim();
+            var invalidChars = Path.GetInvalidFileNameChars();
+            return invalidChars.Aggregate(sanitized, (current, ch) => current.Replace(ch, '_'));
+        }
+
+        private void SubscribeToSheet(MusicSheet sheet)
+        {
+            sheet.PropertyChanged -= this.OnSheetPropertyChanged;
+            sheet.PropertyChanged += this.OnSheetPropertyChanged;
+
+            if (sheet.Parts != null)
+            {
+                sheet.Parts.CollectionChanged -= this.OnPartsCollectionChanged;
+                sheet.Parts.CollectionChanged += this.OnPartsCollectionChanged;
+            }
+        }
+
+        private void OnSheetPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is
+                nameof(MusicSheet.Instrument) or
+                nameof(MusicSheet.Clef) or
+                nameof(MusicSheet.Parts))
+            {
+                CalculateConflicts(this.Sheets);
+            }
+        }
+
+        private void OnPartsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CalculateConflicts(this.Sheets);
+        }
+
+        private static string GetKeyOf(MusicSheet m)
+        {
+            return $"{m.Instrument?.Key}|{string.Join(",", m.Parts?.OrderBy(p => p.Key).Select(p => p.Key) ?? [])}|{m.Clef?.Key}";
+        }
 
         #endregion
     }

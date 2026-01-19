@@ -39,7 +39,10 @@ namespace MusicSheetManager.Models
 
         public string[] Patterns { get; }
 
-        public string DisplayName => this.Patterns.First();
+        public string DisplayName
+        {
+            get { return this.Patterns.First(); }
+        }
 
         #endregion
 

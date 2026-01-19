@@ -41,7 +41,22 @@ internal class MusicSheetService : IMusicSheetService
         foreach (var folder in folders)
         {
             var musicSheetFolder = await Task.Run(() => MusicSheetFolder.TryLoad(folder));
-            this.MusicSheetFolders.Add(musicSheetFolder);
+
+            if (musicSheetFolder != null)
+            {
+                this.MusicSheetFolders.Add(musicSheetFolder);
+            }
+            else
+            {
+                try
+                {
+                    Directory.Delete(folder, true);
+                }
+                catch (Exception e)
+                {
+                    // Delete failed.
+                }
+            }
         }
     }
 
@@ -90,18 +105,18 @@ internal class MusicSheetService : IMusicSheetService
 
         foreach (var sheet in sheets)
         {
-            sheet.UpdateFileName();
+            sheet.UpdateFileName(onlyIfNumbered: true);
         }
 
-        var folder = this.MusicSheetFolders.FirstOrDefault(f => f.Title == metadata.Title);
+        var musicSheetFolder = this.MusicSheetFolders.FirstOrDefault(f => f.Title == metadata.Title);
 
-        if (folder == null)
+        if (musicSheetFolder == null)
         {
-            folder = MusicSheetFolder.Create(metadata);
-            this.MusicSheetFolders.Add(folder);
+            musicSheetFolder = MusicSheetFolder.Create(metadata);
+            this.MusicSheetFolders.Add(musicSheetFolder);
         }
 
-        folder.ImportSheets(sheets);
+        musicSheetFolder.ImportSheets(sheets);
     }
 
     public void SplitPagesFromA3ToA4(string fileName)
