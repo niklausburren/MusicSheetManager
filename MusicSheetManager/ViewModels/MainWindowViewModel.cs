@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -60,9 +61,9 @@ namespace MusicSheetManager.ViewModels
 
         #region Public Methods
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(IProgress<int> progress)
         {
-            await this.MusicSheetTab.InitializeAsync();
+            await this.MusicSheetTab.InitializeAsync(progress);
             await this.PeopleTab.InitializeAsync();
             await this.PlaylistTab.InitializeAsync();
         }

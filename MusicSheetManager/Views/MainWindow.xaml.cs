@@ -32,7 +32,7 @@ public partial class MainWindow : Window
 
     #region Properties
 
-    private MainWindowViewModel ViewModel => (MainWindowViewModel)this.DataContext;
+    public MainWindowViewModel ViewModel => (MainWindowViewModel)this.DataContext;
 
     #endregion
 
@@ -58,8 +58,6 @@ public partial class MainWindow : Window
     {
         try
         {
-            await this.ViewModel.InitializeAsync();
-
             var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
 
             if (cvs?.View is ListCollectionView listView)

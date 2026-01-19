@@ -15,10 +15,9 @@ public interface IMusicSheetService
 
     #endregion
 
-
     #region Public Methods
 
-    Task LoadAsync();
+    Task LoadAsync(IProgress<int> progress);
 
     Task SplitAsync(string fileName, MusicSheetFolderMetadata metadata, SplitOptions splitOptions, IProgress<(MusicSheet, int)> progress);
 

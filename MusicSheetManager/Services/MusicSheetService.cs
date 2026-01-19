@@ -26,17 +26,27 @@ internal class MusicSheetService : IMusicSheetService
 
     #endregion
 
-
     #region IMusicSheetService Members
 
     /// <inheritdoc />
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders { get; } = new ObservableCollection<MusicSheetFolder>();
 
     /// <inheritdoc />
-    public async Task LoadAsync()
+    public async Task LoadAsync(IProgress<int> progress)
     {
         this.MusicSheetFolders.Clear();
+
         var folders = Directory.GetDirectories(Folders.MusicSheetFolder);
+
+        if (folders.Length == 0)
+        {
+            progress?.Report(100);
+            return;
+        }
+
+        progress?.Report(0);
+
+        var processed = 0;
 
         foreach (var folder in folders)
         {
@@ -52,11 +62,15 @@ internal class MusicSheetService : IMusicSheetService
                 {
                     Directory.Delete(folder, true);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // Delete failed.
                 }
             }
+
+            processed++;
+            var percent = (int)Math.Round(processed * 100.0 / folders.Length, MidpointRounding.AwayFromZero);
+            progress?.Report(percent);
         }
     }
 
