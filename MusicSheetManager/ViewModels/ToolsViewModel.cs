@@ -84,6 +84,13 @@ public class ToolsViewModel
     {
         try
         {
+            var result = MessageBox.Show("Are you sure you want to distribute the music sheets?", "Confirm Distribution", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
             this.DistributionService.Distribute();
             MessageBox.Show("The distribution of the music sheets was successful.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }

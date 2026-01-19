@@ -1,4 +1,4 @@
-﻿    <Window x:Class="MusicSheetManager.Views.MainWindow"
+﻿<Window x:Class="MusicSheetManager.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -203,7 +203,11 @@
                 <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
                 <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
                 <Separator />
-                <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}" />
+                <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
             </MenuItem>
@@ -228,6 +232,15 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Resources/person-add.png" Width="16" Height="16" Margin="0,0,4,0" />
                         <TextBlock Text="Create person" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Separator />
+
+                <Button Command="{Binding Tools.DistributeSheetsCommand}" ToolTip="Distribute Sheets">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Distribute Sheets" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </ToolBar>
