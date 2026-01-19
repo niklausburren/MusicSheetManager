@@ -13,6 +13,7 @@
     <None Remove="Resources\baritone-horn-c.png" />
     <None Remove="Resources\euphonium-bb.png" />
     <None Remove="Resources\euphonium-c.png" />
+    <None Remove="Resources\music-sheets-assign.png" />
     <None Remove="Resources\tenor-horn-bb.png" />
     <None Remove="Resources\tenor-horn-c.png" />
     <None Remove="Resources\tenor-horn-eb.png" />
@@ -144,6 +145,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
 	<Resource Include="Resources\music-sheet.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\music-sheets-assign.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\oboe.png">
