@@ -52,11 +52,11 @@
                 </Expander.HeaderTemplate>
                 <StackPanel>
                     <Label Content="Title" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="TitleTextBox" Text="{Binding Metadata.Title}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
+                    <TextBox Name="TitleTextBox" Text="{Binding Metadata.Title}" IsEnabled="{Binding IsMetadataEditable}"/>
                     <Label Content="Composer" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="ComposerTextBox" Text="{Binding Metadata.Composer}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
+                    <TextBox Name="ComposerTextBox" Text="{Binding Metadata.Composer}" IsEnabled="{Binding IsMetadataEditable}"/>
                     <Label Content="Arranger" Margin="-5, 0, 0, 0" />
-                    <TextBox Name="ArrangerTextBox" Text="{Binding Metadata.Arranger}" IsReadOnly="{Binding IsMetadataReadOnly}"/>
+                    <TextBox Name="ArrangerTextBox" Text="{Binding Metadata.Arranger}" IsEnabled="{Binding IsMetadataEditable}"/>
                 </StackPanel>
             </Expander>
 

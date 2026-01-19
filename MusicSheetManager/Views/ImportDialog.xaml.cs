@@ -33,6 +33,11 @@ namespace MusicSheetManager.Views
                     viewModel.Metadata.Title = musicSheetFolder.Title;
                     viewModel.Metadata.Composer = musicSheetFolder.Composer;
                     viewModel.Metadata.Arranger = musicSheetFolder.Arranger;
+                    viewModel.IsMetadataEditable = false;
+                }
+                else
+                {
+                    viewModel.IsMetadataEditable = true;
                 }
             }
 

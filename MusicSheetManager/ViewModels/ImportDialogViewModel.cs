@@ -30,6 +30,8 @@ namespace MusicSheetManager.ViewModels
 
         private bool _isSplitting;
 
+        private bool _isMetadataEditable;
+
         #endregion
 
 
@@ -42,8 +44,8 @@ namespace MusicSheetManager.ViewModels
             this.Metadata = new MusicSheetFolderMetadata();
 
             this.SplitOptions = new SplitOptions();
-            this.SplitCommand = new AsyncRelayCommand(this.ExecuteSplitAsync, this.CanExecuteSplit);
-            this.ImportCommand = new RelayCommand(this.ExecuteImport, this.CanExecuteImport);
+            this.SplitCommand = new AsyncRelayCommand(this.SplitMusicSheetsAsync, this.CanSplitMusicSheets);
+            this.ImportCommand = new RelayCommand(this.ImportMusicSheets, this.CanImportMusicSheets);
 
             this.MusicSheets.CollectionChanged += this.OnMusicSheetsCollectionChanged;
         }
@@ -91,20 +93,47 @@ namespace MusicSheetManager.ViewModels
             set => this.SetProperty(ref _isSplitting, value);
         }
 
+        public bool IsMetadataEditable
+        {
+            get => _isMetadataEditable;
+            set => this.SetProperty(ref _isMetadataEditable, value);
+        }
+
         public ObservableCollection<MusicSheetInfo> MusicSheets { get; } = [];
 
         public ICommand ImportCommand { get; }
 
         public Action<bool?> SetDialogResultAction { get; set; }
 
-        public bool IsMetadataReadOnly => this.MusicSheets?.Count > 0;
+        #endregion
+
+
+        #region Protected Methods
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (!Application.Current.Dispatcher.CheckAccess())
+            {
+                Application.Current.Dispatcher.Invoke(() => this.OnPropertyChanged(e));
+                return;
+            }
+
+            base.OnPropertyChanged(e);
+
+            if (e.PropertyName is
+                nameof(this.IsSplitting))
+            {
+                ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
+            }
+        }
 
         #endregion
 
 
         #region Private Methods
 
-        private bool CanExecuteSplit()
+        private bool CanSplitMusicSheets()
         {
             return
                 !string.IsNullOrEmpty(this.FileName) &&
@@ -112,7 +141,7 @@ namespace MusicSheetManager.ViewModels
                 Path.GetExtension(this.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task ExecuteSplitAsync()
+        private async Task SplitMusicSheetsAsync()
         {
             if (string.IsNullOrWhiteSpace(this.Metadata.Title))
             {
@@ -121,6 +150,7 @@ namespace MusicSheetManager.ViewModels
             }
 
             this.IsSplitting = true;
+            this.IsMetadataEditable = false;
 
             try
             {
@@ -136,9 +166,6 @@ namespace MusicSheetManager.ViewModels
                     this.Progress = this.MusicSheets.Count * 100 / totalSheets;
 
                     this.CalculateConflicts();
-
-                    ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
-                    this.OnPropertyChanged(nameof(this.IsMetadataReadOnly));
                 });
 
                 await _musicSheetService.SplitAsync(this.FileName, this.Metadata, this.SplitOptions, progress).ConfigureAwait(false);
@@ -149,21 +176,14 @@ namespace MusicSheetManager.ViewModels
             }
         }
 
-        private bool CanExecuteImport()
+        private bool CanImportMusicSheets()
         {
-            var selected = this.MusicSheets.Where(msi => msi.IsSelected).ToList();
+            var selectedMusicSheets = this.MusicSheets.Where(msi => msi.IsSelected).ToList();
 
-            if (selected.Count == 0)
-            {
-                return false;
-            }
-
-            return selected.All(msi =>
-                msi.Instrument != InstrumentInfo.Unknown &&
-                !msi.Sheet.HasConflict);
+            return !this.IsSplitting && selectedMusicSheets.Any() && selectedMusicSheets.All(msi => msi.Instrument != InstrumentInfo.Unknown && !msi.Sheet.HasConflict);
         }
 
-        private void ExecuteImport()
+        private void ImportMusicSheets()
         {
             try
             {
@@ -228,12 +248,10 @@ namespace MusicSheetManager.ViewModels
             this.CalculateConflicts();
             
             ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
-            this.OnPropertyChanged(nameof(this.IsMetadataReadOnly));
         }
 
         private void OnMusicSheetInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            // Relevante Eigenschaften beeinflussen sowohl Konfliktstatus als auch Import-Bedingung
             if (e.PropertyName is 
                 nameof(MusicSheetInfo.IsSelected) or 
                 nameof(MusicSheetInfo.Instrument) or 
