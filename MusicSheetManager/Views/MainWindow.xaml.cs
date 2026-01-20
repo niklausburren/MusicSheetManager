@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml;
 using Autofac;
+using AvalonDock.Layout.Serialization;
 using Microsoft.Win32;
 using MusicSheetManager.Models;
+using MusicSheetManager.Properties;
 using MusicSheetManager.Utilities;
 using MusicSheetManager.ViewModels;
 
@@ -25,6 +30,8 @@ public partial class MainWindow : Window
     {
         this.InitializeComponent();
         this.DataContext = viewModel;
+
+        this.RestoreWindowPlacement();
     }
 
     #endregion
@@ -49,15 +56,125 @@ public partial class MainWindow : Window
         return source as TreeViewItem;
     }
 
+    private void RestoreWindowPlacement()
+    {
+        var s = Settings.Default;
+
+        if (double.IsNaN(s.MainWindowLeft) ||
+            double.IsNaN(s.MainWindowTop) ||
+            double.IsNaN(s.MainWindowWidth) ||
+            double.IsNaN(s.MainWindowHeight))
+        {
+            return;
+        }
+
+        this.WindowStartupLocation = WindowStartupLocation.Manual;
+
+        this.Left = s.MainWindowLeft;
+        this.Top = s.MainWindowTop;
+        this.Width = Math.Max(200, s.MainWindowWidth);
+        this.Height = Math.Max(200, s.MainWindowHeight);
+
+        this.WindowState = s.MainWindowState;
+    }
+
+    private void SaveWindowPlacement()
+    {
+        var s = Settings.Default;
+
+        var bounds = this.RestoreBounds;
+
+        s.MainWindowLeft = bounds.Left;
+        s.MainWindowTop = bounds.Top;
+        s.MainWindowWidth = bounds.Width;
+        s.MainWindowHeight = bounds.Height;
+
+        s.MainWindowState = this.WindowState == WindowState.Minimized ? WindowState.Normal : this.WindowState;
+
+        s.Save();
+    }
+
+    private void RestoreDockLayout()
+    {
+        var layout = Settings.Default.DockLayout;
+
+        if (string.IsNullOrWhiteSpace(layout))
+        {
+            return;
+        }
+
+        var knownContentById = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            [MusicSheetsDocument.ContentId] = MusicSheetsDocument.Content,
+            [PlaylistsDocument.ContentId] = PlaylistsDocument.Content,
+            [PeoplesDocument.ContentId] = PeoplesDocument.Content,
+            [PropertiesToolWindow.ContentId] = PropertiesToolWindow.Content,
+            [PdfViewerToolWindow.ContentId] = PdfViewerToolWindow.Content
+        };
+
+        try
+        {
+            using var stringReader = new StringReader(layout);
+            using var xmlReader = XmlReader.Create(stringReader);
+
+            var serializer = new XmlLayoutSerializer(DockManager);
+
+            serializer.LayoutSerializationCallback += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Model.ContentId) &&
+                    knownContentById.TryGetValue(e.Model.ContentId, out var content))
+                {
+                    e.Content = content;
+                    return;
+                }
+
+                e.Cancel = true;
+            };
+
+            serializer.Deserialize(xmlReader);
+        }
+        catch
+        {
+            // Ignore errors
+        }
+    }
+
+    private void SaveDockLayout()
+    {
+        try
+        {
+            var serializer = new XmlLayoutSerializer(DockManager);
+
+            using var stringWriter = new StringWriter();
+            using var xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings
+            {
+                Indent = false,
+                OmitXmlDeclaration = true
+            });
+
+            serializer.Serialize(xmlWriter);
+            xmlWriter.Flush();
+
+            Settings.Default.DockLayout = stringWriter.ToString();
+            Settings.Default.Save();
+        }
+        catch
+        {
+            // Ignore errors
+        }
+    }
+
     #endregion
 
 
     #region Event Handlers
 
-    private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+    private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
     {
         try
         {
+            this.RestoreDockLayout();
+
             var cvs = (CollectionViewSource)this.FindResource("GroupedMusicSheetFolders");
 
             if (cvs?.View is ListCollectionView listView)
@@ -70,8 +187,8 @@ public partial class MainWindow : Window
                 MusicSheetsDocument.IsActive = true;
             };
 
-            this.ViewModel.PlaylistTab.FocusRequested += args => 
-            { 
+            this.ViewModel.PlaylistTab.FocusRequested += args =>
+            {
                 PlaylistsDocument.IsActive = true;
                 PlaylistsTreeView.SetSelectedItem(args.SelectedObject);
                 PlaylistsTreeView.ScrollIntoView(args.SelectedObject);
@@ -90,6 +207,12 @@ public partial class MainWindow : Window
         }
     }
 
+    private void MainWindow_OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        this.SaveDockLayout();
+        this.SaveWindowPlacement();
+    }
+
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
@@ -98,12 +221,12 @@ public partial class MainWindow : Window
     private void ImportButton_Click(object sender, RoutedEventArgs e)
     {
         var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
-        
+
         if (openFileDialog.ShowDialog(this) != true)
         {
             return;
         }
-        
+
         var importDialog = App.Container.Resolve<ImportDialog>();
         importDialog.ShowDialog(this, openFileDialog.FileName);
     }
@@ -148,7 +271,7 @@ public partial class MainWindow : Window
     private void PlaylistsTreeView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         var treeViewItem = FindTreeViewItem(e.OriginalSource as DependencyObject);
-        
+
         if (treeViewItem != null)
         {
             treeViewItem.Focus();
@@ -159,6 +282,7 @@ public partial class MainWindow : Window
 
     private void PlaylistsTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
+        PdfViewer.Source = new Uri("about:blank");
         this.ViewModel.SelectedObject = e.NewValue;
     }
 

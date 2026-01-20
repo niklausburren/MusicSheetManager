@@ -15,7 +15,8 @@
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
         Title="MusicSheetManager" Height="1024" Width="1280"
         WindowStartupLocation="CenterScreen"
-        Loaded="MainWindow_OnLoaded">
+        Loaded="MainWindow_OnLoaded"
+        Closing="MainWindow_OnClosing">
     <Window.InputBindings>
         <KeyBinding Key="Delete" Command="{Binding DeleteSelectedItemCommand}" />
     </Window.InputBindings>
@@ -254,7 +255,10 @@
                 <ad:LayoutPanel Orientation="Horizontal">
                     <ad:LayoutDocumentPaneGroup>
                         <ad:LayoutDocumentPane>
-                            <ad:LayoutDocument x:Name="MusicSheetsDocument" Title="Music sheets" CanClose="False">
+                            <ad:LayoutDocument x:Name="MusicSheetsDocument"
+                                               Title="Music sheets"
+                                               ContentId="Doc.MusicSheets"
+                                               CanClose="False">
                                 <Grid>
                                     <TreeView x:Name="MusicSheetTreeView"
                                               ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}"
@@ -285,7 +289,11 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument x:Name="PlaylistsDocument" Title="Playlists" CanFloat="False" CanClose="False">
+                            <ad:LayoutDocument x:Name="PlaylistsDocument"
+                                               Title="Playlists"
+                                               ContentId="Doc.Playlists"
+                                               CanFloat="False"
+                                               CanClose="False">
                                 <Grid>
                                     <TreeView x:Name="PlaylistsTreeView"
                                               ItemsSource="{Binding PlaylistTab.Playlists}"
@@ -303,7 +311,10 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
-                            <ad:LayoutDocument x:Name="PeoplesDocument" Title="Peoples" CanClose="False">
+                            <ad:LayoutDocument x:Name="PeoplesDocument"
+                                               Title="Peoples"
+                                               ContentId="Doc.Peoples"
+                                               CanClose="False">
                                 <Grid>
                                     <ListView x:Name="PeopleListView"
                                               ItemsSource="{Binding PeopleTab.People}"
@@ -338,10 +349,20 @@
 
                     <ad:LayoutAnchorablePaneGroup DockWidth="400">
                         <ad:LayoutAnchorablePane>
-                            <ad:LayoutAnchorable Title="Properties" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                            <ad:LayoutAnchorable x:Name="PropertiesToolWindow"
+                                                 Title="Properties"
+                                                 ContentId="Tool.Properties"
+                                                 CanClose="False"
+                                                 CanHide="True"
+                                                 AutoHideMinWidth="200">
                                 <xctk:PropertyGrid ShowTitle="False" ShowSearchBox="False" ShowSortOptions="False" SelectedObject="{Binding SelectedObject}" />
                             </ad:LayoutAnchorable>
-                            <ad:LayoutAnchorable Title="PDF Viewer" CanClose="False" CanHide="True" AutoHideMinWidth="200">
+                            <ad:LayoutAnchorable x:Name="PdfViewerToolWindow"
+                                                 Title="PDF Viewer"
+                                                 ContentId="Tool.PdfViewer"
+                                                 CanClose="False"
+                                                 CanHide="True"
+                                                 AutoHideMinWidth="200">
                                 <Grid Background="#333333">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
