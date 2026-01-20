@@ -11,15 +11,20 @@
     <None Remove="Resources\alphorn.png" />
     <None Remove="Resources\baritone-horn-bb.png" />
     <None Remove="Resources\baritone-horn-c.png" />
+    <None Remove="Resources\error.png" />
     <None Remove="Resources\euphonium-bb.png" />
     <None Remove="Resources\euphonium-c.png" />
+    <None Remove="Resources\info.png" />
     <None Remove="Resources\music-sheets-assign.png" />
     <None Remove="Resources\music-sheets-distribute.png" />
     <None Remove="Resources\splash.png" />
+    <None Remove="Resources\success.png" />
+    <None Remove="Resources\sync.png" />
     <None Remove="Resources\tenor-horn-bb.png" />
     <None Remove="Resources\tenor-horn-c.png" />
     <None Remove="Resources\tenor-horn-eb.png" />
     <None Remove="Resources\triangle.png" />
+    <None Remove="Resources\warning.png" />
   </ItemGroup>
 
 
@@ -104,6 +109,9 @@
     <Resource Include="Resources\electric-bass.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\error.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\euphonium-bb.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -136,6 +144,9 @@
     </Resource>
     <Resource Include="Resources\folder-open.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\info.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\keyboard.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -206,6 +217,12 @@
 	<Resource Include="Resources\string-bass.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
+	<Resource Include="Resources\success.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\sync.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
 	<Resource Include="Resources\tenor-horn-bb.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
@@ -231,6 +248,9 @@
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\trumpet-bb.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\warning.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
   </ItemGroup>
