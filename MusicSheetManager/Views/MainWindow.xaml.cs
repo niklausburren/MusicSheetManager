@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         this.InitializeComponent();
         this.DataContext = viewModel;
 
-        this.RestoreWindowPlacement();
+        this.SourceInitialized += (_, _) => this.RestoreWindowPlacement();
     }
 
     #endregion
@@ -60,10 +60,14 @@ public partial class MainWindow : Window
     {
         var s = Settings.Default;
 
-        if (double.IsNaN(s.MainWindowLeft) ||
-            double.IsNaN(s.MainWindowTop) ||
-            double.IsNaN(s.MainWindowWidth) ||
-            double.IsNaN(s.MainWindowHeight))
+        // Nur anwenden, wenn alle Werte endlich sind
+        var invalid =
+            double.IsNaN(s.MainWindowLeft) || double.IsInfinity(s.MainWindowLeft) ||
+            double.IsNaN(s.MainWindowTop) || double.IsInfinity(s.MainWindowTop) ||
+            double.IsNaN(s.MainWindowWidth) || double.IsInfinity(s.MainWindowWidth) ||
+            double.IsNaN(s.MainWindowHeight) || double.IsInfinity(s.MainWindowHeight);
+
+        if (invalid)
         {
             return;
         }
@@ -82,12 +86,18 @@ public partial class MainWindow : Window
     {
         var s = Settings.Default;
 
-        var bounds = this.RestoreBounds;
+        // Für Maximized/Minimized die RestoreBounds verwenden
+        var bounds = this.WindowState == WindowState.Normal ? new Rect(this.Left, this.Top, this.Width, this.Height) : this.RestoreBounds;
 
-        s.MainWindowLeft = bounds.Left;
-        s.MainWindowTop = bounds.Top;
-        s.MainWindowWidth = bounds.Width;
-        s.MainWindowHeight = bounds.Height;
+        // Nur speichern, wenn die Bounds endlich sind
+        if (double.IsFinite(bounds.Left) && double.IsFinite(bounds.Top) &&
+            double.IsFinite(bounds.Width) && double.IsFinite(bounds.Height))
+        {
+            s.MainWindowLeft = bounds.Left;
+            s.MainWindowTop = bounds.Top;
+            s.MainWindowWidth = bounds.Width;
+            s.MainWindowHeight = bounds.Height;
+        }
 
         s.MainWindowState = this.WindowState == WindowState.Minimized ? WindowState.Normal : this.WindowState;
 
