@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance Type=viewModels:AssignmentsDialogViewModel}"
         Title="Assign music sheets to people"
         Height="980"
-        Width="600"
+        Width="605"
         WindowStartupLocation="CenterOwner"
         Loaded="Window_Loaded"
         Closing="Window_Closing">
@@ -44,10 +44,10 @@
 
             <Image 
                 Grid.Column="0"
-                Width="48"
-                Height="48"
+                Width="60"
+                Height="60"
                 Stretch="Uniform"
-                Margin="0,0,10,0"
+                Margin="0,0,13,0"
                 VerticalAlignment="Center"
                 Source="/Resources/folder.png" />
 
@@ -73,10 +73,12 @@
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
                                         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,0.5" Padding="6">
                                             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-                                            <Expander x:Name="GroupExpander" IsExpanded="True" Tag="{Binding Name.Key}">
+                                            <Expander x:Name="GroupExpander"
+                                                      IsExpanded="True"
+                                                      Tag="{Binding Name.Key}">
                                                 <Expander.Header>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Border Width="32" 
+                                                        <Border Width="32"
                                                                 Height="32"
                                                                 VerticalAlignment="Center"
                                                                 BorderBrush="LightGray"
@@ -92,10 +94,14 @@
                                                                    Source="{Binding Name.Icon}"/>
                                                         </Border>
                                                         <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-                                                        <TextBlock Text="{Binding Name.DisplayName}" FontSize="14" FontWeight="Bold" Margin="0,-3,0,0" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Name.DisplayName}"
+                                                                   FontSize="14"
+                                                                   FontWeight="Bold"
+                                                                   Margin="0,-3,0,0"
+                                                                   VerticalAlignment="Center" />
                                                     </StackPanel>
                                                 </Expander.Header>
-                                                <ItemsPresenter Margin="0,0,0,0" />
+                                                <ItemsPresenter Margin="0,5,0,5" />
                                             </Expander>
                                         </Border>
                                     </ControlTemplate>
@@ -133,10 +139,10 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView ColumnHeaderContainerStyle="{StaticResource HeaderlessGridViewColumnHeader}">
-                    <GridViewColumn Width="200">
+                    <GridViewColumn>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type viewModels:PersonInfo}">
-                                <TextBlock Margin="17,0,0,0">
+                                <TextBlock Margin="53,0,0,0">
                                     <Run Text="{Binding Person.FullName, Mode=OneWay}" />
                                     <Run>
                                         <Run.Style>

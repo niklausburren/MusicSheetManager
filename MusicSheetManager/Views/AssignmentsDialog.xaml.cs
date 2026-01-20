@@ -1,4 +1,4 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,41 +42,11 @@ namespace MusicSheetManager.Views
         #endregion
 
 
-        #region Event Handlers
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.RestoreExpanderStates();
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            this.SaveExpanderStates();
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void ExpandAllGroups_Click(object sender, RoutedEventArgs e)
-        {
-            this.SetAllGroupsExpanded(true);
-        }
-
-        private void CollapseAllGroups_Click(object sender, RoutedEventArgs e)
-        {
-            this.SetAllGroupsExpanded(false);
-        }
-
-        #endregion
-
-
         #region Private Methods
 
         private void SetAllGroupsExpanded(bool isExpanded)
         {
-            var expanders = this.FindVisualChildren<Expander>(this.PeopleListView);
+            var expanders = this.FindVisualChildren<Expander>(PeopleListView);
 
             foreach (var expander in expanders)
             {
@@ -86,7 +56,7 @@ namespace MusicSheetManager.Views
 
         private void SaveExpanderStates()
         {
-            var expanders = this.FindVisualChildren<Expander>(this.PeopleListView);
+            var expanders = this.FindVisualChildren<Expander>(PeopleListView);
             var collapsedInstruments = new List<string>();
 
             foreach (var expander in expanders)
@@ -109,7 +79,7 @@ namespace MusicSheetManager.Views
             // Give the visual tree time to build
             this.Dispatcher.InvokeAsync(() =>
             {
-                var expanders = this.FindVisualChildren<Expander>(this.PeopleListView);
+                var expanders = this.FindVisualChildren<Expander>(PeopleListView);
 
                 foreach (var expander in expanders)
                 {
@@ -142,6 +112,51 @@ namespace MusicSheetManager.Views
                     yield return childOfChild;
                 }
             }
+        }
+
+        private void AutoSizeGridViewColumns()
+        {
+            if (PeopleListView.View is not GridView gridView)
+            {
+                return;
+            }
+
+            foreach (var col in gridView.Columns)
+            {
+                col.Width = 0;
+                col.Width = double.NaN;
+            }
+        }
+
+        #endregion
+
+
+        #region Event Handlers
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.RestoreExpanderStates();
+            this.AutoSizeGridViewColumns();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.SaveExpanderStates();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void ExpandAllGroups_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetAllGroupsExpanded(true);
+        }
+
+        private void CollapseAllGroups_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetAllGroupsExpanded(false);
         }
 
         #endregion
