@@ -19,7 +19,7 @@ namespace MusicSheetManager.Properties {
     // -Klasse über ein Tool wie ResGen oder Visual Studio automatisch generiert.
     // Um einen Member hinzuzufügen oder zu entfernen, bearbeiten Sie die .ResX-Datei und führen dann ResGen
     // mit der /str-Option erneut aus, oder Sie erstellen Ihr VS-Projekt neu.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -57,6 +57,449 @@ namespace MusicSheetManager.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baritone Saxophone Eb ähnelt.
+        /// </summary>
+        internal static string BaritoneSaxophoneEb {
+            get {
+                return ResourceManager.GetString("BaritoneSaxophoneEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cornet Bb ähnelt.
+        /// </summary>
+        internal static string CornetBb {
+            get {
+                return ResourceManager.GetString("CornetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alto Clarinet Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_AltoClarinetEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_AltoClarinetEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alto Saxophone Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_AltoSaxophoneEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_AltoSaxophoneEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baritone Horn Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BaritoneHornBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BaritoneHornBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baritone Horn C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BaritoneHornC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BaritoneHornC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baritone Saxophone Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BaritoneSaxophoneEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BaritoneSaxophoneEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Clarinet Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassClarinetBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassClarinetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Drum ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassDrum {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassDrum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basses ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Basses {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Basses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bassoon ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Bassoon {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Bassoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Trombone Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassTromboneBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassTromboneBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bass Trombone C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_BassTromboneC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_BassTromboneC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Clarinet Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_ClarinetBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_ClarinetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Clarinet Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_ClarinetEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_ClarinetEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Contrabass Clarinet Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_ContrabassClarinetBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_ContrabassClarinetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cornet Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_CornetBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_CornetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drum Set ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_DrumSet {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_DrumSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Electric Bass ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_ElectricBass {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_ElectricBass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die English Horn ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_EnglishHorn {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_EnglishHorn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Euphonium Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_EuphoniumBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_EuphoniumBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Euphonium C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_EuphoniumC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_EuphoniumC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flugelhorn Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_FlugelhornBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_FlugelhornBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flugelhorn Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_FlugelhornEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_FlugelhornEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flute ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Flute {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Flute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Horn Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_HornEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_HornEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Horn F ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_HornF {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_HornF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mallets ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Mallets {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Mallets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Oboe ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Oboe {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Oboe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Percussion ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Percussion {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Percussion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Piccolo ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Piccolo {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Piccolo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quad Toms ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_QuadToms {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_QuadToms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sleigh Bells ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_SleighBells {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_SleighBells", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Snare Drum ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_SnareDrum {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_SnareDrum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soprano Saxophone Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_SopranoSaxophoneBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_SopranoSaxophoneBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die String Bass ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_StringBass {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_StringBass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tenor Horn Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TenorHornBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TenorHornBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tenor Horn C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TenorHornC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TenorHornC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tenor Horn Eb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TenorHornEb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TenorHornEb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tenor Saxophone Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TenorSaxophoneBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TenorSaxophoneBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Timpani ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_Timpani {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_Timpani", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trombone Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TromboneBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TromboneBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trombone C ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TromboneC {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TromboneC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trumpet Bb ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TrumpetBb {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TrumpetBb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tubular Bells ähnelt.
+        /// </summary>
+        internal static string InstrumentInfo_TubularBells {
+            get {
+                return ResourceManager.GetString("InstrumentInfo_TubularBells", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The following persons are missing at least one sheet of music: 
+        ///
+        ///{0} ähnelt.
+        /// </summary>
+        internal static string MissingMusicSheetException_Message {
+            get {
+                return ResourceManager.GetString("MissingMusicSheetException_Message", resourceCulture);
             }
         }
         

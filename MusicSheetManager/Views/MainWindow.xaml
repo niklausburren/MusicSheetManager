@@ -3,38 +3,377 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MusicSheetManager"
+        xmlns:viewModels="clr-namespace:MusicSheetManager.ViewModels"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:models="clr-namespace:MusicSheetManager.Models"
+        xmlns:converters="clr-namespace:MusicSheetManager.Converters"
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:ad="https://github.com/Dirkster99/AvalonDock"
+        xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
-        Title="MusicSheetManager" Height="1024" Width="1920"
-        WindowStartupLocation="CenterScreen">
+        x:Name="MainWindowRoot"
+        d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
+        Title="Music Sheet Manager" Height="1024" Width="1280"
+        WindowStartupLocation="CenterScreen"
+        Loaded="MainWindow_OnLoaded"
+        Closing="MainWindow_OnClosing">
+    <Window.InputBindings>
+        <KeyBinding Key="Delete" Command="{Binding DeleteSelectedItemCommand}" />
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
+        <converters:AddToPlaylistParameterConverter x:Key="AddToPlaylistParameterConverter" />
+
+        <CollectionViewSource x:Key="GroupedMusicSheetFolders" Source="{Binding MusicSheetTab.MusicSheetFolders}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Title" Converter="{StaticResource FirstLetterConverter}" />
+            </CollectionViewSource.GroupDescriptions>
+            <CollectionViewSource.SortDescriptions>
+                <componentModel:SortDescription PropertyName="Title" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <ContextMenu x:Key="MusicSheetFolderContextMenu">
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Import sheets" 
+                      Command="{Binding DataContext.MusicSheetTab.ImportSheetsCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Assign sheets to people" 
+                      Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Add to playlist" ItemsSource="{Binding DataContext.PlaylistTab.Playlists, Source={x:Reference MainWindowRoot}}">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding Name}" />
+                        <Setter Property="Command" Value="{Binding DataContext.PlaylistTab.AddToPlaylistCommand, Source={x:Reference MainWindowRoot}}" />
+                        <Setter Property="CommandParameter">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource AddToPlaylistParameterConverter}">
+                                    <Binding />
+                                    <Binding Path="PlacementTarget.DataContext" RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
+            <Separator />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Open in Windows Explorer" 
+                      Command="{Binding DataContext.MusicSheetTab.OpenInExplorerCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        </ContextMenu>
+
+        <ContextMenu x:Key="PlaylistContextMenu">
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Add placeholder"
+                      Command="{Binding DataContext.PlaylistTab.AddPlaceholderCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        </ContextMenu>
+
+        <ContextMenu x:Key="PlaylistEntryContextMenu">
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Move up"
+                      Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryUpCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Page Up" />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+            <MenuItem Header="Move down"
+                      Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryDownCommand, Source={x:Reference MainWindowRoot}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Page Down" />
+        </ContextMenu>
+
+        <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
+            <StackPanel x:Name="MusicSheetPanel" Orientation="Horizontal" Margin="0,2,10,2">
+                <Image Source="{Binding Instrument.Icon}" Width="26" Height="26" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+            </StackPanel>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding HasConflict}" Value="True">
+                    <Setter TargetName="MusicSheetPanel" Property="Background" Value="#FFFFC0C0" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="MusicSheetFolderTemplate" DataType="{x:Type models:MusicSheetFolder}" ItemsSource="{Binding Sheets}" ItemTemplate="{StaticResource MusicSheetTemplate}">
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2" ContextMenu="{StaticResource MusicSheetFolderContextMenu}">
+                <StackPanel.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, ElementName=MainWindowRoot}" CommandParameter="{Binding}" />
+                </StackPanel.InputBindings>
+                <Image x:Name="FolderIcon" Source="/Resources/folder.png" Width="26" Height="26" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Title}" Width="200" FontWeight="SemiBold" Margin="0,0,20,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="CreditsTextBlock" Text="{Binding Credits}" Foreground="Gray" FontStyle="Italic" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="True">
+                    <Setter TargetName="CreditsTextBlock" Property="Foreground" Value="White" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsExpanded}" Value="True">
+                    <Setter TargetName="FolderIcon" Property="Source" Value="/Resources/folder-open.png" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="PlaylistEntryTemplate" DataType="{x:Type models:PlaylistEntry}">
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2" ContextMenu="{StaticResource PlaylistEntryContextMenu}">
+                <Image x:Name="PlaylistEntryIcon" Source="/Resources/playlist-entry.png" Width="26" Height="26" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Number}" Width="20" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+            </StackPanel>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Distribute}" Value="False">
+                    <Setter TargetName="PlaylistEntryIcon" Property="Source" Value="/Resources/playlist-entry-no-distribution.png" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="PlaylistTemplate" DataType="{x:Type models:Playlist}" ItemsSource="{Binding Entries}" ItemTemplate="{StaticResource PlaylistEntryTemplate}">
+            <StackPanel Orientation="Horizontal" Margin="0,2,10,2" ContextMenu="{StaticResource PlaylistContextMenu}">
+                <Image x:Name="PlaylistFolderIcon" Source="/Resources/playlist.png" Width="26" Height="26" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <HierarchicalDataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Distribute}" Value="False">
+                    <Setter TargetName="PlaylistFolderIcon" Property="Source" Value="/Resources/playlist-no-distribution.png" />
+                </DataTrigger>
+            </HierarchicalDataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+
+        <DataTemplate x:Key="NameCellTemplate" DataType="{x:Type models:Person}" >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                <Image x:Name="PersonIcon" Source="/Resources/person.png" Width="26" Height="26" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding FullName}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Dispensed}" Value="True">
+                    <Setter TargetName="PersonIcon" Property="Source" Value="/Resources/person-dispensed.png" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
         <Menu VerticalAlignment="Top" Grid.Row="0">
             <MenuItem Header="File">
+                <MenuItem Header="New">
+                    <MenuItem Header="Playlist" Command="{Binding PlaylistTab.CreatePlaylistCommand}">
+                        <MenuItem.Icon>
+                            <Image Source="/Resources/playlist-add.png" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Person" Command="{Binding PeopleTab.CreatePersonCommand}">
+                        <MenuItem.Icon>
+                            <Image Source="/Resources/person-add.png" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem Header="Import music sheets..." Click="ImportButton_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/import.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator />
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
-                <!-- Edit menu items can be added here -->
+                <MenuItem Header="Move playlist entry up"
+                          Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}"
+                          CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
+                          InputGestureText="Page Up"/>
+                <MenuItem Header="Move playlist entry down"
+                          Command="{Binding PlaylistTab.MovePlaylistEntryDownCommand}"
+                          CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
+                          InputGestureText="Page Down"/>
+                <Separator />
+                <MenuItem Header="Delete"
+                          Command="{Binding DeleteSelectedItemCommand}"
+                          InputGestureText="Del"/>
             </MenuItem>
-            <MenuItem Header="Info">
-                <!-- Info menu items can be added here -->
+            <MenuItem Header="Tools">
+                <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
+                <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
+                <Separator />
+                <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
             </MenuItem>
+            <MenuItem Header="Info"/>
         </Menu>
-        <TabControl Grid.Row="1">
-            <TabItem Header="Music sheets">
-                <StackPanel>
-                    <Button Content="Import" Click="ImportButton_Click"/>
-                </StackPanel>
-            </TabItem>
-            <TabItem Header="Playlists">
-                <!-- Content for Playlists tab -->
-            </TabItem>
-            <TabItem Header="Peoples">
-                <!-- Content for Peoples tab -->
-            </TabItem>
-        </TabControl>
+
+        <ToolBarTray Grid.Row="1">
+            <ToolBar>
+                <Button Click="ImportButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/import.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Import music sheets" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding PlaylistTab.CreatePlaylistCommand}" ToolTip="Create person">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/playlist-add.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Create playlist" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding PeopleTab.CreatePersonCommand}" ToolTip="Create person">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/person-add.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Create person" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Separator />
+
+                <Button Command="{Binding Tools.DistributeSheetsCommand}" ToolTip="Distribute Sheets">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock Text="Distribute Sheets" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <ad:DockingManager x:Name="DockManager" Grid.Row="2">
+            <DockingManager.Theme>
+                <ad:Vs2013BlueTheme />
+            </DockingManager.Theme>
+            <ad:LayoutRoot>
+                <ad:LayoutPanel Orientation="Horizontal">
+                    <ad:LayoutDocumentPaneGroup>
+                        <ad:LayoutDocumentPane>
+                            <ad:LayoutDocument x:Name="MusicSheetsDocument"
+                                               Title="Music sheets"
+                                               ContentId="Doc.MusicSheets"
+                                               CanClose="False">
+                                <Grid>
+                                    <TreeView x:Name="MusicSheetTreeView"
+                                              ItemsSource="{Binding Source={StaticResource GroupedMusicSheetFolders}}"
+                                              ItemTemplate="{StaticResource MusicSheetFolderTemplate}"
+                                              SelectedItemChanged="MusicSheetTreeView_OnSelectedItemChanged"
+                                              PreviewMouseRightButtonDown="MusicSheetTreeView_OnPreviewMouseRightButtonDown">
+                                        <TreeView.Resources>
+                                            <Style TargetType="{x:Type GroupItem}">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                            <Expander IsExpanded="True" Margin="0,0,0,10">
+                                                                <Expander.Header>
+                                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                                                                </Expander.Header>
+                                                                <ItemsPresenter Margin="17,0,0,0" />
+                                                            </Expander>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TreeView.Resources>
+                                        <TreeView.GroupStyle>
+                                            <GroupStyle ContainerStyle="{StaticResource {x:Type GroupItem}}" />
+                                        </TreeView.GroupStyle>
+                                    </TreeView>
+                                </Grid>
+                            </ad:LayoutDocument>
+
+                            <ad:LayoutDocument x:Name="PlaylistsDocument"
+                                               Title="Playlists"
+                                               ContentId="Doc.Playlists"
+                                               CanFloat="False"
+                                               CanClose="False">
+                                <Grid>
+                                    <TreeView x:Name="PlaylistsTreeView"
+                                              ItemsSource="{Binding PlaylistTab.Playlists}"
+                                              ItemTemplate="{StaticResource PlaylistTemplate}"
+                                              SelectedItemChanged="PlaylistsTreeView_OnSelectedItemChanged"
+                                              PreviewMouseRightButtonDown="PlaylistsTreeView_OnPreviewMouseRightButtonDown">
+                                        <TreeView.InputBindings>
+                                            <KeyBinding Key="PageUp" Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}" CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}" />
+                                            <KeyBinding Key="PageDown" Command="{Binding PlaylistTab.MovePlaylistEntryDownCommand}" CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}" />
+                                        </TreeView.InputBindings>
+                                        <TreeView.ItemContainerStyle>
+                                            <Style TargetType="TreeViewItem" />
+                                        </TreeView.ItemContainerStyle>
+                                    </TreeView>
+                                </Grid>
+                            </ad:LayoutDocument>
+
+                            <ad:LayoutDocument x:Name="PeoplesDocument"
+                                               Title="Peoples"
+                                               ContentId="Doc.Peoples"
+                                               CanClose="False">
+                                <Grid>
+                                    <ListView x:Name="PeopleListView"
+                                              ItemsSource="{Binding PeopleTab.People}"
+                                              SelectionChanged="PeopleListView_OnSelectionChanged"
+                                              ScrollViewer.CanContentScroll="False">
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="False" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Width="180" CellTemplate="{StaticResource NameCellTemplate}">
+                                                    <GridViewColumnHeader Content="Name" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Instrument.DisplayName}" Width="180">
+                                                    <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Part.DisplayName}" Width="60">
+                                                    <GridViewColumnHeader Content="Part" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                                <GridViewColumn DisplayMemberBinding="{Binding Clef.DisplayName}" Width="60">
+                                                    <GridViewColumnHeader Content="Clef" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </ad:LayoutDocument>
+                        </ad:LayoutDocumentPane>
+                    </ad:LayoutDocumentPaneGroup>
+
+                    <ad:LayoutAnchorablePaneGroup DockWidth="400">
+                        <ad:LayoutAnchorablePane>
+                            <ad:LayoutAnchorable x:Name="PropertiesToolWindow"
+                                                 Title="Properties"
+                                                 ContentId="Tool.Properties"
+                                                 CanClose="False"
+                                                 CanHide="True"
+                                                 AutoHideMinWidth="200">
+                                <xctk:PropertyGrid ShowTitle="False" ShowSearchBox="False" ShowSortOptions="False" SelectedObject="{Binding SelectedObject}" />
+                            </ad:LayoutAnchorable>
+                            <ad:LayoutAnchorable x:Name="PdfViewerToolWindow"
+                                                 Title="PDF Viewer"
+                                                 ContentId="Tool.PdfViewer"
+                                                 CanClose="False"
+                                                 CanHide="True"
+                                                 AutoHideMinWidth="200">
+                                <Grid Background="#333333">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <wpf:WebView2 x:Name="PdfViewer" Grid.Row="0" />
+                                </Grid>
+                            </ad:LayoutAnchorable>
+                        </ad:LayoutAnchorablePane>
+                    </ad:LayoutAnchorablePaneGroup>
+                </ad:LayoutPanel>
+            </ad:LayoutRoot>
+        </ad:DockingManager>
     </Grid>
 </Window>

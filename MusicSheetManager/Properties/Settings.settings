@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="MusicSheetManager.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="IronOcrLicenseKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">IRONOCR.NIKLAUSBURREN.IRO241225.6478.80119-B3EA881ED6-AOEKVM2UMK26RB6-WFJQ7HRA7NLU-GLBNIUZMSVGW-ONVDYJCGEM3S-S5MEJNZLH2TT-MUODCE-LXFIWUBTRCOQUA-IRONOCR.DOTNET.LITE.SUB-W5GDZK.RENEW.SUPPORT.25.DEC.2025</Value>
+    </Setting>
+    <Setting Name="CollapsedInstrumentGroups" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DockLayout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MainWindowLeft" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">NaN</Value>
+    </Setting>
+    <Setting Name="MainWindowTop" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">NaN</Value>
+    </Setting>
+    <Setting Name="MainWindowWidth" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">NaN</Value>
+    </Setting>
+    <Setting Name="MainWindowHeight" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">NaN</Value>
+    </Setting>
+    <Setting Name="MainWindowState" Type="System.Windows.WindowState" Scope="User">
+      <Value Profile="(Default)">Normal</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
