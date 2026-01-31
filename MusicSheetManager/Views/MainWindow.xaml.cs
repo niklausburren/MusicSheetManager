@@ -33,6 +33,8 @@ public partial class MainWindow : Window
         this.InitializeComponent();
         this.DataContext = viewModel;
 
+        PdfViewer.Source = new Uri("about:blank", UriKind.Absolute);
+
         this.SourceInitialized += (_, _) => this.RestoreWindowPlacement();
     }
 
@@ -257,7 +259,7 @@ public partial class MainWindow : Window
 
     private void MusicSheetTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        PdfViewer.Source = new Uri("about:blank");
+        PdfViewer.Source = new Uri("about:blank", UriKind.Absolute);
 
         switch (e.NewValue)
         {
@@ -276,7 +278,7 @@ public partial class MainWindow : Window
 
     private void PeopleListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        PdfViewer.Source = new Uri("about:blank");
+        PdfViewer.Source = new Uri("about:blank", UriKind.Absolute);
         this.ViewModel.SelectedObject = e.AddedItems.OfType<Person>().FirstOrDefault();
     }
 
@@ -294,7 +296,7 @@ public partial class MainWindow : Window
 
     private void PlaylistsTreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        PdfViewer.Source = new Uri("about:blank");
+        PdfViewer.Source = new Uri("about:blank", UriKind.Absolute);
         this.ViewModel.SelectedObject = e.NewValue;
     }
 

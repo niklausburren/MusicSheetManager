@@ -1,4 +1,4 @@
-﻿    <Window x:Class="MusicSheetManager.Views.MainWindow"
+﻿<Window x:Class="MusicSheetManager.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -360,6 +360,7 @@
                                                  AutoHideMinWidth="200">
                                 <xctk:PropertyGrid ShowTitle="False" ShowSearchBox="False" ShowSortOptions="False" SelectedObject="{Binding SelectedObject}" />
                             </ad:LayoutAnchorable>
+
                             <ad:LayoutAnchorable x:Name="PdfViewerToolWindow"
                                                  Title="PDF Viewer"
                                                  ContentId="Tool.PdfViewer"
@@ -367,10 +368,42 @@
                                                  CanHide="True"
                                                  AutoHideMinWidth="200">
                                 <Grid Background="#333333">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <wpf:WebView2 x:Name="PdfViewer" Grid.Row="0" />
+                                    <!-- WebView2: visible only if Source is not about:blank -->
+                                    <wpf:WebView2 x:Name="PdfViewer">
+                                        <wpf:WebView2.Style>
+                                            <Style TargetType="wpf:WebView2">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Source.AbsoluteUri, ElementName=PdfViewer}" Value="about:blank">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </wpf:WebView2.Style>
+                                    </wpf:WebView2>
+
+                                    <!-- Placeholder: shown when Source is about:blank -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Orientation="Vertical"
+                                                Margin="20">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Source.AbsoluteUri, ElementName=PdfViewer}" Value="about:blank">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <Image Source="/Resources/pdf-file.png" Width="96" Height="96" />
+                                        <TextBlock Text="Select a music sheet for preview"
+                                                   Foreground="#CCCCCC"
+                                                   FontSize="16"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,10,0,0" />
+                                    </StackPanel>
                                 </Grid>
                             </ad:LayoutAnchorable>
                         </ad:LayoutAnchorablePane>
