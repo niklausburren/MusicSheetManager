@@ -209,8 +209,35 @@ namespace MusicSheetManager.Models
 
             foreach (var sheet in sheets)
             {
+                var duplicate = this.Sheets.FirstOrDefault(s => GetKeyOf(s) == GetKeyOf(sheet));
+
+                if (duplicate != null)
+                {
+                    var result = MessageBox.Show(
+                        Application.Current.MainWindow!,
+                        $"The file \"{Path.GetFileName(sheet.FileName)}\" already exists. Do you want to replace it?",
+                        "File Exists",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        continue;
+                    }
+                }
+                
                 sheet.FolderId = this.Id;
+                sheet.Title = this.Metadata.Title;
+                sheet.Composer = this.Metadata.Composer;
+                sheet.Arranger = this.Metadata.Arranger;
+
                 sheet.MoveToFolder(this.Folder);
+
+                if (duplicate != null)
+                {
+                    this.Sheets.Remove(duplicate);
+                }
+
                 this.Sheets.Add(sheet);
                 this.SubscribeToSheet(sheet);
             }

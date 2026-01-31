@@ -199,7 +199,7 @@ namespace MusicSheetManager.Views
             set => this.SetProperty(ref _headerTitle, value);
         }
 
-        public ObservableCollection<DistributionLogEntryViewModel> LogEntries { get; } = new();
+        public ObservableCollection<DistributionLogEntryViewModel> LogEntries { get; } = [];
 
         #endregion
 

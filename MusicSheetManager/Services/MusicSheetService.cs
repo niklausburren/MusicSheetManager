@@ -29,7 +29,7 @@ internal class MusicSheetService : IMusicSheetService
     #region IMusicSheetService Members
 
     /// <inheritdoc />
-    public ObservableCollection<MusicSheetFolder> MusicSheetFolders { get; } = new ObservableCollection<MusicSheetFolder>();
+    public ObservableCollection<MusicSheetFolder> MusicSheetFolders { get; } = [];
 
     /// <inheritdoc />
     public async Task LoadAsync(IProgress<int> progress)

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Autofac;
+﻿using Autofac;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MusicSheetManager.Models;
+using System;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace MusicSheetManager.ViewModels
 {

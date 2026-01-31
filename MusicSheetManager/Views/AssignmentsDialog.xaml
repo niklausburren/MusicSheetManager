@@ -190,10 +190,10 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" Content="Restore defaults" Width="120" Margin="5" HorizontalAlignment="Left" Command="{Binding RestoreDefaults}" />
+                <Button Grid.Column="0" Content="Restore defaults" Width="120" Margin="5" HorizontalAlignment="Left" Command="{Binding RestoreDefaultsCommand}" />
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="OK" Width="100" Margin="5" Command="{Binding UpdateAssignments}" />
+                    <Button Content="OK" Width="100" Margin="5" Command="{Binding UpdateAssignmentsCommand}" />
                     <Button Content="Cancel" Width="100" Margin="5" Click="CancelButton_Click" />
                 </StackPanel>
             </Grid>

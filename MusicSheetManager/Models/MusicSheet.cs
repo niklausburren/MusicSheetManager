@@ -210,22 +210,6 @@ public class MusicSheet : ObservableObject
         this.SaveMetadata();
         
         var newFileName = BuildFilename(folder, this.Title, this.Instrument, this.Parts, this.Clef, false);
-
-        if (File.Exists(newFileName))
-        {
-            var result = MessageBox.Show(
-                Application.Current.MainWindow!,
-                $"The file \"{Path.GetFileName(newFileName)}\" already exists. Do you want to replace it?",
-                "File Exists",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.No)
-            {
-                return;
-            }   
-        }
-        
         File.Move(this.FileName, newFileName!, true);
         this.FileName = newFileName;
     }

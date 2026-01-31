@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -25,8 +26,8 @@ public class AssignmentsDialogViewModel : ObservableObject
     {
         this.PeopleService = peopleService;
         this.MusicSheetAssignmentService = musicSheetAssignmentService;
-        this.UpdateAssignments = new RelayCommand(this.OnUpdateAssignments);
-        this.RestoreDefaults = new RelayCommand(this.OnRestoreDefaults);
+        this.UpdateAssignmentsCommand = new AsyncRelayCommand(this.UpdateAssignmentsAsync);
+        this.RestoreDefaultsCommand = new RelayCommand(this.RestoreDefaults);
     }
 
     #endregion
@@ -34,9 +35,9 @@ public class AssignmentsDialogViewModel : ObservableObject
 
     #region Properties
 
-    public ICommand UpdateAssignments { get; }
+    public ICommand UpdateAssignmentsCommand { get; }
 
-    public ICommand RestoreDefaults { get; }
+    public ICommand RestoreDefaultsCommand { get; }
 
     private IPeopleService PeopleService { get; }
 
@@ -46,22 +47,24 @@ public class AssignmentsDialogViewModel : ObservableObject
     {
         get
         {
-            if (_people == null)
+            if (_people != null)
             {
-                _people = [];
+                return _people;
+            }
 
-                foreach (var person in this.PeopleService.People.Where(p => p.Instrument.Category != InstrumentCategory.Percussion))
-                {
-                    var assignableMusicSheets = this.MusicSheetAssignmentService.GetAssignableMusicSheets(this.MusicSheetFolder, person);
-                    var defaultMusicSheet = this.MusicSheetAssignmentService.GetDefaultMusicSheet(this.MusicSheetFolder, person);
-                    var assignedMusicSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(this.MusicSheetFolder, person);
+            _people = [];
 
-                    _people.Add(new PersonInfo(
-                        person,
-                        assignableMusicSheets,
-                        assignedMusicSheet,
-                        defaultMusicSheet));
-                }
+            foreach (var person in this.PeopleService.People.Where(p => p.Instrument.Category != InstrumentCategory.Percussion))
+            {
+                var assignableMusicSheets = this.MusicSheetAssignmentService.GetAssignableMusicSheets(this.MusicSheetFolder, person);
+                var defaultMusicSheet = this.MusicSheetAssignmentService.GetDefaultMusicSheet(this.MusicSheetFolder, person);
+                var assignedMusicSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(this.MusicSheetFolder, person);
+
+                _people.Add(new PersonInfo(
+                    person,
+                    assignableMusicSheets,
+                    assignedMusicSheet,
+                    defaultMusicSheet));
             }
 
             return _people;
@@ -77,32 +80,35 @@ public class AssignmentsDialogViewModel : ObservableObject
 
     #region Private Methods
 
-    private void OnUpdateAssignments()
+    private async Task UpdateAssignmentsAsync()
     {
-        foreach (var assignment in this.MusicSheetAssignmentService.Assignments.Where(a => a.MusicSheetFolderId == this.MusicSheetFolder.Id).ToList())
+        var assignments = this.MusicSheetAssignmentService.Assignments.Where(a => a.MusicSheetFolderId == this.MusicSheetFolder.Id).ToList();
+
+        foreach (var assignment in assignments)
         {
             this.MusicSheetAssignmentService.Assignments.Remove(assignment);
         }
 
         foreach (var personInfo in this.People)
         {
-            if (personInfo.SelectedMusicSheet != null && 
-                personInfo.SelectedMusicSheet != personInfo.DefaultMusicSheet)
+            if (personInfo.SelectedMusicSheet == null)
             {
-                var assignment = new MusicSheetAssignment(
-                    this.MusicSheetFolder.Id,
-                    personInfo.SelectedMusicSheet?.Id ?? Guid.Empty,
-                    personInfo.Person.Id);
-
-                this.MusicSheetAssignmentService.Assignments.Add(assignment);
+                continue;
             }
+
+            var assignment = new MusicSheetAssignment(
+                this.MusicSheetFolder.Id,
+                personInfo.SelectedMusicSheet.Id,
+                personInfo.Person.Id);
+
+            this.MusicSheetAssignmentService.Assignments.Add(assignment);
         }
 
-        this.MusicSheetAssignmentService.SaveAsync();
+        await this.MusicSheetAssignmentService.SaveAsync();
         this.SetDialogResultAction.Invoke(true);
     }
 
-    private void OnRestoreDefaults()
+    private void RestoreDefaults()
     {
         foreach (var personInfo in this.People)
         {

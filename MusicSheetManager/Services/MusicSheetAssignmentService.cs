@@ -33,7 +33,7 @@ namespace MusicSheetManager.Services
         #region IMusicSheetAssignmentService Members
 
         /// <inheritdoc />
-        public ObservableCollection<MusicSheetAssignment> Assignments { get; } = new();
+        public ObservableCollection<MusicSheetAssignment> Assignments { get; } = [];
 
         public IEnumerable<MusicSheet> GetAssignableMusicSheets(MusicSheetFolder folder, Person person)
         {
@@ -57,7 +57,7 @@ namespace MusicSheetManager.Services
                 MusicSheet musicSheet;
 
                 var parts = person.Part != PartInfo.None
-                    ? person.Part.GetSelfAndHigherParts().ToList()
+                    ? person.Part.GetSelfAndHigherParts()
                     : PartInfo.Fourth.GetSelfAndHigherParts();
 
                 foreach (var part in parts)

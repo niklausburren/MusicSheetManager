@@ -358,7 +358,7 @@ public static class InstrumentInfoExtensions
         { InstrumentInfo.CornetBb, [InstrumentInfo.TrumpetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.TrumpetBb, [InstrumentInfo.CornetBb, InstrumentInfo.FlugelhornBb ] },
         { InstrumentInfo.EuphoniumBb, [InstrumentInfo.TenorHornBb, InstrumentInfo.BaritoneHornBb] },
-        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb, InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb, InstrumentInfo.TromboneBb] },
+        { InstrumentInfo.BassClarinetBb, [InstrumentInfo.BassBb, InstrumentInfo.EuphoniumBb, InstrumentInfo.BaritoneHornBb, InstrumentInfo.TenorHornBb, InstrumentInfo.TromboneBb] },
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
         { InstrumentInfo.Bassoon, [InstrumentInfo.BassC, InstrumentInfo.BaritoneHornC, InstrumentInfo.BassTromboneC, InstrumentInfo.TromboneC] },
         { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
@@ -383,7 +383,7 @@ public static class InstrumentInfoExtensions
     {
         return FallbackInstruments.TryGetValue(instrument, out var fallbacks)
             ? fallbacks
-            : Enumerable.Empty<InstrumentInfo>();
+            : [];
     }
 
     #endregion

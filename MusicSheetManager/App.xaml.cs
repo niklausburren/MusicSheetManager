@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
-using MusicSheetManager.ViewModels;
 using MusicSheetManager.Views;
 using SplashScreen = MusicSheetManager.Views.SplashScreen;
 

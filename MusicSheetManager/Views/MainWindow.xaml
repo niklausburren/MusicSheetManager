@@ -13,7 +13,7 @@
         mc:Ignorable="d"
         x:Name="MainWindowRoot"
         d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
-        Title="MusicSheetManager" Height="1024" Width="1280"
+        Title="Music Sheet Manager" Height="1024" Width="1280"
         WindowStartupLocation="CenterScreen"
         Loaded="MainWindow_OnLoaded"
         Closing="MainWindow_OnClosing">
