@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -294,6 +296,12 @@ public partial class MainWindow : Window
     {
         PdfViewer.Source = new Uri("about:blank");
         this.ViewModel.SelectedObject = e.NewValue;
+    }
+
+    private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var aboutDialog = new AboutDialog { Owner = this };
+        aboutDialog.ShowDialog();
     }
 
     #endregion

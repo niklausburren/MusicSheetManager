@@ -5,10 +5,20 @@
 	<TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+
+    <!-- Provide metadata here; MSBuild will generate attributes -->
+    <AssemblyTitle>Music Sheet Manager</AssemblyTitle>
+    <Product>Music Sheet Manager</Product>
+    <Company>Niklaus Burren</Company>
+    <Authors>Niklaus Burren</Authors>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\alphorn.png" />
+    <None Remove="Resources\app-icon.png" />
     <None Remove="Resources\baritone-horn-bb.png" />
     <None Remove="Resources\baritone-horn-c.png" />
     <None Remove="Resources\error.png" />
@@ -53,6 +63,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\alto-saxophone-eb.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\app-icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\baritone-horn-bb.png">
