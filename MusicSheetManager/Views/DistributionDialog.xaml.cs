@@ -6,14 +6,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MusicSheetManager.Views
 {
-    public partial class DistributionProgressDialog : Window
+    public partial class DistributionDialog : Window
     {
         #region Constructors
 
-        public DistributionProgressDialog()
+        public DistributionDialog()
         {
             this.InitializeComponent();
-            this.DataContext = new DistributionProgressDialogViewModel();
+            this.DataContext = new DistributionDialogViewModel();
 
             this.Loaded += (_, _) =>
             {
@@ -31,7 +31,7 @@ namespace MusicSheetManager.Views
 
         #region Properties
 
-        public DistributionProgressDialogViewModel ViewModel => (DistributionProgressDialogViewModel)this.DataContext;
+        public DistributionDialogViewModel ViewModel => (DistributionDialogViewModel)this.DataContext;
 
         #endregion
 
@@ -143,7 +143,7 @@ namespace MusicSheetManager.Views
         public string Text { get; }
     }
 
-    public class DistributionProgressDialogViewModel : ObservableObject
+    public class DistributionDialogViewModel : ObservableObject
     {
         #region Fields
 

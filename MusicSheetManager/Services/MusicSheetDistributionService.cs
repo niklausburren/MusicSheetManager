@@ -255,7 +255,7 @@ namespace MusicSheetManager.Services
 
             var owner = Application.Current?.MainWindow;
 
-            var dialog = new DistributionProgressDialog
+            var dialog = new DistributionDialog
             {
                 Owner = owner,
                 ViewModel =
@@ -287,7 +287,7 @@ namespace MusicSheetManager.Services
                     foreach (var person in peopleWithMissingMusicSheets.OrderBy(p => p.FullName))
                     {
                         warningCount++;
-                        dialog.AppendLogLine(DistributionLogLevel.Warning, "Missing sheet assignment for: {person.FullName} ({person.Instrument.DisplayName})");
+                        dialog.AppendLogLine(DistributionLogLevel.Warning, $"Missing sheet assignment for: {person.FullName} ({person.Instrument.DisplayName})");
                     }
 
                     // exact linear progress
@@ -324,7 +324,7 @@ namespace MusicSheetManager.Services
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, "Creating directory failed: {dir} :: {ex.Message}");
+                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Creating directory failed: {dir} :: {ex.Message}");
                         }
                     }
 
@@ -340,7 +340,7 @@ namespace MusicSheetManager.Services
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, "Ensuring directory failed: {Path.GetDirectoryName(op.DestinationFile)} :: {ex.Message}");
+                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Ensuring directory failed: {Path.GetDirectoryName(op.DestinationFile)} :: {ex.Message}");
                             continue;
                         }
 
@@ -360,7 +360,7 @@ namespace MusicSheetManager.Services
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, "Copy failed: {op.SourceFile} -> {op.DestinationFile} :: {ex.Message}");
+                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Copy failed: {op.SourceFile} -> {op.DestinationFile} :: {ex.Message}");
                         }
                     }
 
@@ -383,7 +383,7 @@ namespace MusicSheetManager.Services
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, "Delete failed: {file} :: {ex.Message}");
+                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Delete failed: {file} :: {ex.Message}");
                         }
                     }
 
@@ -410,7 +410,7 @@ namespace MusicSheetManager.Services
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, "Remove directory failed: {dir} :: {ex.Message}");
+                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Remove directory failed: {dir} :: {ex.Message}");
                         }
                     }
 
