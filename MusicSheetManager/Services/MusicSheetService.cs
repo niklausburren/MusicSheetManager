@@ -26,6 +26,7 @@ internal class MusicSheetService : IMusicSheetService
 
     #endregion
 
+
     #region IMusicSheetService Members
 
     /// <inheritdoc />

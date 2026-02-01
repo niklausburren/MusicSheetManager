@@ -16,13 +16,59 @@ namespace MusicSheetManager.Utilities
 
         public static string TempFolder { get; } = Path.Combine(Path.GetTempPath(), APP_NAME);
 
-        public static string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), APP_NAME);
+        private static string DefaultAppDataFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), APP_NAME);
 
-        public static string MusicSheetFolder { get; } = Path.Combine(AppDataFolder, "sheets");
+        public static string AppDataFolder
+        {
+            get
+            {
+                var configured = Properties.Settings.Default.AppDataFolder;
+                var path = string.IsNullOrWhiteSpace(configured) ? DefaultAppDataFolder : configured;
+                EnsureDirectory(path);
+                return path;
+            }
+        }
 
-        public static string DistributionFolder { get; } = "C:\\Users\\nikla\\OneDrive\\SGSN\\02_Mitglieder\\01_Stimmverteilung\\2026"; // "C:\\Users\\nikla\\01_Stimmverteilung\\2026";
+        public static string MusicSheetFolder
+        {
+            get
+            {
+                var path = Path.Combine(AppDataFolder, "sheets");
+                EnsureDirectory(path);
+                return path;
+            }
+        }
 
-        public static string ImportFolder { get; } = Path.Combine(TempFolder, "import");
+        public static string DistributionFolder
+        {
+            get
+            {
+                var configured = Properties.Settings.Default.DistributionFolder;
+                var path = string.IsNullOrWhiteSpace(configured) ? Path.Combine(AppDataFolder, "distribution") : configured;
+                EnsureDirectory(path);
+                return path;
+            }
+        }
+
+        #endregion
+
+
+        #region Private Methods
+
+        private static void EnsureDirectory(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(path) && !Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+            catch
+            {
+                // Swallow exceptions to avoid crashing on invalid paths; caller can handle errors if needed.
+            }
+        }
 
         #endregion
     }

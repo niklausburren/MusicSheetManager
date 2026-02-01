@@ -1,8 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using MusicSheetManager.Models;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using MusicSheetManager.Models;
 using Xceed.Wpf.Toolkit;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
@@ -10,6 +9,8 @@ namespace MusicSheetManager.Editors;
 
 public sealed class PartsEditor : ITypeEditor
 {
+    #region ITypeEditor Members
+
     public FrameworkElement ResolveEditor(Xceed.Wpf.Toolkit.PropertyGrid.PropertyItem propertyItem)
     {
         var musicSheet = (MusicSheet)propertyItem.Instance;
@@ -40,4 +41,6 @@ public sealed class PartsEditor : ITypeEditor
 
         return editor;
     }
+
+    #endregion
 }

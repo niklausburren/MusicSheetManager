@@ -33,7 +33,6 @@ public class PlaylistTabViewModel : ObservableObject
         this.AddPlaceholderCommand = new AsyncRelayCommand<Playlist>(this.AddPlaceholderAsync, this.CanAddPlaceholder);
     }
 
-
     #endregion
 
 

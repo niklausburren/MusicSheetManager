@@ -120,5 +120,29 @@ namespace MusicSheetManager.Properties {
                 this["MainWindowState"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string AppDataFolder {
+            get {
+                return ((string)(this["AppDataFolder"]));
+            }
+            set {
+                this["AppDataFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DistributionFolder {
+            get {
+                return ((string)(this["DistributionFolder"]));
+            }
+            set {
+                this["DistributionFolder"] = value;
+            }
+        }
     }
 }

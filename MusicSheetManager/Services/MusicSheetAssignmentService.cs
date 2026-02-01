@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,32 @@ namespace MusicSheetManager.Services
         private JsonSerializerOptions Options { get; }
 
         private static string FilePath { get; } = Path.Combine(Folders.AppDataFolder, "assignments.json");
+
+        #endregion
+
+
+        #region Private Methods
+
+        private static async Task EnsureFileExistsAsync(string path, JsonSerializerOptions options)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var directory = Path.GetDirectoryName(path);
+
+            if (directory != null && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            if (!File.Exists(path))
+            {
+                await using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                await JsonSerializer.SerializeAsync(stream, new List<MusicSheetAssignment>(), options).ConfigureAwait(false);
+            }
+        }
 
         #endregion
 
@@ -93,9 +120,10 @@ namespace MusicSheetManager.Services
         /// <inheritdoc />
         public async Task LoadAsync()
         {
-            await using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+            await EnsureFileExistsAsync(FilePath, this.Options).ConfigureAwait(false);
 
-            var assignments = await JsonSerializer.DeserializeAsync<List<MusicSheetAssignment>>(stream, this.Options);
+            await using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var assignments = await JsonSerializer.DeserializeAsync<List<MusicSheetAssignment>>(stream, this.Options) ?? [];
 
             this.Assignments.Clear();
 
@@ -115,8 +143,8 @@ namespace MusicSheetManager.Services
                 Directory.CreateDirectory(directory);
             }
 
-            await using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(stream, this.Assignments, this.Options);
+            await using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await JsonSerializer.SerializeAsync(stream, this.Assignments, this.Options).ConfigureAwait(false);
         }
 
         #endregion

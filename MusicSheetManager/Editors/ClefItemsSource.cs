@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MusicSheetManager.Models;
+﻿using MusicSheetManager.Models;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Editors;

@@ -26,5 +26,11 @@
     <Setting Name="MainWindowState" Type="System.Windows.WindowState" Scope="User">
       <Value Profile="(Default)">Normal</Value>
     </Setting>
+    <Setting Name="AppDataFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DistributionFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

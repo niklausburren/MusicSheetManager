@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -72,6 +73,27 @@ namespace MusicSheetManager.Services
             }
         }
 
+        private static async Task EnsureFileExistsAsync(string path, JsonSerializerOptions options)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var directory = Path.GetDirectoryName(path);
+
+            if (directory != null && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            if (!File.Exists(path))
+            {
+                await using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                await JsonSerializer.SerializeAsync(stream, new List<Playlist>(), options).ConfigureAwait(false);
+            }
+        }
+
         #endregion
 
 
@@ -127,18 +149,7 @@ namespace MusicSheetManager.Services
 
             try
             {
-                if (!File.Exists(FilePath))
-                {
-                    var directory = Path.GetDirectoryName(FilePath);
-
-                    if (directory != null && !Directory.Exists(directory))
-                    {
-                        Directory.CreateDirectory(directory);
-                    }
-
-                    this.Playlists.Clear();
-                    return;
-                }
+                await EnsureFileExistsAsync(FilePath, this.Options).ConfigureAwait(false);
 
                 await using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var playlists = await JsonSerializer.DeserializeAsync<List<Playlist>>(stream, this.Options) ?? [];
@@ -158,7 +169,6 @@ namespace MusicSheetManager.Services
             }
         }
 
-        // SaveAsync bleibt öffentlich, wird aber exklusiv gelockt (Queue ruft es weiterhin auf).
         public async Task SaveAsync()
         {
             var directory = Path.GetDirectoryName(FilePath);

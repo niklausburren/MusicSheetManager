@@ -1,8 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using IronOcr;
-using MusicSheetManager.Editors;
-using PdfSharpCore.Pdf;
-using PdfSharpCore.Pdf.IO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
+using IronOcr;
+using MusicSheetManager.Editors;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Pdf.IO;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 

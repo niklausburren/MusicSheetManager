@@ -45,7 +45,7 @@ namespace MusicSheetManager
                 var mainWindow = Container.Resolve<MainWindow>();
                 var progress = new Progress<int>(p => splash.Progress = p);
 
-                await mainWindow.ViewModel.InitializeAsync(progress).ConfigureAwait(true);
+                await mainWindow.ViewModel.InitializeAsync(progress);
 
                 this.MainWindow = mainWindow;
                 mainWindow.Show();

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using Autofac;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using MusicSheetManager.Services;
+using MusicSheetManager.Views;
 
 namespace MusicSheetManager.ViewModels;
 
@@ -20,6 +22,7 @@ public class ToolsViewModel
         this.RotatePagesCommand = new RelayCommand(this.RotatePages);
         this.DistributeSheetsCommand = new RelayCommand(this.DistributeSheets);
         this.ExportPartDistributionCommand = new RelayCommand(this.ExportPartDistribution);
+        this.OpenOptionsDialogCommand = new RelayCommand(this.OpenOptionsDialog);
     }
 
     #endregion
@@ -38,6 +41,8 @@ public class ToolsViewModel
     public ICommand DistributeSheetsCommand { get; }
 
     public ICommand ExportPartDistributionCommand { get; }
+
+    public ICommand OpenOptionsDialogCommand { get; } // new
 
     #endregion
 
@@ -101,6 +106,20 @@ public class ToolsViewModel
         catch (Exception ex)
         {
             MessageBox.Show($"Error exporting part distribution: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void OpenOptionsDialog() // new
+    {
+        try
+        {
+            var dialog = App.Container.Resolve<OptionsDialog>();
+            dialog.Owner = Application.Current?.MainWindow;
+            dialog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error opening options: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

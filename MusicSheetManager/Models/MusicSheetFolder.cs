@@ -296,6 +296,16 @@ namespace MusicSheetManager.Models
             }
         }
 
+        private static string GetKeyOf(MusicSheet m)
+        {
+            return $"{m.Instrument?.Key}|{string.Join(",", m.Parts?.OrderBy(p => p.Key).Select(p => p.Key) ?? [])}|{m.Clef?.Key}";
+        }
+
+        #endregion
+
+
+        #region Event Handlers
+
         private void OnSheetPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName is
@@ -310,11 +320,6 @@ namespace MusicSheetManager.Models
         private void OnPartsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             CalculateConflicts(this.Sheets);
-        }
-
-        private static string GetKeyOf(MusicSheet m)
-        {
-            return $"{m.Instrument?.Key}|{string.Join(",", m.Parts?.OrderBy(p => p.Key).Select(p => p.Key) ?? [])}|{m.Clef?.Key}";
         }
 
         #endregion

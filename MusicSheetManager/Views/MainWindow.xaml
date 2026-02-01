@@ -210,8 +210,9 @@
                         <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <Separator />
                 <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
+                <Separator />
+                <MenuItem Header="Options..." Command="{Binding Tools.OpenOptionsDialogCommand}"/>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About..." Click="AboutMenuItem_Click"/>
