@@ -11,7 +11,8 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ImportDialogViewModel}"
-        Title="Import Music Sheets"
+        Icon="/Resources/import.png"
+        Title="Import music sheets"
         Height="800"
         Width="1024"
         WindowStartupLocation="CenterOwner">

@@ -1,6 +1,7 @@
     <Window x:Class="MusicSheetManager.Views.DistributionProgressDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Resources/music-sheets-distribute.png"
         Title="Distribute sheets"
         Height="520"
         Width="900"

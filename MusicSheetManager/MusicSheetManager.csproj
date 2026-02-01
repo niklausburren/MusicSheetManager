@@ -27,6 +27,7 @@
     <None Remove="Resources\info.png" />
     <None Remove="Resources\music-sheets-assign.png" />
     <None Remove="Resources\music-sheets-distribute.png" />
+    <None Remove="Resources\options.png" />
     <None Remove="Resources\pdf-file.png" />
     <None Remove="Resources\splash.png" />
     <None Remove="Resources\success.png" />
@@ -182,6 +183,9 @@
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\oboe.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\options.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\pdf-file.png">

@@ -1,6 +1,7 @@
 <Window x:Class="MusicSheetManager.Views.OptionsDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Resources/options.png"
         Title="Options" Height="260" Width="640" WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize" ShowInTaskbar="False">
     <Grid>
