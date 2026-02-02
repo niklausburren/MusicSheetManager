@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Windows;
 using System.Windows.Input;
 using Autofac;
@@ -89,7 +89,9 @@ public class ToolsViewModel
     {
         try
         {
-            this.DistributionService.Distribute();
+            var distributionDialog = App.Container.Resolve<DistributionDialog>();
+            distributionDialog.Owner = Application.Current?.MainWindow;
+            distributionDialog.ShowDialog();
         }
         catch (Exception ex)
         {

@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header: icon + title/status + percent -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="10" />
@@ -33,7 +33,7 @@
                    VerticalAlignment="Center"
                    Source="{Binding HeaderIcon}" />
 
-            <StackPanel Grid.Column="2" Orientation="Vertical">
+            <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Center">
                 <TextBlock Text="{Binding HeaderTitle}" FontSize="15" FontWeight="Bold" />
                 <TextBlock Text="{Binding StatusText}" Foreground="Gray" />
             </StackPanel>
@@ -97,8 +97,22 @@
         </ListView>
 
         <Border Grid.Row="6" BorderThickness="0,1,0,0" BorderBrush="LightGray" Padding="0,10,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Close" Width="110" IsEnabled="{Binding CanClose}" IsDefault="True" Click="CloseButton_Click" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                <Button Content="Start"
+                        Width="110"
+                        Margin="0,0,8,0"
+                        IsDefault="True"
+                        Command="{Binding StartCommand}" />
+                <Button Content="Cancel"
+                        Width="110"
+                        Margin="0,0,8,0"
+                        IsCancel="True"
+                        IsEnabled="{Binding IsRunning}"
+                        Command="{Binding CancelCommand}" />
+                <Button Content="Close"
+                        Width="110"
+                        IsEnabled="{Binding CanClose}"
+                        Click="CloseButton_Click" />
             </StackPanel>
         </Border>
     </Grid>

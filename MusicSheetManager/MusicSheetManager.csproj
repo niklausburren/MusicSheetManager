@@ -29,6 +29,7 @@
     <None Remove="Resources\music-sheets-distribute.png" />
     <None Remove="Resources\options.png" />
     <None Remove="Resources\pdf-file.png" />
+    <None Remove="Resources\play.png" />
     <None Remove="Resources\splash.png" />
     <None Remove="Resources\success.png" />
     <None Remove="Resources\sync.png" />
@@ -204,6 +205,9 @@
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\piccolo.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\play.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\playlist-add.png">

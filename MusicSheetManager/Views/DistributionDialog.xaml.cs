@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Specialized;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using MusicSheetManager.ViewModels;
 
 namespace MusicSheetManager.Views
 {
@@ -10,10 +10,11 @@ namespace MusicSheetManager.Views
     {
         #region Constructors
 
-        public DistributionDialog()
+        public DistributionDialog(DistributionDialogViewModel viewModel)
         {
             this.InitializeComponent();
-            this.DataContext = new DistributionDialogViewModel();
+
+            this.DataContext = viewModel;
 
             this.Loaded += (_, _) =>
             {
@@ -25,9 +26,13 @@ namespace MusicSheetManager.Views
             {
                 this.ViewModel.LogEntries.CollectionChanged -= this.OnLogEntriesCollectionChanged;
             };
+
+            // Block closing via title bar while running (mirrors Close button enabled state)
+            this.Closing += this.DistributionDialog_Closing;
         }
 
         #endregion
+
 
         #region Properties
 
@@ -35,61 +40,8 @@ namespace MusicSheetManager.Views
 
         #endregion
 
-        #region Public Methods
 
-        public void AppendLogLine(DistributionLogLevel level, string message)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                this.Dispatcher.Invoke(() => this.AppendLogLine(level, message));
-                return;
-            }
-
-            this.ViewModel.AppendLogEntry(level, message);
-        }
-
-        public void ReportProgress(int progress, string statusText)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                this.Dispatcher.Invoke(() => this.ReportProgress(progress, statusText));
-                return;
-            }
-
-            this.ViewModel.Progress = progress;
-            this.ViewModel.StatusText = statusText ?? string.Empty;
-        }
-
-        public void SetHeader(string iconUri, string title)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                this.Dispatcher.Invoke(() => this.SetHeader(iconUri, title));
-                return;
-            }
-
-            this.ViewModel.HeaderIcon = iconUri;
-            this.ViewModel.HeaderTitle = title;
-        }
-
-        public void MarkCompleted(string iconUri, string title, string finalStatus)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                this.Dispatcher.Invoke(() => this.MarkCompleted(iconUri, title, finalStatus));
-                return;
-            }
-
-            this.ViewModel.HeaderIcon = iconUri;
-            this.ViewModel.HeaderTitle = title;
-            this.ViewModel.StatusText = finalStatus ?? "Completed";
-            this.ViewModel.Progress = 100;
-            this.ViewModel.CanClose = true;
-        }
-
-        #endregion
-
-        #region Private Methods
+        #region Event Handlers
 
         private void OnLogEntriesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -104,17 +56,22 @@ namespace MusicSheetManager.Views
             // Use dispatcher to ensure containers are generated
             this.Dispatcher.BeginInvoke(() =>
             {
-                this.LogListView.ScrollIntoView(last);
+                LogListView.ScrollIntoView(last);
             });
         }
-
-        #endregion
-
-        #region Event Handlers
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void DistributionDialog_Closing(object? sender, CancelEventArgs e)
+        {
+            // Only allow closing (including title bar X) when not running
+            if (this.ViewModel.IsRunning)
+            {
+                e.Cancel = true;
+            }
         }
 
         #endregion
@@ -127,124 +84,27 @@ namespace MusicSheetManager.Views
         Error
     }
 
-    public sealed class DistributionLogEntryViewModel : ObservableObject
+    public sealed class DistributionLogEntry : ObservableObject
     {
-        public DistributionLogEntryViewModel(DistributionLogLevel level, string icon, string text)
+        #region Constructors
+
+        public DistributionLogEntry(DistributionLogLevel level, string icon, string text)
         {
             this.Level = level;
             this.Icon = icon;
             this.Text = text;
         }
 
+        #endregion
+
+
+        #region Properties
+
         public DistributionLogLevel Level { get; }
 
         public string Icon { get; }
 
         public string Text { get; }
-    }
-
-    public class DistributionDialogViewModel : ObservableObject
-    {
-        #region Fields
-
-        private int _progress;
-
-        private string _statusText;
-
-        private bool _canClose;
-
-        private string _headerIcon = "/Resources/sync.png";
-
-        private string _headerTitle = "Distribute sheets...";
-
-        #endregion
-
-        #region Properties
-
-        public int Progress
-        {
-            get => _progress;
-            set
-            {
-                if (this.SetProperty(ref _progress, value))
-                {
-                    this.OnPropertyChanged(nameof(this.PercentText));
-                }
-            }
-        }
-
-        public string PercentText => $"{this.Progress}%";
-
-        public string StatusText
-        {
-            get => _statusText;
-            set => this.SetProperty(ref _statusText, value);
-        }
-
-        public bool CanClose
-        {
-            get => _canClose;
-            set => this.SetProperty(ref _canClose, value);
-        }
-
-        public string HeaderIcon
-        {
-            get => _headerIcon;
-            set => this.SetProperty(ref _headerIcon, value);
-        }
-
-        public string HeaderTitle
-        {
-            get => _headerTitle;
-            set => this.SetProperty(ref _headerTitle, value);
-        }
-
-        public ObservableCollection<DistributionLogEntryViewModel> LogEntries { get; } = [];
-
-        #endregion
-
-        #region Public Methods
-
-        // Backward-compat: infer level from text prefixes
-        public void AppendLogLine(string line)
-        {
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                this.LogEntries.Add(new DistributionLogEntryViewModel(DistributionLogLevel.Info, "/Resources/info.png", string.Empty));
-                return;
-            }
-
-            var (level, icon) = GetLevelAndIcon(line);
-            this.LogEntries.Add(new DistributionLogEntryViewModel(level, icon, line));
-        }
-
-        // Preferred: explicit level
-        public void AppendLogEntry(DistributionLogLevel level, string message)
-        {
-            var icon = level switch
-            {
-                DistributionLogLevel.Error => "/Resources/error.png",
-                DistributionLogLevel.Warning => "/Resources/warning.png",
-                _ => "/Resources/info.png"
-            };
-
-            this.LogEntries.Add(new DistributionLogEntryViewModel(level, icon, message ?? string.Empty));
-        }
-
-        private static (DistributionLogLevel Level, string Icon) GetLevelAndIcon(string line)
-        {
-            if (line.StartsWith("! ERROR", StringComparison.OrdinalIgnoreCase))
-            {
-                return (DistributionLogLevel.Error, "/Resources/error.png");
-            }
-
-            if (line.StartsWith("! WARN", StringComparison.OrdinalIgnoreCase))
-            {
-                return (DistributionLogLevel.Warning, "/Resources/warning.png");
-            }
-
-            return (DistributionLogLevel.Info, "/Resources/info.png");
-        }
 
         #endregion
     }

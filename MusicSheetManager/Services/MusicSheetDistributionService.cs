@@ -5,10 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using MusicSheetManager.Models;
-using MusicSheetManager.Properties;
 using MusicSheetManager.Utilities;
 using MusicSheetManager.Views;
 using OfficeOpenXml;
@@ -42,7 +41,7 @@ namespace MusicSheetManager.Services
 
         #region Private Methods
 
-        private string SanitizeSheetName(string name)
+        private static string SanitizeSheetName(string name)
         {
             var invalidChars = new[] { ':', '\\', '/', '?', '*', '[', ']' };
             var sanitized = name;
@@ -54,7 +53,7 @@ namespace MusicSheetManager.Services
 
             if (sanitized.Length > 31)
             {
-                sanitized = sanitized.Substring(0, 31);
+                sanitized = sanitized[..31];
             }
 
             return sanitized;
@@ -75,10 +74,12 @@ namespace MusicSheetManager.Services
             var hash = sha.ComputeHash(stream);
 
             var sb = new StringBuilder(hash.Length * 2);
+
             foreach (var b in hash)
             {
                 sb.Append(b.ToString("x2"));
             }
+            
             return sb.ToString();
         }
 
@@ -111,23 +112,22 @@ namespace MusicSheetManager.Services
                 yield break;
             }
 
-            foreach (var dir in Directory.EnumerateDirectories(root, "*", SearchOption.AllDirectories)
-                         .OrderByDescending(d => d.Length))
+            foreach (var dir in Directory.EnumerateDirectories(root, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
             {
                 yield return dir;
             }
         }
 
-        private DistributionPlan BuildDistributionPlan(HashSet<Person> peopleWithMissingMusicSheets)
+        private DistributionPlan BuildDistributionPlan()
         {
             // Compute expected state
             var expectedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var expectedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                Folders.DistributionFolder
-            };
+            var expectedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Folders.DistributionFolder };
 
-            var copyOps = new List<CopyOperation>(capacity: 1024);
+            var copyOperations = new List<CopyOperation>(capacity: 1024);
+
+            // Track which titles are missing per person
+            var missingTitlesByPerson = new Dictionary<Person, HashSet<string>>();
 
             var instruments = this.PeopleService.People.Select(p => p.Instrument).Distinct().ToList();
 
@@ -157,11 +157,18 @@ namespace MusicSheetManager.Services
                             {
                                 var dest = Path.Combine(playlistFolder, $"{entry.Number} {Path.GetFileName(musicSheet.FileName)}");
                                 expectedFiles.Add(dest);
-                                copyOps.Add(new CopyOperation(musicSheet.FileName, dest));
+                                copyOperations.Add(new CopyOperation(musicSheet.FileName, dest));
                             }
                             else
                             {
-                                peopleWithMissingMusicSheets.Add(person);
+                                if (!missingTitlesByPerson.TryGetValue(person, out var titles))
+                                {
+                                    titles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    missingTitlesByPerson[person] = titles;
+                                }
+
+                                // Track the title of the folder (piece) missing for this person
+                                titles.Add(entry.MusicSheetFolder.Title);
                             }
                         }
                     }
@@ -187,35 +194,27 @@ namespace MusicSheetManager.Services
                     {
                         var dest = Path.Combine(percussionSubFolder, $"{entry.Number} {Path.GetFileName(musicSheet.FileName)}");
                         expectedFiles.Add(dest);
-                        copyOps.Add(new CopyOperation(musicSheet.FileName, dest));
+                        copyOperations.Add(new CopyOperation(musicSheet.FileName, dest));
                     }
                 }
             }
 
             // Plan delete files that are not expected (if distribution folder exists)
             var filesToDelete = new List<string>();
+
             if (Directory.Exists(Folders.DistributionFolder))
             {
-                foreach (var existingFile in Directory.EnumerateFiles(Folders.DistributionFolder, "*", SearchOption.AllDirectories))
-                {
-                    if (!expectedFiles.Contains(existingFile))
-                    {
-                        filesToDelete.Add(existingFile);
-                    }
-                }
+                filesToDelete.AddRange(Directory.EnumerateFiles(Folders.DistributionFolder, "*", SearchOption.AllDirectories)
+                    .Where(existingFile => !expectedFiles.Contains(existingFile)));
             }
 
             // Plan directory cleanup: delete empty dirs not expected (bottom-up)
             var dirsToDeleteIfEmpty = new List<string>();
+
             if (Directory.Exists(Folders.DistributionFolder))
             {
-                foreach (var dir in EnumerateDirectoriesBottomUp(Folders.DistributionFolder))
-                {
-                    if (!expectedDirectories.Contains(dir))
-                    {
-                        dirsToDeleteIfEmpty.Add(dir);
-                    }
-                }
+                dirsToDeleteIfEmpty.AddRange(EnumerateDirectoriesBottomUp(Folders.DistributionFolder)
+                    .Where(dir => !expectedDirectories.Contains(dir)));
             }
 
             // Directories to create: expected dirs ordered top-down (shortest first)
@@ -226,11 +225,20 @@ namespace MusicSheetManager.Services
             // Make deletes deterministic
             filesToDelete.Sort(StringComparer.OrdinalIgnoreCase);
 
+            // Build immutable MissingSheetInfo list
+            var missingSheets = missingTitlesByPerson
+                .OrderBy(kvp => kvp.Key.FullName, StringComparer.OrdinalIgnoreCase)
+                .Select(kvp => new MissingSheetInfo(
+                    kvp.Key,
+                    kvp.Value.OrderBy(t => t, StringComparer.OrdinalIgnoreCase).ToArray()))
+                .ToList();
+
             return new DistributionPlan(
-                DirectoriesToCreate: dirsToCreate,
-                FilesToEnsure: copyOps,
-                FilesToDelete: filesToDelete,
-                DirectoriesToDeleteIfEmpty: dirsToDeleteIfEmpty);
+                directoriesToCreate: dirsToCreate,
+                filesToEnsure: copyOperations,
+                filesToDelete: filesToDelete,
+                directoriesToDeleteIfEmpty: dirsToDeleteIfEmpty,
+                missingSheets: missingSheets);
         }
 
         private static int CalculateProgressPercent(int done, int total)
@@ -249,26 +257,14 @@ namespace MusicSheetManager.Services
 
         #region IMusicSheetDistributionService Members
 
-        public void Distribute()
+        public Task DistributeAsync(IDistributionReporter reporter, CancellationToken cancellationToken = default)
         {
             EnsureDirectory(Folders.DistributionFolder);
 
-            var owner = Application.Current?.MainWindow;
+            reporter.SetHeader("/Resources/sync.png", "Distributing sheets...");
+            reporter.ReportProgress(0, "Preparing...");
 
-            var dialog = new DistributionDialog
-            {
-                Owner = owner,
-                ViewModel =
-                {
-                    CanClose = false
-                }
-            };
-
-            // initial header/status
-            dialog.SetHeader("/Resources/sync.png", "Distribute sheets...");
-            dialog.ReportProgress(0, "Preparing...");
-
-            Task.Run(() =>
+            return Task.Run(() =>
             {
                 var copied = 0;
                 var deleted = 0;
@@ -279,16 +275,11 @@ namespace MusicSheetManager.Services
 
                 try
                 {
-                    dialog.ReportProgress(0, "Planning...");
-                    var peopleWithMissingMusicSheets = new HashSet<Person>();
-                    var plan = this.BuildDistributionPlan(peopleWithMissingMusicSheets);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    // Log warnings for missing sheets (per person, once)
-                    foreach (var person in peopleWithMissingMusicSheets.OrderBy(p => p.FullName))
-                    {
-                        warningCount++;
-                        dialog.AppendLogLine(DistributionLogLevel.Warning, $"Missing sheet assignment for: {person.FullName} ({person.Instrument.DisplayName})");
-                    }
+                    reporter.ReportProgress(0, "Planning...");
+
+                    var plan = this.BuildDistributionPlan();
 
                     // exact linear progress
                     var total =
@@ -303,54 +294,58 @@ namespace MusicSheetManager.Services
                     void Step(string status)
                     {
                         done++;
-                        dialog.ReportProgress(CalculateProgressPercent(done, total), status);
+                        reporter.ReportProgress(CalculateProgressPercent(done, total), status);
                     }
 
                     // 1) mkdir
-                    foreach (var dir in plan.DirectoriesToCreate)
+                    foreach (var newDirectory in plan.DirectoriesToCreate)
                     {
-                        Step($"Ensuring directory: {dir}");
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                        if (Directory.Exists(dir))
+                        Step($"Ensuring directory: {newDirectory}");
+
+                        if (Directory.Exists(newDirectory))
                         {
                             continue;
                         }
 
                         try
                         {
-                            Directory.CreateDirectory(dir);
-                            dialog.AppendLogLine(DistributionLogLevel.Info, $"CREATE DIR  {dir}");
+                            reporter.AppendLog(DistributionLogLevel.Info, $"CREATE DIR  {newDirectory}");
+                            Directory.CreateDirectory(newDirectory!);
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Creating directory failed: {dir} :: {ex.Message}");
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Creating dir failed: {newDirectory} :: {ex.Message}");
                         }
                     }
 
                     // 2) copy/update by hash
-                    foreach (var op in plan.FilesToEnsure)
+                    foreach (var copyOperation in plan.FilesToEnsure)
                     {
-                        Step($"Comparing: {Path.GetFileName(op.DestinationFile)}");
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        Step($"Comparing: {Path.GetFileName(copyOperation.DestinationFile)}");
 
                         try
                         {
-                            EnsureDirectory(Path.GetDirectoryName(op.DestinationFile)!);
+                            EnsureDirectory(Path.GetDirectoryName(copyOperation.DestinationFile)!);
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Ensuring directory failed: {Path.GetDirectoryName(copyOperation.DestinationFile)} :: {ex.Message}");
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Ensuring directory failed: {Path.GetDirectoryName(op.DestinationFile)} :: {ex.Message}");
                             continue;
                         }
 
                         try
                         {
-                            if (FilesDifferByHash(op.SourceFile, op.DestinationFile))
+                            if (FilesDifferByHash(copyOperation.SourceFile, copyOperation.DestinationFile))
                             {
-                                File.Copy(op.SourceFile, op.DestinationFile, overwrite: true);
+                                reporter.AppendLog(DistributionLogLevel.Info, $"COPY FILE {copyOperation.DestinationFile}");
                                 copied++;
-                                dialog.AppendLogLine(DistributionLogLevel.Info, $"COPY FILE {op.DestinationFile}");
+                                File.Copy(copyOperation.SourceFile, copyOperation.DestinationFile!, overwrite: true);
                             }
                             else
                             {
@@ -359,14 +354,16 @@ namespace MusicSheetManager.Services
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Copy file failed: {copyOperation.SourceFile} -> {copyOperation.DestinationFile} :: {ex.Message}");
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Copy failed: {op.SourceFile} -> {op.DestinationFile} :: {ex.Message}");
                         }
                     }
 
                     // 3) delete obsolete files
                     foreach (var file in plan.FilesToDelete)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         Step($"Deleting: {Path.GetFileName(file)}");
 
                         if (!File.Exists(file))
@@ -376,20 +373,22 @@ namespace MusicSheetManager.Services
 
                         try
                         {
-                            File.Delete(file);
+                            reporter.AppendLog(DistributionLogLevel.Info, $"DELETE FILE {file}");
                             deleted++;
-                            dialog.AppendLogLine(DistributionLogLevel.Info, $"DELETE FILE {file}");
+                            File.Delete(file);
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Delete file failed: {file} :: {ex.Message}");
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Delete failed: {file} :: {ex.Message}");
                         }
                     }
 
                     // 4) remove empty obsolete dirs (bottom-up)
                     foreach (var dir in plan.DirectoriesToDeleteIfEmpty)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         Step($"Cleaning directory: {dir}");
 
                         try
@@ -404,51 +403,58 @@ namespace MusicSheetManager.Services
                                 continue;
                             }
 
+                            reporter.AppendLog(DistributionLogLevel.Info, $"RMDIR {dir}");
                             Directory.Delete(dir, recursive: false);
-                            dialog.AppendLogLine(DistributionLogLevel.Info, $"RMDIR {dir}");
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Remove directory failed: {dir} :: {ex.Message}");
                             errorCount++;
-                            dialog.AppendLogLine(DistributionLogLevel.Error, $"Remove directory failed: {dir} :: {ex.Message}");
                         }
+                    }
+
+                    // Log warnings for missing sheets (per person, list titles)
+                    foreach (var missingSheetInfo in plan.MissingSheets)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var titles = string.Join(", ", missingSheetInfo.Titles);
+                        warningCount++;
+                        reporter.AppendLog(
+                            DistributionLogLevel.Warning,
+                            $"Missing sheets for: {missingSheetInfo.Person.FullName} ({missingSheetInfo.Person.Instrument.DisplayName}), missing titles: {titles}");
                     }
 
                     var summary = $"Summary: copied={copied}, deleted={deleted}, skipped={skipped}, warnings={warningCount}, errors={errorCount}";
 
-                    dialog.AppendLogLine(DistributionLogLevel.Info, summary);
+                    reporter.AppendLog(DistributionLogLevel.Info, summary);
 
                     // Final header state
                     if (errorCount > 0)
                     {
-                        dialog.MarkCompleted("/Resources/error.png", "Distribute sheets - Error", summary);
+                        reporter.MarkCompleted("/Resources/error.png", "Sheets distributed with errors", summary);
                     }
                     else if (warningCount > 0)
                     {
-                        dialog.MarkCompleted("/Resources/warning.png", "Distribute sheets - Warning", summary);
+                        reporter.MarkCompleted("/Resources/warning.png", "Sheets distributed with warnings", summary);
                     }
                     else
                     {
-                        dialog.MarkCompleted("/Resources/success.png", "Distribute sheets - Success", summary);
+                        reporter.MarkCompleted("/Resources/success.png", "Sheets distributed successfully", summary);
                     }
-
-                    // Preserve existing behavior: missing assignments still throw (but after log is visible)
-                    if (peopleWithMissingMusicSheets.Any())
-                    {
-                        throw new MissingMusicSheetException(peopleWithMissingMusicSheets);
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    reporter.AppendLog(DistributionLogLevel.Warning, "Operation cancelled");
+                    reporter.MarkCompleted("/Resources/warning.png", "Sheets distribution cancelled", "Distribution cancelled by user");
                 }
                 catch (Exception ex)
                 {
-                    errorCount++;
-                    dialog.AppendLogLine(DistributionLogLevel.Error, "Unhandled exception:");
-                    dialog.AppendLogLine(DistributionLogLevel.Error, ex.ToString());
+                    reporter.AppendLog(DistributionLogLevel.Error, "Unhandled exception:");
+                    reporter.AppendLog(DistributionLogLevel.Error, ex.ToString());
 
-                    dialog.MarkCompleted("/Resources/error.png", "Distribute sheets - Error", "Completed with errors (see log).");
+                    reporter.MarkCompleted("/Resources/error.png", "Sheets distributed with errors", "Completed with errors (see log).");
                 }
-            });
-
-            dialog.ShowDialog();
+            }, cancellationToken);
         }
 
         public void ExportPartDistribution()
@@ -461,7 +467,7 @@ namespace MusicSheetManager.Services
             foreach (var playlist in this.PlaylistService.Playlists)
             {
                 // Worksheet mit Playlist-Namen erstellen (ungültige Zeichen entfernen)
-                var sheetName = this.SanitizeSheetName(playlist.Name);
+                var sheetName = SanitizeSheetName(playlist.Name);
                 var worksheet = package.Workbook.Worksheets.Add(sheetName);
 
                 // Titel mit Playlist-Namen in Zeile 1
@@ -604,24 +610,96 @@ namespace MusicSheetManager.Services
         #endregion
 
 
-        private sealed record CopyOperation(string SourceFile, string DestinationFile);
+        #region Class CopyOperation
 
-        private sealed record DistributionPlan(
-            IReadOnlyList<string> DirectoriesToCreate,
-            IReadOnlyList<CopyOperation> FilesToEnsure,
-            IReadOnlyList<string> FilesToDelete,
-            IReadOnlyList<string> DirectoriesToDeleteIfEmpty);
+        private sealed class CopyOperation
+        {
+            #region Constructors
+
+            public CopyOperation(string sourceFile, string destinationFile)
+            {
+                this.SourceFile = sourceFile;
+                this.DestinationFile = destinationFile;
+            }
+
+            #endregion
+
+
+            #region Properties
+
+            public string SourceFile { get; }
+
+            public string DestinationFile { get; }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Class MissingSheetInfo
+
+        private sealed class MissingSheetInfo
+        {
+            #region Constructors
+
+            public MissingSheetInfo(Person person, IReadOnlyCollection<string> titles)
+            {
+                this.Person = person;
+                this.Titles = titles;
+            }
+
+            #endregion
+
+            #region Properties
+
+            public Person Person { get; }
+
+            public IReadOnlyCollection<string> Titles { get; }
+
+            #endregion
+        }
+
+        #endregion
+
+
+        #region Class DistributionPlan
+
+        private sealed class DistributionPlan
+        {
+            #region Constructors
+
+            public DistributionPlan(
+                IReadOnlyList<string> directoriesToCreate,
+                IReadOnlyList<CopyOperation> filesToEnsure,
+                IReadOnlyList<string> filesToDelete,
+                IReadOnlyList<string> directoriesToDeleteIfEmpty,
+                IReadOnlyList<MissingSheetInfo> missingSheets)
+            {
+                this.DirectoriesToCreate = directoriesToCreate;
+                this.FilesToEnsure = filesToEnsure;
+                this.FilesToDelete = filesToDelete;
+                this.DirectoriesToDeleteIfEmpty = directoriesToDeleteIfEmpty;
+                this.MissingSheets = missingSheets;
+            }
+
+            #endregion
+
+
+            #region Properties
+
+            public IReadOnlyList<string> DirectoriesToCreate { get; }
+
+            public IReadOnlyList<CopyOperation> FilesToEnsure { get; }
+
+            public IReadOnlyList<string> FilesToDelete { get; }
+
+            public IReadOnlyList<string> DirectoriesToDeleteIfEmpty { get; }
+
+            public IReadOnlyList<MissingSheetInfo> MissingSheets { get; }
+
+            #endregion
+        }
+
+        #endregion
     }
-}
-
-public class MissingMusicSheetException : Exception
-{
-    #region Constructors
-
-    public MissingMusicSheetException(IEnumerable<Person> people)
-        : base(string.Format(Resources.MissingMusicSheetException_Message, string.Join("\n", people.Select(p => $"- {p.FullName} ({p.Instrument})"))))
-    {
-    }
-
-    #endregion
 }

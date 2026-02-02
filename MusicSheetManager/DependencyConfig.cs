@@ -21,6 +21,9 @@ public static class DependencyConfig
         builder.RegisterType<OptionsDialogViewModel>().AsSelf();
         builder.RegisterType<OptionsDialog>().AsSelf();
 
+        builder.RegisterType<DistributionDialogViewModel>().AsSelf();
+        builder.RegisterType<DistributionDialog>().AsSelf();
+
         builder.RegisterType<MusicSheetService>().As<IMusicSheetService>().SingleInstance();
         builder.RegisterType<MusicSheetAssignmentService>().As<IMusicSheetAssignmentService>().SingleInstance();
         builder.RegisterType<PeopleService>().As<IPeopleService>().SingleInstance();

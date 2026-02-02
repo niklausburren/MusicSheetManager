@@ -1,10 +1,13 @@
-﻿namespace MusicSheetManager.Services;
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace MusicSheetManager.Services;
 
 public interface IMusicSheetDistributionService
 {
     #region Public Methods
 
-    void Distribute();
+    Task DistributeAsync(IDistributionReporter reporter, CancellationToken cancellationToken = default);
 
     void ExportPartDistribution();
 
