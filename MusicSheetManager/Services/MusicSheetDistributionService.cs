@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -40,24 +41,6 @@ namespace MusicSheetManager.Services
 
 
         #region Private Methods
-
-        private static string SanitizeSheetName(string name)
-        {
-            var invalidChars = new[] { ':', '\\', '/', '?', '*', '[', ']' };
-            var sanitized = name;
-
-            foreach (var invalidChar in invalidChars)
-            {
-                sanitized = sanitized.Replace(invalidChar, '_');
-            }
-
-            if (sanitized.Length > 31)
-            {
-                sanitized = sanitized[..31];
-            }
-
-            return sanitized;
-        }
 
         private static void EnsureDirectory(string directory)
         {
@@ -250,6 +233,15 @@ namespace MusicSheetManager.Services
 
             var pct = (int)Math.Round(done * 100.0 / total, MidpointRounding.AwayFromZero);
             return Math.Clamp(pct, 0, 100);
+        }
+
+        private static string CreateUniqueTempFilePath(string baseName, string extensionWithoutDot)
+        {
+            // Unique suffix
+            var unique = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+
+            var fileName = $"{baseName} {unique}.{extensionWithoutDot}";
+            return Path.Combine(Folders.TempFolder, fileName);
         }
 
         #endregion
@@ -457,147 +449,144 @@ namespace MusicSheetManager.Services
             }, cancellationToken);
         }
 
-        public void ExportPartDistribution()
+        public void ExportSheetDistribution(Playlist playlist)
         {
             ExcelPackage.License.SetNonCommercialPersonal("Niklaus Burren");
 
             using var package = new ExcelPackage();
 
-            // Alle Playlists durchlaufen und jeweils ein eigenes Sheet erstellen
-            foreach (var playlist in this.PlaylistService.Playlists)
+            // Worksheet mit Playlist-Namen erstellen (ungültige Zeichen entfernen)
+            var sheetName = playlist.SanitizedName;
+            var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+            // Titel mit Playlist-Namen in Zeile 1
+            worksheet.Cells[1, 1].Value = playlist.Name;
+            worksheet.Cells[1, 1].Style.Font.Bold = true;
+            worksheet.Cells[1, 1].Style.Font.Size = 16;
+
+            // Header-Zeile in Zeile 3 erstellen
+            var headerRow = 3;
+            worksheet.Cells[headerRow, 1].Value = "Person";
+            var column = 2;
+            var musicSheetFolders = new List<MusicSheetFolder>();
+
+            foreach (var entry in playlist.Entries.Where(e => e.MusicSheetFolder != null))
             {
-                // Worksheet mit Playlist-Namen erstellen (ungültige Zeichen entfernen)
-                var sheetName = SanitizeSheetName(playlist.Name);
-                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                musicSheetFolders.Add(entry.MusicSheetFolder);
+                worksheet.Cells[headerRow, column].Value = $"{entry.Index+1:D2} {entry.MusicSheetFolder.Title}";
+                column++;
+            }
 
-                // Titel mit Playlist-Namen in Zeile 1
-                worksheet.Cells[1, 1].Value = playlist.Name;
-                worksheet.Cells[1, 1].Style.Font.Bold = true;
-                worksheet.Cells[1, 1].Style.Font.Size = 16;
+            // Header formatieren
+            using (var range = worksheet.Cells[headerRow, 1, headerRow, column - 1])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+            }
 
-                // Header-Zeile in Zeile 3 erstellen
-                var headerRow = 3;
-                worksheet.Cells[headerRow, 1].Value = "Person";
-                var column = 2;
-                var musicSheetFolders = new List<MusicSheetFolder>();
+            // Erste Spalte fixieren (Freeze Panes)
+            worksheet.View.FreezePanes(headerRow + 1, 2);
 
-                foreach (var entry in playlist.Entries.Where(e => e.MusicSheetFolder != null))
-                {
-                    musicSheetFolders.Add(entry.MusicSheetFolder);
-                    worksheet.Cells[headerRow, column].Value = $"{entry.Index+1:D2} {entry.MusicSheetFolder.Title}";
-                    column++;
-                }
+            // Personen nach Instrument gruppiert auflisten (ohne Percussion)
+            var row = headerRow + 1;
+            var groupedPeople = this.PeopleService.People
+                .Where(p => !p.Dispensed && p.Instrument.Category != InstrumentCategory.Percussion)
+                .OrderBy(p => p.Instrument.Index)
+                .ThenBy(p => p.Part?.Index ?? int.MaxValue)
+                .ThenBy(p => p.FullName)
+                .GroupBy(p => p.Instrument);
 
-                // Header formatieren
-                using (var range = worksheet.Cells[headerRow, 1, headerRow, column - 1])
+            foreach (var instrumentGroup in groupedPeople)
+            {
+                // Instrument als Titel-Zeile
+                worksheet.Cells[row, 1].Value = instrumentGroup.Key.DisplayName;
+                using (var range = worksheet.Cells[row, 1, row, column - 1])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
                 }
+                row++;
 
-                // Erste Spalte fixieren (Freeze Panes)
-                worksheet.View.FreezePanes(headerRow + 1, 2);
-
-                // Personen nach Instrument gruppiert auflisten (ohne Percussion)
-                var row = headerRow + 1;
-                var groupedPeople = this.PeopleService.People
-                    .Where(p => !p.Dispensed && p.Instrument.Category != InstrumentCategory.Percussion)
-                    .OrderBy(p => p.Instrument.Index)
-                    .ThenBy(p => p.Part?.Index ?? int.MaxValue)
-                    .ThenBy(p => p.FullName)
-                    .GroupBy(p => p.Instrument);
-
-                foreach (var instrumentGroup in groupedPeople)
+                // Personen des Instruments auflisten
+                foreach (var person in instrumentGroup)
                 {
-                    // Instrument als Titel-Zeile
-                    worksheet.Cells[row, 1].Value = instrumentGroup.Key.DisplayName;
-                    using (var range = worksheet.Cells[row, 1, row, column - 1])
+                    var partInfo = person.Part != null ? $" ({person.Part.DisplayName})" : "";
+                    worksheet.Cells[row, 1].Value = $"{person.FullName}{partInfo}";
+
+                    column = 2;
+                    foreach (var musicSheetFolder in musicSheetFolders)
                     {
-                        range.Style.Font.Bold = true;
-                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                        var assignedSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(musicSheetFolder, person);
+
+                        if (assignedSheet != null)
+                        {
+                            var sheetInfo = assignedSheet.Instrument.DisplayName;
+
+                            if (assignedSheet.Parts != null && assignedSheet.Parts.Any())
+                            {
+                                var parts = string.Join(", ", assignedSheet.Parts.Select(p => p.DisplayName));
+                                sheetInfo += $" - {parts}";
+                            }
+
+                            worksheet.Cells[row, column].Value = sheetInfo;
+                        }
+                        else
+                        {
+                            // Zelle gelb markieren, wenn kein Part zugeordnet werden konnte
+                            worksheet.Cells[row, column].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells[row, column].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                        }
+
+                        column++;
                     }
+
                     row++;
-
-                    // Personen des Instruments auflisten
-                    foreach (var person in instrumentGroup)
-                    {
-                        var partInfo = person.Part != null ? $" ({person.Part.DisplayName})" : "";
-                        worksheet.Cells[row, 1].Value = $"{person.FullName}{partInfo}";
-
-                        column = 2;
-                        foreach (var musicSheetFolder in musicSheetFolders)
-                        {
-                            var assignedSheet = this.MusicSheetAssignmentService.GetAssignedMusicSheet(musicSheetFolder, person);
-
-                            if (assignedSheet != null)
-                            {
-                                var sheetInfo = assignedSheet.Instrument.DisplayName;
-
-                                if (assignedSheet.Parts != null && assignedSheet.Parts.Any())
-                                {
-                                    var parts = string.Join(", ", assignedSheet.Parts.Select(p => p.DisplayName));
-                                    sheetInfo += $" - {parts}";
-                                }
-
-                                worksheet.Cells[row, column].Value = sheetInfo;
-                            }
-                            else
-                            {
-                                // Zelle gelb markieren, wenn kein Part zugeordnet werden konnte
-                                worksheet.Cells[row, column].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.Cells[row, column].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
-                            }
-
-                            column++;
-                        }
-
-                        row++;
-                    }
-                }
-
-                // Feinen grauen Rahmen um die gesamte Tabelle (Header + Daten)
-                var lastRow = row - 1;
-                var lastColumn = column - 1;
-
-                if (lastRow >= headerRow && lastColumn >= 1)
-                {
-                    using (var range = worksheet.Cells[headerRow, 1, lastRow, lastColumn])
-                    {
-                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.Gray);
-                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Gray);
-                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.Gray);
-                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.Gray);
-                    }
-
-                    // Innere Rahmen für alle Zellen
-                    for (var r = headerRow; r <= lastRow; r++)
-                    {
-                        for (var c = 1; c <= lastColumn; c++)
-                        {
-                            worksheet.Cells[r, c].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            worksheet.Cells[r, c].Style.Border.Top.Color.SetColor(System.Drawing.Color.Gray);
-                            worksheet.Cells[r, c].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            worksheet.Cells[r, c].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Gray);
-                            worksheet.Cells[r, c].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            worksheet.Cells[r, c].Style.Border.Left.Color.SetColor(System.Drawing.Color.Gray);
-                            worksheet.Cells[r, c].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            worksheet.Cells[r, c].Style.Border.Right.Color.SetColor(System.Drawing.Color.Gray);
-                        }
-                    }
-
-                    // Spaltenbreite automatisch anpassen
-                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
                 }
             }
 
-            // Datei speichern
-            var fileInfo = new FileInfo(Path.Combine(Folders.TempFolder, $"Stimmverteilung SGSN {DateTime.Now:G}.xlsx".Replace(":", ".")));
+            // Feinen grauen Rahmen um die gesamte Tabelle (Header + Daten)
+            var lastRow = row - 1;
+            var lastColumn = column - 1;
+
+            if (lastRow >= headerRow && lastColumn >= 1)
+            {
+                using (var range = worksheet.Cells[headerRow, 1, lastRow, lastColumn])
+                {
+                    range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Top.Color.SetColor(System.Drawing.Color.Gray);
+                    range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Gray);
+                    range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Left.Color.SetColor(System.Drawing.Color.Gray);
+                    range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Right.Color.SetColor(System.Drawing.Color.Gray);
+                }
+
+                // Innere Rahmen für alle Zellen
+                for (var r = headerRow; r <= lastRow; r++)
+                {
+                    for (var c = 1; c <= lastColumn; c++)
+                    {
+                        worksheet.Cells[r, c].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        worksheet.Cells[r, c].Style.Border.Top.Color.SetColor(System.Drawing.Color.Gray);
+                        worksheet.Cells[r, c].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        worksheet.Cells[r, c].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Gray);
+                        worksheet.Cells[r, c].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        worksheet.Cells[r, c].Style.Border.Left.Color.SetColor(System.Drawing.Color.Gray);
+                        worksheet.Cells[r, c].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        worksheet.Cells[r, c].Style.Border.Right.Color.SetColor(System.Drawing.Color.Gray);
+                    }
+                }
+
+                // Spaltenbreite automatisch anpassen
+                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+            }
+
+            // Datei speichern mit garantiert eindeutigem Namen
+            var filePath = CreateUniqueTempFilePath($"Sheet distribution {playlist.SanitizedName}", "xlsx");
+            var fileInfo = new FileInfo(filePath);
             package.SaveAs(fileInfo);
 
             Process.Start(new ProcessStartInfo
@@ -630,31 +619,6 @@ namespace MusicSheetManager.Services
             public string SourceFile { get; }
 
             public string DestinationFile { get; }
-
-            #endregion
-        }
-
-        #endregion
-
-        #region Class MissingSheetInfo
-
-        private sealed class MissingSheetInfo
-        {
-            #region Constructors
-
-            public MissingSheetInfo(Person person, IReadOnlyCollection<string> titles)
-            {
-                this.Person = person;
-                this.Titles = titles;
-            }
-
-            #endregion
-
-            #region Properties
-
-            public Person Person { get; }
-
-            public IReadOnlyCollection<string> Titles { get; }
 
             #endregion
         }
@@ -696,6 +660,33 @@ namespace MusicSheetManager.Services
             public IReadOnlyList<string> DirectoriesToDeleteIfEmpty { get; }
 
             public IReadOnlyList<MissingSheetInfo> MissingSheets { get; }
+
+            #endregion
+        }
+
+        #endregion
+
+
+        #region Class MissingSheetInfo
+
+        private sealed class MissingSheetInfo
+        {
+            #region Constructors
+
+            public MissingSheetInfo(Person person, IReadOnlyCollection<string> titles)
+            {
+                this.Person = person;
+                this.Titles = titles;
+            }
+
+            #endregion
+
+
+            #region Properties
+
+            public Person Person { get; }
+
+            public IReadOnlyCollection<string> Titles { get; }
 
             #endregion
         }

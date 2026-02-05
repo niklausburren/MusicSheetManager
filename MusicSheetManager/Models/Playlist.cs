@@ -2,12 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MusicSheetManager.Services;
+using MusicSheetManager.Utilities;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace MusicSheetManager.Models
@@ -82,16 +81,7 @@ namespace MusicSheetManager.Models
 
         [Browsable(false)]
         [JsonIgnore]
-        public string SanitizedName
-        {
-            get
-            {
-                var invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-                var regexSearch = new string(invalidChars);
-                var r = new Regex($"[{Regex.Escape(regexSearch)}]");
-                return r.Replace(this.Name, "_");
-            }
-        }
+        public string SanitizedName => FileSystemHelper.SanitizeFileName(this.Name);
 
         #endregion
 
@@ -142,7 +132,6 @@ namespace MusicSheetManager.Models
                 }
             }
 
-            // Distribute kann sich durch Add/Remove geändert haben
             this.OnPropertyChanged(nameof(this.Distribute));
         }
 
@@ -150,7 +139,6 @@ namespace MusicSheetManager.Models
         {
             if (e.PropertyName == nameof(PlaylistEntry.Distribute))
             {
-                // Playlist.Distribute neu benachrichtigen
                 this.OnPropertyChanged(nameof(this.Distribute));
             }
         }

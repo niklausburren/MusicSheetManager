@@ -210,7 +210,17 @@
                         <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="Export part distribution" Command="{Binding Tools.ExportPartDistributionCommand}" />
+                <MenuItem Header="Export sheet distribution"
+                          ItemsSource="{Binding DataContext.PlaylistTab.Playlists, RelativeSource={RelativeSource AncestorType=Window}}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding Name}" />
+                            <Setter Property="Command"
+                                    Value="{Binding DataContext.Tools.ExportSheetDistributionCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="CommandParameter" Value="{Binding}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Options..." Command="{Binding Tools.OpenOptionsDialogCommand}">
                     <MenuItem.Icon>

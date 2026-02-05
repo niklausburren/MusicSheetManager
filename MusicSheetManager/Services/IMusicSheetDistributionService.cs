@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MusicSheetManager.Models;
 
 namespace MusicSheetManager.Services;
 
@@ -9,7 +10,7 @@ public interface IMusicSheetDistributionService
 
     Task DistributeAsync(IDistributionReporter reporter, CancellationToken cancellationToken = default);
 
-    void ExportPartDistribution();
+    void ExportSheetDistribution(Playlist playlistService);
 
     #endregion
 }

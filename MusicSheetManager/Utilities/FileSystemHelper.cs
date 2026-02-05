@@ -4,8 +4,21 @@ using System.Threading.Tasks;
 namespace MusicSheetManager.Utilities;
 
 public static class FileSystemHelper
-{
+{   
     #region Public Methods
+
+    public static string SanitizeFileName(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return string.Empty;
+        }
+
+        var invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+        var regexSearch = new string(invalidChars);
+        var r = new System.Text.RegularExpressions.Regex($"[{System.Text.RegularExpressions.Regex.Escape(regexSearch)}]");
+        return r.Replace(fileName, "_");
+    }
 
     public static async Task<bool> TryDeleteFolderAsync(
         string folder,

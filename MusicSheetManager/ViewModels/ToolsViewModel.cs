@@ -1,9 +1,10 @@
-﻿    using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Input;
 using Autofac;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using MusicSheetManager.Models;
 using MusicSheetManager.Services;
 using MusicSheetManager.Views;
 
@@ -21,7 +22,7 @@ public class ToolsViewModel
         this.SplitA3ToA4Command = new RelayCommand(this.SplitPagesFromA3ToA4);
         this.RotatePagesCommand = new RelayCommand(this.RotatePages);
         this.DistributeSheetsCommand = new RelayCommand(this.DistributeSheets);
-        this.ExportPartDistributionCommand = new RelayCommand(this.ExportPartDistribution);
+        this.ExportSheetDistributionCommand = new RelayCommand<Playlist>(this.ExportSheetDistribution);
         this.OpenOptionsDialogCommand = new RelayCommand(this.OpenOptionsDialog);
     }
 
@@ -40,7 +41,7 @@ public class ToolsViewModel
 
     public ICommand DistributeSheetsCommand { get; }
 
-    public ICommand ExportPartDistributionCommand { get; }
+    public ICommand ExportSheetDistributionCommand { get; }
 
     public ICommand OpenOptionsDialogCommand { get; } // new
 
@@ -99,15 +100,20 @@ public class ToolsViewModel
         }
     }
 
-    private void ExportPartDistribution()
+    private void ExportSheetDistribution(Playlist playlist)
     {
+        if (playlist == null)
+        {
+            return;
+        }
+
         try
         {
-            this.DistributionService.ExportPartDistribution();
+            this.DistributionService.ExportSheetDistribution(playlist);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error exporting part distribution: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Error exporting distribution for playlist '{playlist.Name}': {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
