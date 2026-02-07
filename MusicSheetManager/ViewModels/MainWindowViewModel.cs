@@ -92,7 +92,7 @@ namespace MusicSheetManager.ViewModels
 
         private void NotifyDeleteCommandChanged()
         {
-            if (this.DeleteSelectedItemCommand is RelayCommand rc)
+            if (this.DeleteSelectedItemCommand is IRelayCommand rc)
             {
                 rc.NotifyCanExecuteChanged();
             }

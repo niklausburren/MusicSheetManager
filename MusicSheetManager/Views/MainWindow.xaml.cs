@@ -58,6 +58,16 @@ public partial class MainWindow : Window
         return source as TreeViewItem;
     }
 
+    private static ListViewItem FindListViewItem(DependencyObject source)
+    {
+        while (source != null && source is not ListViewItem)
+        {
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return source as ListViewItem;
+    }
+
     private void RestoreWindowPlacement()
     {
         var s = Settings.Default;
@@ -271,6 +281,19 @@ public partial class MainWindow : Window
             default:
                 this.ViewModel.SelectedObject = null;
                 break;
+        }
+    }
+
+    // New: select person on right-click so Delete affects the correct item
+    private void PeopleListView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var listViewItem = FindListViewItem(e.OriginalSource as DependencyObject);
+
+        if (listViewItem != null)
+        {
+            listViewItem.Focus();
+            listViewItem.IsSelected = true;
+            e.Handled = true;
         }
     }
 

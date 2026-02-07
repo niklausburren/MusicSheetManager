@@ -27,13 +27,18 @@
     <None Remove="Resources\error.png" />
     <None Remove="Resources\euphonium-bb.png" />
     <None Remove="Resources\euphonium-c.png" />
+    <None Remove="Resources\excel-sheet.png" />
+    <None Remove="Resources\explorer.png" />
     <None Remove="Resources\info.png" />
     <None Remove="Resources\music-sheets-assign.png" />
     <None Remove="Resources\music-sheets-distribute.png" />
     <None Remove="Resources\options.png" />
     <None Remove="Resources\pdf-file.png" />
+    <None Remove="Resources\people.png" />
     <None Remove="Resources\play.png" />
+    <None Remove="Resources\rotate.png" />
     <None Remove="Resources\splash.png" />
+    <None Remove="Resources\split.png" />
     <None Remove="Resources\success.png" />
     <None Remove="Resources\sync.png" />
     <None Remove="Resources\tenor-horn-bb.png" />
@@ -147,6 +152,12 @@
     <Resource Include="Resources\euphonium-c.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\excel-sheet.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\explorer.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\flugelhorn-bb.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -204,6 +215,9 @@
 	<Resource Include="Resources\pdf-file.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
+	<Resource Include="Resources\people.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
 	<Resource Include="Resources\percussion.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
@@ -240,6 +254,9 @@
 	<Resource Include="Resources\person-add.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
+	<Resource Include="Resources\rotate.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
 	<Resource Include="Resources\score.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
@@ -250,6 +267,9 @@
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\splash.png">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Resources\split.png">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Resource>
 	<Resource Include="Resources\string-bass.png">

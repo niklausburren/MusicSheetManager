@@ -39,11 +39,19 @@
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Import sheets" 
                       Command="{Binding DataContext.MusicSheetTab.ImportSheetsCommand, Source={x:Reference MainWindowRoot}}"
-                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/import.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Assign sheets to people" 
                       Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
-                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/people.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Add to playlist" ItemsSource="{Binding DataContext.PlaylistTab.Playlists, Source={x:Reference MainWindowRoot}}">
@@ -61,12 +69,37 @@
                         </Setter>
                     </Style>
                 </MenuItem.ItemContainerStyle>
+                <MenuItem.Icon>
+                    <Image Source="/Resources/playlist-add.png" Width="16" Height="16" />
+                </MenuItem.Icon>
             </MenuItem>
             <Separator />
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Open in Windows Explorer" 
                       Command="{Binding DataContext.MusicSheetTab.OpenInExplorerCommand, Source={x:Reference MainWindowRoot}}"
-                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/explorer.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Delete"
+                      Command="{Binding DataContext.DeleteSelectedItemCommand, Source={x:Reference MainWindowRoot}}"
+                      InputGestureText="Del">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <ContextMenu x:Key="MusicSheetContextMenu">
+            <MenuItem Header="Delete"
+                      Command="{Binding DataContext.DeleteSelectedItemCommand, Source={x:Reference MainWindowRoot}}"
+                      InputGestureText="Del">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
 
         <ContextMenu x:Key="PlaylistContextMenu">
@@ -74,6 +107,14 @@
             <MenuItem Header="Add placeholder"
                       Command="{Binding DataContext.PlaylistTab.AddPlaceholderCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator/>
+            <MenuItem Header="Delete"
+                      Command="{Binding DataContext.DeleteSelectedItemCommand, Source={x:Reference MainWindowRoot}}"
+                      InputGestureText="Del">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
 
         <ContextMenu x:Key="PlaylistEntryContextMenu">
@@ -95,10 +136,31 @@
                     <Image Source="/Resources/arrow-down.png" Width="16" Height="16" />
                 </MenuItem.Icon>
             </MenuItem>
+            <Separator/>
+            <MenuItem Header="Delete"
+                      Command="{Binding DataContext.DeleteSelectedItemCommand, Source={x:Reference MainWindowRoot}}"
+                      InputGestureText="Del">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <ContextMenu x:Key="PersonContextMenu">
+            <MenuItem Header="Delete"
+                      Command="{Binding DataContext.DeleteSelectedItemCommand, Source={x:Reference MainWindowRoot}}"
+                      InputGestureText="Del">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
 
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
-            <StackPanel x:Name="MusicSheetPanel" Orientation="Horizontal" Margin="0,2,10,2">
+            <StackPanel x:Name="MusicSheetPanel"
+                        Orientation="Horizontal"
+                        Margin="0,2,10,2"
+                        ContextMenu="{StaticResource MusicSheetContextMenu}">
                 <Image Source="{Binding Instrument.Icon}" Width="26" Height="26" Margin="0,0,4,0" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
             </StackPanel>
@@ -223,9 +285,17 @@
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Split pages form A3 to A4"
-                          Command="{Binding Tools.SplitA3ToA4Command}" />
-                <MenuItem Header="Rotate pages"
-                          Command="{Binding Tools.RotatePagesCommand}" />
+                          Command="{Binding Tools.SplitA3ToA4Command}">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/split.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Rotate pages 90° CCW"
+                          Command="{Binding Tools.RotatePagesCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/rotate.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Distribute Sheets"
                           Command="{Binding Tools.DistributeSheetsCommand}">
@@ -242,6 +312,9 @@
                             <Setter Property="CommandParameter" Value="{Binding}" />
                         </Style>
                     </MenuItem.ItemContainerStyle>
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/excel-sheet.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Options..." Command="{Binding Tools.OpenOptionsDialogCommand}">
@@ -295,6 +368,7 @@
                 <ad:LayoutPanel Orientation="Horizontal">
                     <ad:LayoutDocumentPaneGroup>
                         <ad:LayoutDocumentPane>
+                            <!-- Music sheets tab -->
                             <ad:LayoutDocument x:Name="MusicSheetsDocument"
                                                Title="Music sheets"
                                                ContentId="Doc.MusicSheets"
@@ -329,6 +403,7 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
+                            <!-- Playlists tab -->
                             <ad:LayoutDocument x:Name="PlaylistsDocument"
                                                Title="Playlists"
                                                ContentId="Doc.Playlists"
@@ -351,6 +426,7 @@
                                 </Grid>
                             </ad:LayoutDocument>
 
+                            <!-- Peoples tab -->
                             <ad:LayoutDocument x:Name="PeoplesDocument"
                                                Title="Peoples"
                                                ContentId="Doc.Peoples"
@@ -359,10 +435,12 @@
                                     <ListView x:Name="PeopleListView"
                                               ItemsSource="{Binding PeopleTab.People}"
                                               SelectionChanged="PeopleListView_OnSelectionChanged"
+                                              PreviewMouseRightButtonDown="PeopleListView_OnPreviewMouseRightButtonDown"
                                               ScrollViewer.CanContentScroll="False">
                                         <ListView.ItemContainerStyle>
                                             <Style TargetType="ListViewItem">
                                                 <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="False" />
+                                                <Setter Property="ContextMenu" Value="{StaticResource PersonContextMenu}" />
                                             </Style>
                                         </ListView.ItemContainerStyle>
                                         <ListView.View>
