@@ -23,9 +23,9 @@ namespace MusicSheetManager.Models
 
         #region Properties
 
-        public static ClefInfo TrebleClef { get; } = new("TrebleClef", "TC", "T.C.", "6", "¢");
+        public static ClefInfo TrebleClef { get; } = new("TrebleClef", "TC", "T.C.");
 
-        public static ClefInfo BassClef { get; } = new("BassClef", "BC", "B.C.", "in C", " C");
+        public static ClefInfo BassClef { get; } = new("BassClef", "BC", "B.C.");
 
         public static ClefInfo PercussionClef { get; } = new("PercussionClef", "Perc", "Perc.");
 
@@ -59,12 +59,13 @@ namespace MusicSheetManager.Models
 
         public static ClefInfo TryGet(string text, InstrumentInfo instrument)
         {
-            if (instrument == InstrumentInfo.Bassoon ||
-                instrument == InstrumentInfo.BassTromboneBb ||
-                instrument == InstrumentInfo.StringBass ||
+            if (instrument == InstrumentInfo.StringBass ||
                 instrument == InstrumentInfo.Timpani ||
                 instrument == InstrumentInfo.BassDrum ||
+                instrument == InstrumentInfo.Bassoon ||
                 instrument == InstrumentInfo.TromboneC ||
+                instrument == InstrumentInfo.BassTromboneC ||
+                instrument == InstrumentInfo.EuphoniumC ||
                 instrument == InstrumentInfo.TenorHornC ||
                 instrument == InstrumentInfo.BaritoneHornC ||
                 instrument == InstrumentInfo.BassC)
@@ -79,13 +80,6 @@ namespace MusicSheetManager.Models
                 instrument == InstrumentInfo.Triangle)
             {
                 return PercussionClef;
-            }
-
-            if (instrument != InstrumentInfo.TromboneBb &&
-                instrument != InstrumentInfo.BassBb &&
-                instrument != InstrumentInfo.BassEb)
-            {
-                return TrebleClef;
             }
 
             foreach (var instrumentPattern in instrument.Patterns)
@@ -106,7 +100,7 @@ namespace MusicSheetManager.Models
                 break;
             }
 
-            return BassClef;
+            return TrebleClef;
         }
 
         #endregion
