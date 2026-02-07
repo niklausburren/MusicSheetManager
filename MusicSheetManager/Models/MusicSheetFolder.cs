@@ -21,7 +21,7 @@ namespace MusicSheetManager.Models
             this.Id = Guid.NewGuid();
             this.Metadata = metadata;
 
-            this.Folder = Path.Combine(Folders.MusicSheetFolder, SanitizeFolderName(this.Metadata.Title));
+            this.Folder = Path.Combine(Folders.MusicSheetFolder, FileSystemHelper.SanitizeFileName(this.Metadata.Title));
         }
 
         public MusicSheetFolder(string folder)
@@ -73,7 +73,7 @@ namespace MusicSheetManager.Models
                     return;
                 }
 
-                var newFolder = Path.Combine(Folders.MusicSheetFolder, SanitizeFolderName(value));
+                var newFolder = Path.Combine(Folders.MusicSheetFolder, FileSystemHelper.SanitizeFileName(value));
                 
                 if (Directory.Exists(newFolder))
                 {
@@ -276,13 +276,6 @@ namespace MusicSheetManager.Models
 
 
         #region Private Methods
-
-        private static string SanitizeFolderName(string name)
-        {
-            var sanitized = (name ?? string.Empty).Trim();
-            var invalidChars = Path.GetInvalidFileNameChars();
-            return invalidChars.Aggregate(sanitized, (current, ch) => current.Replace(ch, '_'));
-        }
 
         private void SubscribeToSheet(MusicSheet sheet)
         {
