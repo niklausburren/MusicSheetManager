@@ -365,23 +365,14 @@
                         </ad:LayoutDocumentPane>
                     </ad:LayoutDocumentPaneGroup>
 
-                    <ad:LayoutAnchorablePaneGroup DockWidth="400">
-                        <ad:LayoutAnchorablePane>
-                            <ad:LayoutAnchorable x:Name="PropertiesToolWindow"
-                                                 Title="Properties"
-                                                 ContentId="Tool.Properties"
-                                                 CanClose="False"
-                                                 CanHide="True"
-                                                 AutoHideMinWidth="200">
-                                <xctk:PropertyGrid ShowTitle="False" ShowSearchBox="False" ShowSortOptions="False" SelectedObject="{Binding SelectedObject}" />
-                            </ad:LayoutAnchorable>
-
+                    <ad:LayoutAnchorablePaneGroup DockWidth="500" Orientation="Vertical">
+                        <ad:LayoutAnchorablePane DockHeight="3*">
                             <ad:LayoutAnchorable x:Name="PdfViewerToolWindow"
                                                  Title="PDF Viewer"
                                                  ContentId="Tool.PdfViewer"
                                                  CanClose="False"
                                                  CanHide="True"
-                                                 AutoHideMinWidth="200">
+                                                 AutoHideMinWidth="500">
                                 <Grid Background="#333333">
                                     <!-- WebView2: visible only if Source is not about:blank -->
                                     <wpf:WebView2 x:Name="PdfViewer">
@@ -420,6 +411,20 @@
                                                    Margin="0,10,0,0" />
                                     </StackPanel>
                                 </Grid>
+                            </ad:LayoutAnchorable>
+                        </ad:LayoutAnchorablePane>
+
+                        <ad:LayoutAnchorablePane DockHeight="1.2*">
+                            <ad:LayoutAnchorable x:Name="PropertiesToolWindow"
+                                                 Title="Properties"
+                                                 ContentId="Tool.Properties"
+                                                 CanClose="False"
+                                                 CanHide="True"
+                                                 AutoHideMinWidth="500">
+                                <xctk:PropertyGrid ShowTitle="False"
+                                                   ShowSearchBox="False"
+                                                   ShowSortOptions="False"
+                                                   SelectedObject="{Binding SelectedObject}" />
                             </ad:LayoutAnchorable>
                         </ad:LayoutAnchorablePane>
                     </ad:LayoutAnchorablePaneGroup>
