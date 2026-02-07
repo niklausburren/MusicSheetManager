@@ -57,11 +57,6 @@ public class PlaylistTabViewModel : ObservableObject
 
     #region Public Methods
 
-    public async Task InitializeAsync()
-    {
-        await this.PlaylistService.LoadAsync();
-    }
-
     public async Task DeletePlaylistAsync(Playlist playlist)
     {
         this.FocusRequested?.Invoke(FocusRequestedEventArgs.Empty);

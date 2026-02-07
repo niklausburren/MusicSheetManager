@@ -44,11 +44,6 @@ public class PeopleTabViewModel : ObservableObject
 
     #region Public Methods
 
-    public async Task InitializeAsync()
-    {
-        await this.PeopleService.LoadAsync();
-    }
-
     public async Task DeletePersonAsync(Person person)
     {
         this.FocusRequested?.Invoke(FocusRequestedEventArgs.Empty);

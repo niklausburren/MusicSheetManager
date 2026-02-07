@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
+using MusicSheetManager.Services;
 using MusicSheetManager.Views;
 using SplashScreen = MusicSheetManager.Views.SplashScreen;
 
@@ -42,10 +43,19 @@ namespace MusicSheetManager
 
             try
             {
-                var mainWindow = Container.Resolve<MainWindow>();
+                var musicSheetService = Container.Resolve<IMusicSheetService>();
+                var peopleService = Container.Resolve<IPeopleService>();
+                var playlistService = Container.Resolve<IPlaylistService>();
+                var musicSheetAssignmentService = Container.Resolve<IMusicSheetAssignmentService>();
+
                 var progress = new Progress<int>(p => splash.Progress = p);
 
-                await mainWindow.ViewModel.InitializeAsync(progress);
+                await musicSheetService.LoadAsync(progress);
+                await peopleService.LoadAsync();
+                await playlistService.LoadAsync();
+                await musicSheetAssignmentService.LoadAsync();
+
+                var mainWindow = Container.Resolve<MainWindow>();
 
                 this.MainWindow = mainWindow;
                 mainWindow.Show();

@@ -62,12 +62,6 @@ public class MusicSheetTabViewModel : ObservableObject
 
     #region Public Methods
 
-    public async Task InitializeAsync(IProgress<int> progress)
-    {
-        await this.MusicSheetService.LoadAsync(progress);
-        await this.MusicSheetAssignmentService.LoadAsync();
-    }
-
     public async Task DeleteMusicSheetFolderAsync(MusicSheetFolder musicSheetFolder)
     {
         if (musicSheetFolder is null)

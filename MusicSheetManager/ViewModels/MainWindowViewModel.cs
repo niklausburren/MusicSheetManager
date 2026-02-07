@@ -59,18 +59,6 @@ namespace MusicSheetManager.ViewModels
         #endregion
 
 
-        #region Public Methods
-
-        public async Task InitializeAsync(IProgress<int> progress)
-        {
-            await this.MusicSheetTab.InitializeAsync(progress);
-            await this.PeopleTab.InitializeAsync();
-            await this.PlaylistTab.InitializeAsync();
-        }
-
-        #endregion
-
-
         #region Private Methods
 
         private async Task DeleteSelectedItem()
