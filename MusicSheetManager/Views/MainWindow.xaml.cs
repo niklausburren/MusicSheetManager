@@ -240,19 +240,6 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    private void ImportButton_Click(object sender, RoutedEventArgs e)
-    {
-        var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
-
-        if (openFileDialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        var importDialog = App.Container.Resolve<ImportDialog>();
-        importDialog.ShowDialog(this, openFileDialog.FileName);
-    }
-
     private void MusicSheetTreeView_OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         var treeViewItem = FindTreeViewItem(e.OriginalSource as DependencyObject);

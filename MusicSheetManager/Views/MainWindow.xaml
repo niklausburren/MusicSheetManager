@@ -19,7 +19,23 @@
         Loaded="MainWindow_OnLoaded"
         Closing="MainWindow_OnClosing">
     <Window.InputBindings>
-        <KeyBinding Key="Delete" Command="{Binding DeleteSelectedItemCommand}" />
+        <!-- Import sheet folder: Ctrl+I -->
+        <KeyBinding Gesture="Ctrl+I"
+                    Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}" />
+
+        <!-- Import sheets: Ctrl+Shift+I -->
+        <KeyBinding Gesture="Ctrl+Shift+I"
+                    Command="{Binding MusicSheetTab.ImportSheetsCommand}"
+                    CommandParameter="{Binding ElementName=MusicSheetTreeView, Path=SelectedItem}" />
+
+        <!-- Assign sheets to people: Ctrl+A -->
+        <KeyBinding Gesture="Ctrl+A"
+                    Command="{Binding MusicSheetTab.AssignMusicSheetsCommand}"
+                    CommandParameter="{Binding ElementName=MusicSheetTreeView, Path=SelectedItem}" />
+
+        <!-- Delete selected item: Del -->
+        <KeyBinding Key="Delete"
+                    Command="{Binding DeleteSelectedItemCommand}" />
     </Window.InputBindings>
 
     <Window.Resources>
@@ -39,7 +55,8 @@
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Import sheets" 
                       Command="{Binding DataContext.MusicSheetTab.ImportSheetsCommand, Source={x:Reference MainWindowRoot}}"
-                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Ctrl+Shift+I">
                 <MenuItem.Icon>
                     <Image Source="/Resources/import.png" Width="16" Height="16" />
                 </MenuItem.Icon>
@@ -47,7 +64,8 @@
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Assign sheets to people" 
                       Command="{Binding DataContext.MusicSheetTab.AssignMusicSheetsCommand, Source={x:Reference MainWindowRoot}}"
-                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      InputGestureText="Ctrl+A">
                 <MenuItem.Icon>
                     <Image Source="/Resources/people.png" Width="16" Height="16" />
                 </MenuItem.Icon>
@@ -249,7 +267,9 @@
                         </MenuItem.Icon>
                     </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Import music sheets..." Click="ImportButton_Click">
+                <MenuItem Header="Import music sheets..."
+                          Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}"
+                          InputGestureText="Ctrl+I">
                     <MenuItem.Icon>
                         <Image Source="/Resources/import.png" Width="16" Height="16" />
                     </MenuItem.Icon>
@@ -258,6 +278,15 @@
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
+                <MenuItem Header="Assign sheets to people"
+                          Command="{Binding MusicSheetTab.AssignMusicSheetsCommand}"
+                          CommandParameter="{Binding ElementName=MusicSheetTreeView, Path=SelectedItem}"
+                          InputGestureText="Ctrl+A">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/people.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
                 <MenuItem Header="Move playlist entry up"
                           Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}"
                           CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
@@ -330,7 +359,7 @@
 
         <ToolBarTray Grid.Row="1">
             <ToolBar>
-                <Button Click="ImportButton_Click">
+                <Button Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Resources/import.png" Width="16" Height="16" Margin="0,0,4,0" />
                         <TextBlock Text="Import music sheets" VerticalAlignment="Center" />

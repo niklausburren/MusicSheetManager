@@ -29,14 +29,13 @@ public class MusicSheetTabViewModel : ObservableObject
     #region Constructors
 
     public MusicSheetTabViewModel(
-        IMusicSheetService musicSheetService,
-        IMusicSheetAssignmentService musicSheetAssignmentService)
+        IMusicSheetService musicSheetService)
     {
         this.MusicSheetService = musicSheetService;
-        this.MusicSheetAssignmentService = musicSheetAssignmentService;
 
+        this.ImportMusicSheetFolderCommand = new RelayCommand(this.ImportMusicSheetFolder);
         this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
-        this.AssignMusicSheetsCommand = new RelayCommand<MusicSheetFolder>(this.AssignMusicSheets);
+        this.AssignMusicSheetsCommand = new RelayCommand<object>(this.AssignMusicSheets, this.CanAssignMusicSheets);
         this.OpenInExplorerCommand = new RelayCommand<MusicSheetFolder>(this.OpenInExplorer, this.CanOpenInExplorer);
     }
 
@@ -47,8 +46,6 @@ public class MusicSheetTabViewModel : ObservableObject
 
     private IMusicSheetService MusicSheetService { get; }
 
-    private IMusicSheetAssignmentService MusicSheetAssignmentService { get; }
-
     public ObservableCollection<MusicSheetFolder> MusicSheetFolders => this.MusicSheetService.MusicSheetFolders;
 
     public ICommand ImportSheetsCommand { get; }
@@ -56,6 +53,8 @@ public class MusicSheetTabViewModel : ObservableObject
     public ICommand AssignMusicSheetsCommand { get; }
 
     public ICommand OpenInExplorerCommand { get; }
+
+    public ICommand ImportMusicSheetFolderCommand { get; }
 
     #endregion
 
@@ -119,6 +118,21 @@ public class MusicSheetTabViewModel : ObservableObject
 
     #region Private Methods
 
+    private void ImportMusicSheetFolder()
+    {
+        var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
+
+        if (openFileDialog.ShowDialog(Application.Current.MainWindow!) != true)
+        {
+            return;
+        }
+
+        var importDialog = App.Container.Resolve<ImportDialog>();
+        importDialog.ShowDialog(Application.Current.MainWindow!, openFileDialog.FileName);
+
+        this.FocusRequested?.Invoke();
+    }
+
     private void ImportSheets(MusicSheetFolder musicSheetFolder)
     {
         if (musicSheetFolder is null)
@@ -142,11 +156,18 @@ public class MusicSheetTabViewModel : ObservableObject
             Application.Current.MainWindow,
             openFileDialog.FileName,
             musicSheetFolder);
+
+        this.FocusRequested?.Invoke();
     }
 
-    private void AssignMusicSheets(MusicSheetFolder musicSheetFolder)
+    private bool CanAssignMusicSheets(object parameter)
     {
-        if (musicSheetFolder is null)
+        return parameter is MusicSheetFolder musicSheetFolder && musicSheetFolder.Sheets.Any();
+    }
+
+    private void AssignMusicSheets(object parameter)
+    {
+        if (parameter is not MusicSheetFolder musicSheetFolder)
         {
             return;
         }
