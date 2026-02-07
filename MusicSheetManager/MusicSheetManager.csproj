@@ -19,8 +19,11 @@
   <ItemGroup>
     <None Remove="Resources\alphorn.png" />
     <None Remove="Resources\app-icon.png" />
+    <None Remove="Resources\arrow-down.png" />
+    <None Remove="Resources\arrow-up.png" />
     <None Remove="Resources\baritone-horn-bb.png" />
     <None Remove="Resources\baritone-horn-c.png" />
+    <None Remove="Resources\delete.png" />
     <None Remove="Resources\error.png" />
     <None Remove="Resources\euphonium-bb.png" />
     <None Remove="Resources\euphonium-c.png" />
@@ -72,6 +75,12 @@
     <Resource Include="Resources\app-icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\arrow-down.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\arrow-up.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\baritone-horn-bb.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -118,6 +127,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\cymbals.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\delete.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\drum-set.png">

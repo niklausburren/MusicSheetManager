@@ -28,8 +28,8 @@ public class PlaylistTabViewModel : ObservableObject
 
         this.AddToPlaylistCommand = new AsyncRelayCommand<(Playlist playlist, MusicSheetFolder folder)>(this.AddToPlaylistAsync);
         this.CreatePlaylistCommand = new AsyncRelayCommand(this.CreatePlaylistAsync);
-        this.MovePlaylistEntryUpCommand = new AsyncRelayCommand<PlaylistEntry>(this.MoveUpAsync, this.CanMoveUp);
-        this.MovePlaylistEntryDownCommand = new AsyncRelayCommand<PlaylistEntry>(this.MoveDownAsync, this.CanMoveDown);
+        this.MovePlaylistEntryUpCommand = new AsyncRelayCommand<object>(this.MoveUpAsync, this.CanMoveUp);
+        this.MovePlaylistEntryDownCommand = new AsyncRelayCommand<object>(this.MoveDownAsync, this.CanMoveDown);
         this.AddPlaceholderCommand = new AsyncRelayCommand<Playlist>(this.AddPlaceholderAsync, this.CanAddPlaceholder);
     }
 
@@ -152,8 +152,14 @@ public class PlaylistTabViewModel : ObservableObject
         return playlist != null;
     }
 
-    private async Task MoveUpAsync(PlaylistEntry entry)
+    private async Task MoveUpAsync(object parameter)
     {
+        if (parameter is not PlaylistEntry entry)
+        {
+            // Ignore if a Playlist (or anything else) is passed.
+            return;
+        }
+
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(entry));
         
         if (playlist == null)
@@ -171,9 +177,9 @@ public class PlaylistTabViewModel : ObservableObject
         }
     }
 
-    private bool CanMoveUp(PlaylistEntry entry)
+    private bool CanMoveUp(object parameter)
     {
-        if (entry == null)
+        if (parameter is not PlaylistEntry entry)
         {
             return false;
         }
@@ -184,8 +190,13 @@ public class PlaylistTabViewModel : ObservableObject
         return index > 0;
     }
 
-    private async Task MoveDownAsync(PlaylistEntry entry)
+    private async Task MoveDownAsync(object parameter)
     {
+        if (parameter is not PlaylistEntry entry)
+        {
+            return;
+        }
+
         var playlist = this.Playlists.FirstOrDefault(p => p.Entries.Contains(entry));
 
         if (playlist == null)
@@ -203,9 +214,9 @@ public class PlaylistTabViewModel : ObservableObject
         }
     }
 
-    private bool CanMoveDown(PlaylistEntry entry)
+    private bool CanMoveDown(object? parameter)
     {
-        if (entry == null)
+        if (parameter is not PlaylistEntry entry)
         {
             return false;
         }

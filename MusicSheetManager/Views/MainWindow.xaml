@@ -81,12 +81,20 @@
             <MenuItem Header="Move up"
                       Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryUpCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                      InputGestureText="Page Up" />
+                      InputGestureText="Page Up">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/arrow-up.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
             <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <MenuItem Header="Move down"
                       Command="{Binding DataContext.PlaylistTab.MovePlaylistEntryDownCommand, Source={x:Reference MainWindowRoot}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                      InputGestureText="Page Down" />
+                      InputGestureText="Page Down">
+                <MenuItem.Icon>
+                    <Image Source="/Resources/arrow-down.png" Width="16" Height="16" />
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
 
         <HierarchicalDataTemplate x:Key="MusicSheetTemplate" DataType="{x:Type models:MusicSheet}">
@@ -191,21 +199,36 @@
                 <MenuItem Header="Move playlist entry up"
                           Command="{Binding PlaylistTab.MovePlaylistEntryUpCommand}"
                           CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
-                          InputGestureText="Page Up"/>
+                          InputGestureText="Page Up">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/arrow-up.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Move playlist entry down"
                           Command="{Binding PlaylistTab.MovePlaylistEntryDownCommand}"
                           CommandParameter="{Binding ElementName=PlaylistsTreeView, Path=SelectedItem}"
-                          InputGestureText="Page Down"/>
+                          InputGestureText="Page Down">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/arrow-down.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Delete"
                           Command="{Binding DeleteSelectedItemCommand}"
-                          InputGestureText="Del"/>
+                          InputGestureText="Del">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/delete.png" Width="16" Height="16" />
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Tools">
-                <MenuItem Header="Split pages form A3 to A4" Command="{Binding Tools.SplitA3ToA4Command}" />
-                <MenuItem Header="Rotate pages" Command="{Binding Tools.RotatePagesCommand}" />
+                <MenuItem Header="Split pages form A3 to A4"
+                          Command="{Binding Tools.SplitA3ToA4Command}" />
+                <MenuItem Header="Rotate pages"
+                          Command="{Binding Tools.RotatePagesCommand}" />
                 <Separator />
-                <MenuItem Header="Distribute Sheets" Command="{Binding Tools.DistributeSheetsCommand}">
+                <MenuItem Header="Distribute Sheets"
+                          Command="{Binding Tools.DistributeSheetsCommand}">
                     <MenuItem.Icon>
                         <Image Source="/Resources/music-sheets-distribute.png" Width="16" Height="16" />
                     </MenuItem.Icon>
@@ -215,8 +238,7 @@
                     <MenuItem.ItemContainerStyle>
                         <Style TargetType="MenuItem">
                             <Setter Property="Header" Value="{Binding Name}" />
-                            <Setter Property="Command"
-                                    Value="{Binding DataContext.Tools.ExportSheetDistributionCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="Command" Value="{Binding DataContext.Tools.ExportSheetDistributionCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                             <Setter Property="CommandParameter" Value="{Binding}" />
                         </Style>
                     </MenuItem.ItemContainerStyle>
