@@ -6,8 +6,8 @@
         ShowInTaskbar="False"
         Topmost="True"
         WindowStartupLocation="CenterScreen"
-        Width="700"
-        Height="466"
+        Width="600"
+        Height="460"
         Background="Transparent"
         AllowsTransparency="True">
   <Grid Margin="0">
@@ -17,7 +17,7 @@
             RenderOptions.BitmapScalingMode="HighQuality" />
 
     <ProgressBar
-             Margin="133,377,159,83"
+             Margin="99,397,104,59"
              Minimum="0"
              Maximum="100"
              Value="{Binding Progress, RelativeSource={RelativeSource AncestorType=Window}}"
