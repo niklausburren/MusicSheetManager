@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using MusicSheetManager.Models;
 using MusicSheetManager.ViewModels;
+using OfficeOpenXml.Drawing.Slicer.Style;
 
 namespace MusicSheetManager.Views
 {
@@ -22,27 +25,30 @@ namespace MusicSheetManager.Views
 
         #region Public Methods
 
-        public void ShowDialog(Window owner, string fileName, MusicSheetFolder musicSheetFolder = null)
+        public void ShowDialog(Window owner, IEnumerable<string> fileNames, MusicSheetFolder musicSheetFolder = null)
         {
-            if (this.DataContext is ImportDialogViewModel viewModel)
+            if (this.DataContext is not ImportDialogViewModel viewModel)
             {
-                viewModel.FileName = fileName;
-
-                if (musicSheetFolder != null)
-                {
-                    viewModel.Metadata.Title = musicSheetFolder.Title;
-                    viewModel.Metadata.Composer = musicSheetFolder.Composer;
-                    viewModel.Metadata.Arranger = musicSheetFolder.Arranger;
-                    viewModel.IsMetadataEditable = false;
-                }
-                else
-                {
-                    viewModel.IsMetadataEditable = true;
-                }
+                return;
             }
 
+            viewModel.FileNames = fileNames.ToList();
+
+            if (musicSheetFolder != null)
+            {
+                viewModel.Metadata.Title = musicSheetFolder.Title;
+                viewModel.Metadata.Composer = musicSheetFolder.Composer;
+                viewModel.Metadata.Arranger = musicSheetFolder.Arranger;
+                viewModel.IsMetadataEditable = false;
+            }
+            else
+            {
+                viewModel.IsMetadataEditable = true;
+            }
+
+            PdfViewer.Source = new Uri(viewModel.FileNames[0]);
+
             this.Owner = owner;
-            PdfViewer.Source = new Uri(fileName);
             base.ShowDialog();
         }
 

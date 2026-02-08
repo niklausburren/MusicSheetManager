@@ -262,7 +262,7 @@ namespace MusicSheetManager.Models
             foreach (var musicSheet in musicSheets)
             {
                 var key = GetKeyOf(musicSheet);
-                var hasConflict = groups.TryGetValue(key, out var count) && count > 1;
+                var hasConflict = groups.TryGetValue(key, out var count) && count > 1 && musicSheet.Instrument != InstrumentInfo.Unknown;
                 musicSheet.HasConflict = hasConflict;
             }
 

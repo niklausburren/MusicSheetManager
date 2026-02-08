@@ -182,7 +182,7 @@ public class MusicSheet : ObservableObject
     {
         var ocrResult = await PerformOcrAsync(document, startIndex);
 
-        var fileName = BuildFilename(Path.GetDirectoryName(document.FullPath), metadata.Title, ocrResult.instrument, ocrResult.parts, ocrResult.clef);
+        var fileName = BuildFilename(Path.GetDirectoryName(document.FullPath), metadata.Title ?? "New", ocrResult.instrument, ocrResult.parts, ocrResult.clef);
 
         using (var outputDocument = new PdfDocument())
         {

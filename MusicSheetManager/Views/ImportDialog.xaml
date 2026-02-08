@@ -13,8 +13,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:ImportDialogViewModel}"
         Icon="/Resources/import.png"
         Title="Import music sheets"
-        Height="800"
-        Width="1024"
+        Height="1040"
+        Width="1180"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -32,60 +32,107 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="410" />
+            <ColumnDefinition Width="500" />
             <ColumnDefinition Width="5" />
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
         
         <Grid Grid.Column="0" Margin="10">
             <Grid.RowDefinitions>
+                <!-- Header row added -->
+                <RowDefinition Height="Auto" />
+                <!-- existing rows shifted down -->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+
+            <!-- Header: Title + dynamic description -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,30">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5" VerticalAlignment="Center">
+                    <!-- Icon switches with file count; use menu icons -->
+                    <Image Width="48" Height="48" Margin="0,0,6,0">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source" Value="/Resources/import.png"/>
+                                <Style.Triggers>
+                                    <!-- Single file -->
+                                    <DataTrigger Binding="{Binding ShowSplitControls}" Value="True">
+                                        <Setter Property="Source" Value="/Resources/import-single-file.png"/>
+                                    </DataTrigger>
+                                    <!-- Multiple files -->
+                                    <DataTrigger Binding="{Binding ShowSplitControls}" Value="False">
+                                        <Setter Property="Source" Value="/Resources/import-multiple-files.png"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+
+                    <!-- Dynamic title -->
+                    <TextBlock Text="{Binding ImportTitle}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding ImportDescription}"
+                           TextWrapping="Wrap"
+                           Foreground="Gray"/>
+            </StackPanel>
             
-            <Expander Header="Metadata" VerticalAlignment="Top" IsExpanded="True" Grid.Row="0">
+            <!-- Metadata -->
+            <Expander Header="Metadata"
+                      VerticalAlignment="Top"
+                      Grid.Row="1"
+                      IsExpanded="{Binding IsMetadataExpanded, Mode=TwoWay}">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontWeight="Bold" />
                     </DataTemplate>
                 </Expander.HeaderTemplate>
                 <StackPanel>
-                    <Label Content="Title" Margin="-5, 0, 0, 0" />
+                    <Label Content="Title*" Margin="-5, 0, 0, 0" />
                     <TextBox Name="TitleTextBox" Text="{Binding Metadata.Title}" IsEnabled="{Binding IsMetadataEditable}"/>
-                    <Label Content="Composer" Margin="-5, 0, 0, 0" />
+                    <Label Content="Composer*" Margin="-5, 0, 0, 0" />
                     <TextBox Name="ComposerTextBox" Text="{Binding Metadata.Composer}" IsEnabled="{Binding IsMetadataEditable}"/>
                     <Label Content="Arranger" Margin="-5, 0, 0, 0" />
                     <TextBox Name="ArrangerTextBox" Text="{Binding Metadata.Arranger}" IsEnabled="{Binding IsMetadataEditable}"/>
                 </StackPanel>
             </Expander>
 
-            <Expander Header="Split options" Margin="0, 20, 0, 0" VerticalAlignment="Top" IsExpanded="True" Grid.Row="1">
+            <!-- Split options -->
+            <Expander Header="Split options"
+                      Margin="0, 20, 0, 0"
+                      VerticalAlignment="Top"
+                      Grid.Row="2"
+                      Visibility="{Binding ShowSplitControls, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      IsExpanded="{Binding IsSplitOptionsExpanded, Mode=TwoWay}">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontWeight="Bold" />
                     </DataTemplate>
                 </Expander.HeaderTemplate>
-                <StackPanel>
+                <StackPanel x:Name="SplitOptionsPanel">
                     <Label Content="Pages per Sheet" Margin="-5, 0, 0, 0" />
                     <ComboBox Name="PagesPerSheetComboBox"
-                          ItemsSource="{Binding Source={StaticResource PagesPerSheetValues}}"
-                          SelectedValue="{Binding SplitOptions.PagesPerSheet}"
-                          SelectedValuePath="."
-                          Height="22">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource EnumDisplayNameConverter}}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                              ItemsSource="{Binding Source={StaticResource PagesPerSheetValues}}"
+                              SelectedValue="{Binding SplitOptions.PagesPerSheet}"
+                              SelectedValuePath="."
+                              Height="22">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource EnumDisplayNameConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <CheckBox Content="Split A3 to A4" Name="SplitA3ToA4CheckBox" IsChecked="{Binding SplitOptions.SplitA3ToA4}" Margin="0,10,0,0" />
                     <CheckBox Content="Rotate pages 90° CCW" Name="RotateCheckBox" IsChecked="{Binding SplitOptions.Rotate}" Margin="0,10,0,0" />
                 </StackPanel>
             </Expander>
 
-            <Expander Header="Music Sheets" Margin="0, 20, 0, 10" VerticalAlignment="Stretch" IsExpanded="True" Grid.Row="3">
+            <Expander Header="Music Sheets" Margin="0, 20, 0, 10" VerticalAlignment="Stretch" IsExpanded="True" Grid.Row="4">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontWeight="Bold" />
@@ -137,7 +184,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Width="152">
+                                <GridViewColumn Width="242">
                                     <GridViewColumnHeader Content="Instrument" HorizontalContentAlignment="Left" Padding="6,0,0,0" />
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate DataType="{x:Type models:MusicSheetInfo}">
@@ -187,14 +234,14 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid Grid.Row="1" Margin="0,20,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="5" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Button Content="Split" Name="SplitButton" Padding="5, 0, 5, 0" Command="{Binding SplitCommand}" Height="20" />
-                        <ProgressBar Grid.Column="2" Height="20" Value="{Binding Progress}" Maximum="100" Visibility="{Binding IsSplitting, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Button x:Name="SplitAndDetectButton" Command="{Binding SplitAndDetectCommand}" Content="{Binding SplitAndDetectButtonText}" Padding="10,1,10,1" />
+                        <ProgressBar Grid.Column="2" Height="22" Value="{Binding Progress}" Maximum="100" Visibility="{Binding IsSplittingOrDetecting, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                 </Grid>
             </Expander>

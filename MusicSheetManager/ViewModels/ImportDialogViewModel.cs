@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,17 +22,29 @@ namespace MusicSheetManager.ViewModels
 
         private readonly IMusicSheetService _musicSheetService;
 
-        private int _progress;
-
-        private string _fileName;
-
         private MusicSheetFolderMetadata _metadata;
 
         private SplitOptions _splitOptions;
 
-        private bool _isSplitting;
+        private IReadOnlyList<string> _fileNames;
+
+        private bool _isSplittingOrDetecting;
+
+        private int _progress;
 
         private bool _isMetadataEditable;
+
+        private bool _showSplitControls;
+
+        private string _splitAndDetectButtonText = "Split & detect";
+
+        private string _importTitle = "Import music sheets";
+
+        private string _importDescription;
+
+        private bool _isMetadataExpanded = true;
+
+        private bool _isSplitOptionsExpanded = true;
 
         #endregion
 
@@ -44,10 +58,17 @@ namespace MusicSheetManager.ViewModels
             this.Metadata = new MusicSheetFolderMetadata();
 
             this.SplitOptions = new SplitOptions();
-            this.SplitCommand = new AsyncRelayCommand(this.SplitMusicSheetsAsync, this.CanSplitMusicSheets);
+            this.SplitAndDetectCommand = new AsyncRelayCommand(this.ExecuteSplitAndDetectAsync, this.CanSplitMusicSheets);
             this.ImportCommand = new RelayCommand(this.ImportMusicSheets, this.CanImportMusicSheets);
 
             this.MusicSheets.CollectionChanged += this.OnMusicSheetsCollectionChanged;
+
+            this.ShowSplitControls = true;
+            this.SplitAndDetectButtonText = "Split & detect";
+            this.ImportDescription = string.Empty;
+
+            this.IsMetadataExpanded = true;
+            this.IsSplitOptionsExpanded = true;
         }
 
         #endregion
@@ -61,14 +82,14 @@ namespace MusicSheetManager.ViewModels
             set => this.SetProperty(ref _progress, value);
         }
 
-        public string FileName
+        public IReadOnlyList<string> FileNames
         {
-            get => _fileName;
+            get => _fileNames;
             set
             {
-                if (this.SetProperty(ref _fileName, value))
+                if (this.SetProperty(ref _fileNames, value))
                 {
-                    ((AsyncRelayCommand)this.SplitCommand).NotifyCanExecuteChanged();
+                    this.UpdateUi();
                 }
             }
         }
@@ -85,12 +106,12 @@ namespace MusicSheetManager.ViewModels
             set => this.SetProperty(ref _splitOptions, value);
         }
 
-        public ICommand SplitCommand { get; }
+        public ICommand SplitAndDetectCommand { get; }
 
-        public bool IsSplitting
+        public bool IsSplittingOrDetecting
         {
-            get => _isSplitting;
-            set => this.SetProperty(ref _isSplitting, value);
+            get => _isSplittingOrDetecting;
+            set => this.SetProperty(ref _isSplittingOrDetecting, value);
         }
 
         public bool IsMetadataEditable
@@ -104,6 +125,42 @@ namespace MusicSheetManager.ViewModels
         public ICommand ImportCommand { get; }
 
         public Action<bool?> SetDialogResultAction { get; set; }
+
+        public bool ShowSplitControls
+        {
+            get => _showSplitControls;
+            set => this.SetProperty(ref _showSplitControls, value);
+        }
+
+        public string SplitAndDetectButtonText
+        {
+            get => _splitAndDetectButtonText;
+            set => this.SetProperty(ref _splitAndDetectButtonText, value);
+        }
+
+        public string ImportTitle
+        {
+            get => _importTitle;
+            set => this.SetProperty(ref _importTitle, value);
+        }
+
+        public string ImportDescription
+        {
+            get => _importDescription;
+            set => this.SetProperty(ref _importDescription, value);
+        }
+
+        public bool IsMetadataExpanded
+        {
+            get => _isMetadataExpanded;
+            set => SetProperty(ref _isMetadataExpanded, value);
+        }
+
+        public bool IsSplitOptionsExpanded
+        {
+            get => _isSplitOptionsExpanded;
+            set => SetProperty(ref _isSplitOptionsExpanded, value);
+        }
 
         #endregion
 
@@ -121,8 +178,7 @@ namespace MusicSheetManager.ViewModels
 
             base.OnPropertyChanged(e);
 
-            if (e.PropertyName is
-                nameof(this.IsSplitting))
+            if (e.PropertyName is nameof(this.IsSplittingOrDetecting))
             {
                 ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
             }
@@ -133,23 +189,87 @@ namespace MusicSheetManager.ViewModels
 
         #region Private Methods
 
-        private bool CanSplitMusicSheets()
+        private void UpdateUi()
         {
-            return
-                !string.IsNullOrEmpty(this.FileName) &&
-                File.Exists(this.FileName) &&
-                Path.GetExtension(this.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+            var fileCount = this.FileNames?.Count ?? 0;
+
+            this.ShowSplitControls = fileCount <= 1;
+            this.SplitAndDetectButtonText = fileCount <= 1
+                ? "Split & detect"
+                : "Detect";
+
+            this.ImportTitle = fileCount switch
+            {
+                1 => "Import single PDF file with multiple sheets",
+                > 1 => "Import multiple PDF files with only one sheet",
+                _ => "Import music sheets"
+            };
+
+            this.ImportDescription = fileCount switch
+            {
+                1 =>
+                    "You have selected a PDF file containing multiple music sheets. Enter first the required metadata and select the appropriate options for splitting the file into individual files for each music sheet. Press then the “Split & detect” button to start splitting and automatic recognition of instruments, parts, and clefs.",
+                > 1 =>
+                    $"You have selected {fileCount} PDF files with only one music sheet. Enter first the required metadata. Press then the “Detect” button to start automatic recognition of instruments, parts, and clefs.",
+                _ => string.Empty
+            };
+
+            ((AsyncRelayCommand)this.SplitAndDetectCommand).NotifyCanExecuteChanged();
         }
 
-        private async Task SplitMusicSheetsAsync()
+        private bool CanSplitMusicSheets()
         {
-            if (string.IsNullOrWhiteSpace(this.Metadata.Title))
+            return true;
+            // Enable when there is at least one valid file
+            if (this.FileNames is not [not null])
             {
-                MessageBox.Show("Please enter a title under Metadata.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            // Ensure all entries exist and are PDFs
+            return this.FileNames.Count >= 1 &&
+                   this.FileNames.All(f => !string.IsNullOrWhiteSpace(f) &&
+                                           File.Exists(f) &&
+                                           Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task ExecuteSplitAndDetectAsync()
+        {
+            try
+            {
+                var fileCount = this.FileNames?.Count ?? 0;
+
+                if (fileCount <= 1)
+                {
+                    await this.SplitAndDetectMusicSheetsAsync();
+                }
+                else
+                {
+                    await this.DetectMusicSheetsAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(
+                    Application.Current.MainWindow!,
+                    $"Error while splitting or detecting music sheets: {e.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async Task SplitAndDetectMusicSheetsAsync()
+        {
+            if (this.EnsureRequiredMetadata())
+            {
                 return;
             }
 
-            this.IsSplitting = true;
+            this.IsSplittingOrDetecting = true;
+
+            this.IsMetadataExpanded = false;
+            this.IsSplitOptionsExpanded = false;
             this.IsMetadataEditable = false;
 
             try
@@ -161,18 +281,49 @@ namespace MusicSheetManager.ViewModels
                 {
                     var (musicSheet, totalSheets) = report;
                     var info = new MusicSheetInfo(musicSheet);
-                    this.SubscribeToItem(info);
                     this.MusicSheets.Add(info);
                     this.Progress = this.MusicSheets.Count * 100 / totalSheets;
-
-                    this.CalculateConflicts();
                 });
 
-                await _musicSheetService.SplitAsync(this.FileName, this.Metadata, this.SplitOptions, progress).ConfigureAwait(false);
+                await _musicSheetService.SplitAndDetectSheetsAsync(this.FileNames[0], this.Metadata, this.SplitOptions, progress);
             }
             finally
             {
-                this.IsSplitting = false;
+                this.IsSplittingOrDetecting = false;
+            }
+        }
+
+        private async Task DetectMusicSheetsAsync()
+        {
+            if (this.EnsureRequiredMetadata())
+            {
+                return;
+            }
+
+            this.IsSplittingOrDetecting = true;
+
+            this.IsMetadataExpanded = false;
+            this.IsSplitOptionsExpanded = false;
+            this.IsMetadataEditable = false;
+
+            try
+            {
+                this.Progress = 0;
+                this.MusicSheets.Clear();
+
+                var progress = new Progress<(MusicSheet, int)>(report =>
+                {
+                    var (musicSheet, totalSheets) = report;
+                    var info = new MusicSheetInfo(musicSheet);
+                    this.MusicSheets.Add(info);
+                    this.Progress = this.MusicSheets.Count * 100 / totalSheets;
+                });
+
+                await _musicSheetService.DetectSheetsAsync(this.FileNames, this.Metadata, progress);
+            }
+            finally
+            {
+                this.IsSplittingOrDetecting = false;
             }
         }
 
@@ -180,7 +331,7 @@ namespace MusicSheetManager.ViewModels
         {
             var selectedMusicSheets = this.MusicSheets.Where(msi => msi.IsSelected).ToList();
 
-            return !this.IsSplitting && selectedMusicSheets.Any() && selectedMusicSheets.All(msi => msi.Instrument != InstrumentInfo.Unknown && !msi.Sheet.HasConflict);
+            return !this.IsSplittingOrDetecting && selectedMusicSheets.Any() && selectedMusicSheets.All(msi => msi.Instrument != InstrumentInfo.Unknown && !msi.Sheet.HasConflict);
         }
 
         private void ImportMusicSheets()
@@ -218,6 +369,31 @@ namespace MusicSheetManager.ViewModels
             MusicSheetFolder.CalculateConflicts(this.MusicSheets.Where(m => m.IsSelected).Select(i => i.Sheet).ToList());
         }
 
+        private bool EnsureRequiredMetadata()
+        {
+            if (string.IsNullOrWhiteSpace(this.Metadata.Title))
+            {
+                MessageBox.Show(
+                    "Please enter a \"Title\" under Metadata.",
+                    "Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.Metadata.Composer))
+            {
+                MessageBox.Show(
+                    "Please enter a \"Composer\" under Metadata.",
+                    "Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
 
@@ -238,6 +414,7 @@ namespace MusicSheetManager.ViewModels
                 foreach (var item in e.OldItems.OfType<MusicSheetInfo>())
                 {
                     item.PropertyChanged -= this.OnMusicSheetInfoPropertyChanged;
+
                     if (item.Parts != null)
                     {
                         item.Parts.CollectionChanged -= this.OnPartsCollectionChanged;
@@ -252,15 +429,17 @@ namespace MusicSheetManager.ViewModels
 
         private void OnMusicSheetInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName is 
-                nameof(MusicSheetInfo.IsSelected) or 
-                nameof(MusicSheetInfo.Instrument) or 
-                nameof(MusicSheetInfo.Clef) or 
-                nameof(MusicSheetInfo.Parts))
+            if (e.PropertyName is not (
+                nameof(MusicSheetInfo.IsSelected) or
+                nameof(MusicSheetInfo.Instrument) or
+                nameof(MusicSheetInfo.Clef) or
+                nameof(MusicSheetInfo.Parts)))
             {
-                this.CalculateConflicts();
-                ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
+                return;
             }
+
+            this.CalculateConflicts();
+            ((RelayCommand)this.ImportCommand).NotifyCanExecuteChanged();
         }
 
         private void OnPartsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -322,15 +501,15 @@ namespace MusicSheetManager.ViewModels
 
     public enum PagesPerSheet
     {
-        [System.ComponentModel.DataAnnotations.Display(Name = "1 page")]
+        [Display(Name = "1 page")]
         OnePage,
-        [System.ComponentModel.DataAnnotations.Display(Name = "2 pages")]
+        [Display(Name = "2 pages")]
         TwoPages,
-        [System.ComponentModel.DataAnnotations.Display(Name = "3 pages")]
+        [Display(Name = "3 pages")]
         ThreePages,
-        [System.ComponentModel.DataAnnotations.Display(Name = "4 pages")]
+        [Display(Name = "4 pages")]
         FourPages,
-        [System.ComponentModel.DataAnnotations.Display(Name = "All pages")]
+        [Display(Name = "All pages")]
         AllPages
     }
 }

@@ -9,9 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
-using Autofac;
 using AvalonDock.Layout.Serialization;
-using Microsoft.Win32;
 using MusicSheetManager.Models;
 using MusicSheetManager.Properties;
 using MusicSheetManager.Utilities;
@@ -312,6 +310,20 @@ public partial class MainWindow : Window
     {
         var aboutDialog = new AboutDialog { Owner = this };
         aboutDialog.ShowDialog();
+    }
+
+    private void ImportDropDownButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { ContextMenu: { } menu } b)
+        {
+            return;
+        }
+
+        menu.PlacementTarget = b;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        menu.HorizontalOffset = 0;
+        menu.VerticalOffset = 0;
+        menu.IsOpen = true;
     }
 
     #endregion

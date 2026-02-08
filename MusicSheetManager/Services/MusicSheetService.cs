@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows; // Für MessageBox, Application
 using IronOcr;
 using MusicSheetManager.Models;
 using MusicSheetManager.Properties;
@@ -12,6 +13,7 @@ using MusicSheetManager.ViewModels;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
+using PdfDocument = PdfSharpCore.Pdf.PdfDocument;
 
 namespace MusicSheetManager.Services;
 
@@ -22,6 +24,24 @@ internal class MusicSheetService : IMusicSheetService
     public MusicSheetService()
     {
         License.LicenseKey = Settings.Default.IronOcrLicenseKey;
+    }
+
+    #endregion
+
+
+    #region Private Methods
+
+    private static string EnsureEmptyTempFolder()
+    {
+        var tempFolder = Path.Combine(Folders.TempFolder, "Import");
+
+        if (Directory.Exists(tempFolder))
+        {
+            Directory.Delete(tempFolder, true);
+        }
+
+        Directory.CreateDirectory(tempFolder);
+        return tempFolder;
     }
 
     #endregion
@@ -75,17 +95,10 @@ internal class MusicSheetService : IMusicSheetService
         }
     }
 
-    public async Task SplitAsync(string fileName, MusicSheetFolderMetadata metadata, SplitOptions splitOptions, IProgress<(MusicSheet, int)> progress)
+    public async Task SplitAndDetectSheetsAsync(string fileName, MusicSheetFolderMetadata metadata, SplitOptions splitOptions, IProgress<(MusicSheet, int)> progress)
     {
         // Create a temporary folder
-        var tempFolder = Path.Combine(Path.GetTempPath(), "MusicSheetManager", "Import");
-
-        if (Directory.Exists(tempFolder))
-        {
-            Directory.Delete(tempFolder, true);
-        }
-
-        Directory.CreateDirectory(tempFolder);
+        var tempFolder = EnsureEmptyTempFolder();
 
         // Copy the file to the temporary folder
         var tempFilePath = Path.Combine(tempFolder, "original.pdf");
@@ -101,15 +114,60 @@ internal class MusicSheetService : IMusicSheetService
             this.RotatePages(tempFilePath);
         }
 
-        using var document = PdfReader.Open(tempFilePath, PdfDocumentOpenMode.Import);
-
-        var pagePerSheetCount = splitOptions.PagesPerSheet.ToInt() ?? document.PageCount;
-        var totalSheets = document.PageCount / pagePerSheetCount;
-
-        for (var index = 0; index < document.Pages.Count; index += pagePerSheetCount)
+        try
         {
-            var musicSheet = await MusicSheet.CreateAsync(metadata, document, index, pagePerSheetCount).ConfigureAwait(false);
-            progress.Report((musicSheet, totalSheets));
+            using var document = PdfReader.Open(tempFilePath, PdfDocumentOpenMode.Import);
+            var pagePerSheetCount = splitOptions.PagesPerSheet.ToInt() ?? document.PageCount;
+            var totalSheets = document.PageCount / pagePerSheetCount;
+
+            for (var index = 0; index < document.Pages.Count; index += pagePerSheetCount)
+            {
+                var musicSheet = await MusicSheet.CreateAsync(metadata, document, index, pagePerSheetCount);
+                progress.Report((musicSheet, totalSheets));
+            }
+        }
+        catch (PdfReaderException)
+        {
+            MessageBox.Show(
+                Application.Current.MainWindow!,
+                $"The PDF file \"{Path.GetFileName(fileName)}\" is damaged. Try to repair it with opening and saving in Adobe Acrobat.",
+                "Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    public async Task DetectSheetsAsync(IEnumerable<string> fileNames, MusicSheetFolderMetadata metadata, IProgress<(MusicSheet, int)> progress)
+    {
+        var tempFolder = EnsureEmptyTempFolder();
+        var tempFileNames = new List<string>();
+
+        foreach (var fileName in fileNames)
+        {
+            var tempFilePath = Path.Combine(tempFolder, $"{Path.GetFileNameWithoutExtension(fileName)}.original.pdf");
+            File.Copy(fileName, tempFilePath);
+            tempFileNames.Add(tempFilePath);
+        }
+
+        var total = tempFileNames.Count;
+
+        foreach (var tempFileName in tempFileNames)
+        {
+            try
+            {
+                using var document = PdfReader.Open(tempFileName, PdfDocumentOpenMode.Import);
+                var musicSheet = await MusicSheet.CreateAsync(metadata, document, 0, document.PageCount);
+                progress.Report((musicSheet, total));
+            }
+            catch (PdfReaderException)
+            {
+                MessageBox.Show(
+                    Application.Current.MainWindow!,
+                    $"The PDF file \"{Path.GetFileName(tempFileName)}\" is damaged. Try to repair it with opening and saving in Adobe Acrobat.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
     }
 

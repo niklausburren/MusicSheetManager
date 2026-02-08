@@ -21,7 +21,7 @@
     <Window.InputBindings>
         <!-- Import sheet folder: Ctrl+I -->
         <KeyBinding Gesture="Ctrl+I"
-                    Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}" />
+                    Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromSingleFileCommand}" />
 
         <!-- Import sheets: Ctrl+Shift+I -->
         <KeyBinding Gesture="Ctrl+Shift+I"
@@ -267,12 +267,22 @@
                         </MenuItem.Icon>
                     </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Import music sheets..."
-                          Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}"
-                          InputGestureText="Ctrl+I">
+                <MenuItem Header="Import music sheets">
                     <MenuItem.Icon>
                         <Image Source="/Resources/import.png" Width="16" Height="16" />
                     </MenuItem.Icon>
+                    <MenuItem Header="Single file containing multiple music sheets"
+                              Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromSingleFileCommand}">
+                        <MenuItem.Icon>
+                            <Image Source="/Resources/import-single-file.png" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Multiple files containing only one music sheet"
+                              Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromMultipleFilesCommand}">
+                        <MenuItem.Icon>
+                            <Image Source="/Resources/import-multiple-files.png" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
@@ -359,12 +369,33 @@
 
         <ToolBarTray Grid.Row="1">
             <ToolBar>
-                <Button Command="{Binding MusicSheetTab.ImportMusicSheetFolderCommand}">
+                <!-- Import: normaler Button, öffnet ContextMenu per Linksklick -->
+                <Button x:Name="ImportDropDownButton"
+                        ToolTip="Import music sheets"
+                        Click="ImportDropDownButton_OnClick">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Resources/import.png" Width="16" Height="16" Margin="0,0,4,0" />
                         <TextBlock Text="Import music sheets" VerticalAlignment="Center" />
+                        <TextBlock Text="▼" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="Gray" />
                     </StackPanel>
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Single file containing multiple music sheets"
+                                      Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromSingleFileCommand}">
+                                <MenuItem.Icon>
+                                    <Image Source="/Resources/import-single-file.png" Width="16" Height="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Multiple files containing only one music sheet"
+                                      Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromMultipleFilesCommand}">
+                                <MenuItem.Icon>
+                                    <Image Source="/Resources/import-multiple-files.png" Width="16" Height="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
+
                 <Button Command="{Binding PlaylistTab.CreatePlaylistCommand}" ToolTip="Create person">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Resources/playlist-add.png" Width="16" Height="16" Margin="0,0,4,0" />

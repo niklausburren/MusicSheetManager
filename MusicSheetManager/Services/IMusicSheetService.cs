@@ -20,7 +20,9 @@ public interface IMusicSheetService
 
     Task LoadAsync(IProgress<int> progress);
 
-    Task SplitAsync(string fileName, MusicSheetFolderMetadata metadata, SplitOptions splitOptions, IProgress<(MusicSheet, int)> progress);
+    Task SplitAndDetectSheetsAsync(string fileName, MusicSheetFolderMetadata metadata, SplitOptions splitOptions, IProgress<(MusicSheet, int)> progress);
+
+    Task DetectSheetsAsync(IEnumerable<string> fileNames, MusicSheetFolderMetadata metadata, IProgress<(MusicSheet, int)> progress);
 
     void Import(MusicSheetFolderMetadata metadata, IEnumerable<MusicSheet> musicSheets);
 

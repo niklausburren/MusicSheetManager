@@ -33,7 +33,8 @@ public class MusicSheetTabViewModel : ObservableObject
     {
         this.MusicSheetService = musicSheetService;
 
-        this.ImportMusicSheetFolderCommand = new RelayCommand(this.ImportMusicSheetFolder);
+        this.ImportMusicSheetFolderFromSingleFileCommand = new RelayCommand(this.ImportMusicSheetFolderFromSingleFile);
+        this.ImportMusicSheetFolderFromMultipleFilesCommand = new RelayCommand(this.ImportMusicSheetFolderFromMultipleFiles);
         this.ImportSheetsCommand = new RelayCommand<MusicSheetFolder>(this.ImportSheets); 
         this.AssignMusicSheetsCommand = new RelayCommand<object>(this.AssignMusicSheets, this.CanAssignMusicSheets);
         this.OpenInExplorerCommand = new RelayCommand<MusicSheetFolder>(this.OpenInExplorer, this.CanOpenInExplorer);
@@ -54,7 +55,9 @@ public class MusicSheetTabViewModel : ObservableObject
 
     public ICommand OpenInExplorerCommand { get; }
 
-    public ICommand ImportMusicSheetFolderCommand { get; }
+    public ICommand ImportMusicSheetFolderFromSingleFileCommand { get; }
+
+    public ICommand ImportMusicSheetFolderFromMultipleFilesCommand { get; }
 
     #endregion
 
@@ -118,7 +121,7 @@ public class MusicSheetTabViewModel : ObservableObject
 
     #region Private Methods
 
-    private void ImportMusicSheetFolder()
+    private void ImportMusicSheetFolderFromSingleFile()
     {
         var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
 
@@ -128,7 +131,27 @@ public class MusicSheetTabViewModel : ObservableObject
         }
 
         var importDialog = App.Container.Resolve<ImportDialog>();
-        importDialog.ShowDialog(Application.Current.MainWindow!, openFileDialog.FileName);
+        importDialog.ShowDialog(Application.Current.MainWindow!, [openFileDialog.FileName]);
+
+        this.FocusRequested?.Invoke();
+    }
+
+    private void ImportMusicSheetFolderFromMultipleFiles()
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "PDF files (*.pdf)|*.pdf",
+            Title = "Select multiple PDF files",
+            Multiselect = true
+        };
+
+        if (openFileDialog.ShowDialog(Application.Current.MainWindow!) != true)
+        {
+            return;
+        }
+
+        var importDialog = App.Container.Resolve<ImportDialog>();
+        importDialog.ShowDialog(Application.Current.MainWindow!, openFileDialog.FileNames);
 
         this.FocusRequested?.Invoke();
     }
@@ -154,7 +177,7 @@ public class MusicSheetTabViewModel : ObservableObject
         var importDialog = App.Container.Resolve<ImportDialog>();
         importDialog.ShowDialog(
             Application.Current.MainWindow,
-            openFileDialog.FileName,
+            [openFileDialog.FileName],
             musicSheetFolder);
 
         this.FocusRequested?.Invoke();
