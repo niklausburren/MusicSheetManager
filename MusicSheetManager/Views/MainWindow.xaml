@@ -271,13 +271,13 @@
                     <MenuItem.Icon>
                         <Image Source="/Resources/import.png" Width="16" Height="16" />
                     </MenuItem.Icon>
-                    <MenuItem Header="Single file containing multiple music sheets"
+                    <MenuItem Header="PDF file containing multiple sheets"
                               Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromSingleFileCommand}">
                         <MenuItem.Icon>
                             <Image Source="/Resources/import-single-file.png" Width="16" Height="16" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Multiple files containing only one music sheet"
+                    <MenuItem Header="PDF files containing one sheet"
                               Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromMultipleFilesCommand}">
                         <MenuItem.Icon>
                             <Image Source="/Resources/import-multiple-files.png" Width="16" Height="16" />
@@ -380,13 +380,13 @@
                     </StackPanel>
                     <Button.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Single file containing multiple music sheets"
+                            <MenuItem Header="PDF file containing multiple sheets"
                                       Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromSingleFileCommand}">
                                 <MenuItem.Icon>
                                     <Image Source="/Resources/import-single-file.png" Width="16" Height="16" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="Multiple files containing only one music sheet"
+                            <MenuItem Header="PDF files containing one sheet"
                                       Command="{Binding MusicSheetTab.ImportMusicSheetFolderFromMultipleFilesCommand}">
                                 <MenuItem.Icon>
                                     <Image Source="/Resources/import-multiple-files.png" Width="16" Height="16" />

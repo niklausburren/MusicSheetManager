@@ -25,26 +25,14 @@ namespace MusicSheetManager.Views
 
         #region Public Methods
 
-        public void ShowDialog(Window owner, IEnumerable<string> fileNames, MusicSheetFolder musicSheetFolder = null)
+        public void ShowDialog(Window owner, ImportMode importMode, IEnumerable<string> fileNames, MusicSheetFolder musicSheetFolder = null)
         {
             if (this.DataContext is not ImportDialogViewModel viewModel)
             {
                 return;
             }
 
-            viewModel.FileNames = fileNames.ToList();
-
-            if (musicSheetFolder != null)
-            {
-                viewModel.Metadata.Title = musicSheetFolder.Title;
-                viewModel.Metadata.Composer = musicSheetFolder.Composer;
-                viewModel.Metadata.Arranger = musicSheetFolder.Arranger;
-                viewModel.IsMetadataEditable = false;
-            }
-            else
-            {
-                viewModel.IsMetadataEditable = true;
-            }
+            viewModel.Init(importMode, fileNames, musicSheetFolder);
 
             PdfViewer.Source = new Uri(viewModel.FileNames[0]);
 

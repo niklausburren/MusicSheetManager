@@ -71,21 +71,32 @@ public class MusicSheetTabViewModel : ObservableObject
             return;
         }
 
-        var result = MessageBox.Show(
+        var dialogResult = MessageBox.Show(
             Application.Current.MainWindow!,
             $"Do you want to delete the music sheet folder \"{musicSheetFolder.Title}\" and all its contents?",
             "Confirm Deletion",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes)
+        if (dialogResult != MessageBoxResult.Yes)
         {
             return;
         }
 
-        if (await FileSystemHelper.TryDeleteFolderAsync(musicSheetFolder.Folder))
+        var deleteResult = await FileSystemHelper.TryDeleteFolderAsync(musicSheetFolder.Folder);
+
+        if (deleteResult.Success)
         {
             this.MusicSheetService.MusicSheetFolders.Remove(musicSheetFolder);
+        }
+        else
+        {
+            MessageBox.Show(
+                Application.Current.MainWindow!,
+                $"Failed to delete the music sheet folder: {deleteResult.ErrorMessage}",
+                "Deletion Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -96,23 +107,34 @@ public class MusicSheetTabViewModel : ObservableObject
             return;
         }
 
-        var result = MessageBox.Show(
+        var dialogResult = MessageBox.Show(
             Application.Current.MainWindow!,
             $"Do you want to delete the music sheet \"{musicSheet.DisplayName}\"?",
             "Confirm Deletion",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes)
+        if (dialogResult != MessageBoxResult.Yes)
         {
             return;
         }
 
         var folder = this.MusicSheetService.MusicSheetFolders.First(m => m.Id == musicSheet.FolderId);
 
-        if (await FileSystemHelper.TryDeleteFileAsync(musicSheet.FileName))
+        var deleteResult = await FileSystemHelper.TryDeleteFileAsync(musicSheet.FileName);
+
+        if (deleteResult.Success)
         {
             folder.Sheets.Remove(musicSheet);
+        }
+        else
+        {
+            MessageBox.Show(
+                Application.Current.MainWindow!,
+                $"Failed to delete the music sheet: {deleteResult.ErrorMessage}",
+                "Deletion Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -123,7 +145,11 @@ public class MusicSheetTabViewModel : ObservableObject
 
     private void ImportMusicSheetFolderFromSingleFile()
     {
-        var openFileDialog = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf", Title = "Select a PDF file" };
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "PDF files (*.pdf)|*.pdf",
+            Title = "Select a PDF file"
+        };
 
         if (openFileDialog.ShowDialog(Application.Current.MainWindow!) != true)
         {
@@ -131,7 +157,11 @@ public class MusicSheetTabViewModel : ObservableObject
         }
 
         var importDialog = App.Container.Resolve<ImportDialog>();
-        importDialog.ShowDialog(Application.Current.MainWindow!, [openFileDialog.FileName]);
+
+        importDialog.ShowDialog(
+            Application.Current.MainWindow!,
+            ImportMode.SplitAndDetect,
+            [openFileDialog.FileName]);
 
         this.FocusRequested?.Invoke();
     }
@@ -151,7 +181,11 @@ public class MusicSheetTabViewModel : ObservableObject
         }
 
         var importDialog = App.Container.Resolve<ImportDialog>();
-        importDialog.ShowDialog(Application.Current.MainWindow!, openFileDialog.FileNames);
+
+        importDialog.ShowDialog(
+            Application.Current.MainWindow!,
+            ImportMode.DetectOnly,
+            openFileDialog.FileNames);
 
         this.FocusRequested?.Invoke();
     }
@@ -177,6 +211,7 @@ public class MusicSheetTabViewModel : ObservableObject
         var importDialog = App.Container.Resolve<ImportDialog>();
         importDialog.ShowDialog(
             Application.Current.MainWindow,
+            ImportMode.SplitAndDetect,
             [openFileDialog.FileName],
             musicSheetFolder);
 

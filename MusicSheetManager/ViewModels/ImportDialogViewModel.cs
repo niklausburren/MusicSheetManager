@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,9 +21,9 @@ namespace MusicSheetManager.ViewModels
 
         private readonly IMusicSheetService _musicSheetService;
 
-        private MusicSheetFolderMetadata _metadata;
+        private readonly MusicSheetFolderMetadata _metadata;
 
-        private SplitOptions _splitOptions;
+        private readonly SplitOptions _splitOptions;
 
         private IReadOnlyList<string> _fileNames;
 
@@ -46,6 +45,8 @@ namespace MusicSheetManager.ViewModels
 
         private bool _isSplitOptionsExpanded = true;
 
+        private ImportMode _importMode;
+
         #endregion
 
 
@@ -58,7 +59,7 @@ namespace MusicSheetManager.ViewModels
             this.Metadata = new MusicSheetFolderMetadata();
 
             this.SplitOptions = new SplitOptions();
-            this.SplitAndDetectCommand = new AsyncRelayCommand(this.ExecuteSplitAndDetectAsync, this.CanSplitMusicSheets);
+            this.SplitAndDetectCommand = new AsyncRelayCommand(this.ExecuteSplitAndDetectAsync);
             this.ImportCommand = new RelayCommand(this.ImportMusicSheets, this.CanImportMusicSheets);
 
             this.MusicSheets.CollectionChanged += this.OnMusicSheetsCollectionChanged;
@@ -76,48 +77,48 @@ namespace MusicSheetManager.ViewModels
 
         #region Properties
 
+        public ImportMode ImportMode
+        {
+            get => _importMode;
+            private set => this.SetProperty(ref _importMode, value);
+        }
+
+        public IReadOnlyList<string> FileNames
+        {
+            get => _fileNames;
+            private set => this.SetProperty(ref _fileNames, value);
+        }
+
+        public MusicSheetFolderMetadata Metadata
+        {
+            get => _metadata;
+            private init => this.SetProperty(ref _metadata, value);
+        }
+
+        public SplitOptions SplitOptions
+        {
+            get => _splitOptions;
+            private init => this.SetProperty(ref _splitOptions, value);
+        }
+
+        public ICommand SplitAndDetectCommand { get; }
+
         public int Progress
         {
             get => _progress;
             set => this.SetProperty(ref _progress, value);
         }
 
-        public IReadOnlyList<string> FileNames
-        {
-            get => _fileNames;
-            set
-            {
-                if (this.SetProperty(ref _fileNames, value))
-                {
-                    this.UpdateUi();
-                }
-            }
-        }
-
-        public MusicSheetFolderMetadata Metadata
-        {
-            get => _metadata;
-            set => this.SetProperty(ref _metadata, value);
-        }
-
-        public SplitOptions SplitOptions
-        {
-            get => _splitOptions;
-            set => this.SetProperty(ref _splitOptions, value);
-        }
-
-        public ICommand SplitAndDetectCommand { get; }
-
         public bool IsSplittingOrDetecting
         {
             get => _isSplittingOrDetecting;
-            set => this.SetProperty(ref _isSplittingOrDetecting, value);
+            private set => this.SetProperty(ref _isSplittingOrDetecting, value);
         }
 
         public bool IsMetadataEditable
         {
             get => _isMetadataEditable;
-            set => this.SetProperty(ref _isMetadataEditable, value);
+            private set => this.SetProperty(ref _isMetadataEditable, value);
         }
 
         public ObservableCollection<MusicSheetInfo> MusicSheets { get; } = [];
@@ -153,13 +154,38 @@ namespace MusicSheetManager.ViewModels
         public bool IsMetadataExpanded
         {
             get => _isMetadataExpanded;
-            set => SetProperty(ref _isMetadataExpanded, value);
+            set => this.SetProperty(ref _isMetadataExpanded, value);
         }
 
         public bool IsSplitOptionsExpanded
         {
             get => _isSplitOptionsExpanded;
-            set => SetProperty(ref _isSplitOptionsExpanded, value);
+            set => this.SetProperty(ref _isSplitOptionsExpanded, value);
+        }
+
+        #endregion
+
+
+        #region Public Methods
+
+        public void Init(ImportMode importMode, IEnumerable<string> fileNames, MusicSheetFolder musicSheetFolder = null)
+        {
+            this.ImportMode = importMode;
+            this.FileNames = fileNames.ToList();
+            
+            if (musicSheetFolder != null)
+            {
+                this.Metadata.Title = musicSheetFolder.Title;
+                this.Metadata.Composer = musicSheetFolder.Composer;
+                this.Metadata.Arranger = musicSheetFolder.Arranger;
+                this.IsMetadataEditable = false;
+            }
+            else
+            {
+                this.IsMetadataEditable = true;
+            }
+
+            this.UpdateUi();
         }
 
         #endregion
@@ -193,59 +219,48 @@ namespace MusicSheetManager.ViewModels
         {
             var fileCount = this.FileNames?.Count ?? 0;
 
-            this.ShowSplitControls = fileCount <= 1;
-            this.SplitAndDetectButtonText = fileCount <= 1
-                ? "Split & detect"
-                : "Detect";
-
-            this.ImportTitle = fileCount switch
+            switch (this.ImportMode)
             {
-                1 => "Import single PDF file with multiple sheets",
-                > 1 => "Import multiple PDF files with only one sheet",
-                _ => "Import music sheets"
-            };
+                case ImportMode.SplitAndDetect:
+                    this.ImportTitle = "Import PDF file containing multiple sheets";
+                    this.ImportDescription = 
+                        "You have selected a PDF file containing multiple music sheets. " +
+                        "Enter first the required metadata and select the appropriate options " +
+                        "for splitting the file into individual files for each music sheet. " +
+                        "Press then the “Split & detect” button to start splitting and automatic " +
+                        "recognition of instruments, parts, and clefs.";
+                    this.SplitAndDetectButtonText = "Split & detect";
+                    this.ShowSplitControls = true;
+                    break;
 
-            this.ImportDescription = fileCount switch
-            {
-                1 =>
-                    "You have selected a PDF file containing multiple music sheets. Enter first the required metadata and select the appropriate options for splitting the file into individual files for each music sheet. Press then the “Split & detect” button to start splitting and automatic recognition of instruments, parts, and clefs.",
-                > 1 =>
-                    $"You have selected {fileCount} PDF files with only one music sheet. Enter first the required metadata. Press then the “Detect” button to start automatic recognition of instruments, parts, and clefs.",
-                _ => string.Empty
-            };
-
-            ((AsyncRelayCommand)this.SplitAndDetectCommand).NotifyCanExecuteChanged();
-        }
-
-        private bool CanSplitMusicSheets()
-        {
-            return true;
-            // Enable when there is at least one valid file
-            if (this.FileNames is not [not null])
-            {
-                return false;
+                case ImportMode.DetectOnly:
+                    this.ImportTitle = "Import PDF files containing one sheet";
+                    this.ImportDescription = 
+                        $"You have selected {fileCount} PDF {(fileCount > 1 ? "files" : "file")} containing " +
+                        $"only one music sheet. Enter first the required metadata. Press then the “Detect” " +
+                        $"button to start automatic recognition of instruments, parts, and clefs.";
+                    this.SplitAndDetectButtonText = "Detect";
+                    this.ShowSplitControls = false;
+                    break;
             }
 
-            // Ensure all entries exist and are PDFs
-            return this.FileNames.Count >= 1 &&
-                   this.FileNames.All(f => !string.IsNullOrWhiteSpace(f) &&
-                                           File.Exists(f) &&
-                                           Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase));
+            ((AsyncRelayCommand)this.SplitAndDetectCommand).NotifyCanExecuteChanged();
         }
 
         private async Task ExecuteSplitAndDetectAsync()
         {
             try
             {
-                var fileCount = this.FileNames?.Count ?? 0;
-
-                if (fileCount <= 1)
+                switch (this.ImportMode)
                 {
-                    await this.SplitAndDetectMusicSheetsAsync();
-                }
-                else
-                {
-                    await this.DetectMusicSheetsAsync();
+                    case ImportMode.SplitAndDetect:
+                        await this.SplitAndDetectMusicSheetsAsync();
+                        break;
+                    case ImportMode.DetectOnly:
+                        await this.DetectMusicSheetsAsync();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             catch (Exception e)
@@ -497,6 +512,12 @@ namespace MusicSheetManager.ViewModels
         }
 
         #endregion
+    }
+
+    public enum ImportMode
+    {
+        SplitAndDetect,
+        DetectOnly
     }
 
     public enum PagesPerSheet
