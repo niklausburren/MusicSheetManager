@@ -256,7 +256,7 @@ namespace MusicSheetManager.Services
             reporter.SetHeader("/Resources/sync.png", "Distributing sheets...");
             reporter.ReportProgress(0, "Preparing...");
 
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 var copied = 0;
                 var deleted = 0;
@@ -363,15 +363,14 @@ namespace MusicSheetManager.Services
                             continue;
                         }
 
-                        try
+                        reporter.AppendLog(DistributionLogLevel.Info, $"DELETE FILE {file}");
+                        deleted++;
+
+                        var result = await FileSystemHelper.TryDeleteFileAsync(file);
+
+                        if (!result.Success)
                         {
-                            reporter.AppendLog(DistributionLogLevel.Info, $"DELETE FILE {file}");
-                            deleted++;
-                            File.Delete(file);
-                        }
-                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                        {
-                            reporter.AppendLog(DistributionLogLevel.Error, $"Delete file failed: {file} :: {ex.Message}");
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Delete file failed: {file} :: {result.ErrorMessage}");
                             errorCount++;
                         }
                     }
@@ -383,24 +382,23 @@ namespace MusicSheetManager.Services
 
                         Step($"Cleaning directory: {dir}");
 
-                        try
+                        if (!Directory.Exists(dir))
                         {
-                            if (!Directory.Exists(dir))
-                            {
-                                continue;
-                            }
-
-                            if (Directory.EnumerateFileSystemEntries(dir).Any())
-                            {
-                                continue;
-                            }
-
-                            reporter.AppendLog(DistributionLogLevel.Info, $"RMDIR {dir}");
-                            Directory.Delete(dir, recursive: false);
+                            continue;
                         }
-                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+
+                        if (Directory.EnumerateFileSystemEntries(dir).Any())
                         {
-                            reporter.AppendLog(DistributionLogLevel.Error, $"Remove directory failed: {dir} :: {ex.Message}");
+                            continue;
+                        }
+
+                        reporter.AppendLog(DistributionLogLevel.Info, $"RMDIR {dir}");
+
+                        var result = await FileSystemHelper.TryDeleteFolderAsync(dir);
+
+                        if (!result.Success)
+                        {
+                            reporter.AppendLog(DistributionLogLevel.Error, $"Remove directory failed: {dir} :: {result.ErrorMessage}");
                             errorCount++;
                         }
                     }

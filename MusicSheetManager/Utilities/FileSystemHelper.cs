@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -20,16 +21,17 @@ public static class FileSystemHelper
         return r.Replace(fileName, "_");
     }
 
-    public static async Task<bool> TryDeleteFolderAsync(
+    public static async Task<(bool Success, string ErrorMessage)> TryDeleteFolderAsync(
         string folder,
-        bool changeWorkingDirectory = true,
         int maxRetries = 20,
         int delayMs = 500)
     {
         if (string.IsNullOrWhiteSpace(folder))
         {
-            return false;
+            return (false, "Folder name empty.");
         }
+
+        Exception exception = null;
 
         for (var attempt = 0; attempt < maxRetries; attempt++)
         {
@@ -37,33 +39,35 @@ public static class FileSystemHelper
             {
                 if (!Directory.Exists(folder))
                 {
-                    return true;
+                    return (true, null);
                 }
 
                 var dir = new DirectoryInfo(folder);
                 dir.Attributes = FileAttributes.Normal;
                 Directory.Delete(folder, recursive: true);
-                return true;
+                return (true, null);
             }
-            catch
+            catch (Exception ex)
             {
+                exception = ex;
                 await Task.Delay(delayMs).ConfigureAwait(false);
             }
         }
 
-        return false;
+        return (false, exception?.Message);
     }
 
-    public static async Task<bool> TryDeleteFileAsync(
+    public static async Task<(bool Success, string ErrorMessage)> TryDeleteFileAsync(
         string fileName,
-        bool changeWorkingDirectory = true,
         int maxRetries = 20,
         int delayMs = 500)
     {
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            return false;
+            return (false, "File name empty.");
         }
+
+        Exception exception = null;
 
         for (var attempt = 0; attempt < maxRetries; attempt++)
         {
@@ -71,21 +75,22 @@ public static class FileSystemHelper
             {
                 if (!File.Exists(fileName))
                 {
-                    return true;
+                    return (true, null);
                 }
 
                 var dir = new FileInfo(fileName);
                 dir.Attributes = FileAttributes.Normal;
                 File.Delete(fileName);
-                return true;
+                return (true, null);
             }
-            catch
+            catch (Exception ex)
             {
+                exception = ex;
                 await Task.Delay(delayMs).ConfigureAwait(false);
             }
         }
 
-        return false;
+        return (false, exception?.Message);
     }
 
     #endregion
