@@ -33,6 +33,8 @@ public class PartInfo : IEquatable<PartInfo>
 
     public static PartInfo Fourth { get; } = new("Fourth", "4th", "4");
 
+    public static PartInfo Fifth { get; } = new("Fifth", "5th", "5");
+
     public static IReadOnlyList<PartInfo> All { get; } = typeof(PartInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
         .Select(pi => pi.GetValue(null))

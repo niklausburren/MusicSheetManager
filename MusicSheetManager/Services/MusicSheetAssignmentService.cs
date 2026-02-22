@@ -85,7 +85,7 @@ namespace MusicSheetManager.Services
 
                 var parts = person.Part != PartInfo.None
                     ? person.Part.GetSelfAndHigherParts()
-                    : PartInfo.Fourth.GetSelfAndHigherParts();
+                    : PartInfo.Fifth.GetSelfAndHigherParts();
 
                 foreach (var part in parts)
                 {
