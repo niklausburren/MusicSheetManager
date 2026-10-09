@@ -138,6 +138,9 @@
   <data name="InstrumentInfo_Bassoon" xml:space="preserve">
     <value>Bassoon</value>
   </data>
+  <data name="InstrumentInfo_Bagpipe" xml:space="preserve">
+    <value>Bagpipe</value>
+  </data>
   <data name="InstrumentInfo_AltoClarinetEb" xml:space="preserve">
     <value>Alto Clarinet Eb</value>
   </data>
@@ -274,5 +277,14 @@
   </data>
   <data name="InstrumentInfo_BassTromboneC" xml:space="preserve">
     <value>Bass Trombone C</value>
+  </data>
+  <data name="InstrumentInfo_Violin" xml:space="preserve">
+    <value>Violin</value>
+  </data>
+  <data name="InstrumentInfo_Cello" xml:space="preserve">
+    <value>Cello</value>
+  </data>
+  <data name="InstrumentInfo_Choir" xml:space="preserve">
+    <value>Choir</value>
   </data>
 </root>

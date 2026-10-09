@@ -248,6 +248,8 @@ internal static class PagesPerSheetExtensions
             PagesPerSheet.TwoPages => 2,
             PagesPerSheet.ThreePages => 3,
             PagesPerSheet.FourPages => 4,
+            PagesPerSheet.FivePages => 5,
+            PagesPerSheet.SixPages => 6,
             PagesPerSheet.AllPages => null,
             _ => throw new ArgumentOutOfRangeException(nameof(pagesPerSheet), pagesPerSheet, null)
         };

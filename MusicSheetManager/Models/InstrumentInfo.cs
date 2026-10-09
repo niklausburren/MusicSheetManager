@@ -44,6 +44,8 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public static InstrumentInfo Bassoon { get; } = new("Bassoon", InstrumentCategory.Wood, "Bassoon", "Fagott");
 
+    public static InstrumentInfo Bagpipe { get; } = new("Bagpipe", InstrumentCategory.Wood, "Bagpipe", "Bagpipes", "Dudelsack");
+
     public static InstrumentInfo ClarinetBb { get; } = new("ClarinetBb", InstrumentCategory.Wood, "Bb Clarinet", "Clarinet Bb", "Clarinet in Bb", "Clarinet .{0,6}in Bb", "Bb Klarinette", "Klarinette Bb", "Klarinette in Bb", "Klarinette .{0,6}in Bb", "B Klarinette", "Klarinette B", "Klarinette in B", "Klarinette .{0,6}in B");
 
     public static InstrumentInfo ClarinetEb { get; } = new("ClarinetEb", InstrumentCategory.Wood, "Eb Clarinet", "Clarinet Eb", "Clarinet in Eb", "Clarinet .{0,6}in Eb", "Eb Klarinette", "Klarinette Eb", "Klarinette in Eb", "Klarinette .{0,6}in Eb", "Es Klarinette", "Klarinette Es", "Klarinette in Es", "Klarinette .{0,6}in Es");
@@ -142,9 +144,15 @@ public class InstrumentInfo : IEquatable<InstrumentInfo>
 
     public static InstrumentInfo Guitar { get; } = new("Guitar", InstrumentCategory.Strings, "Guitar", "Gitarre");
 
+    public static InstrumentInfo Violin { get; } = new("Violin", InstrumentCategory.Strings, "Violin", "Violine", "Geige");
+
+    public static InstrumentInfo Cello { get; } = new("Cello", InstrumentCategory.Strings, "Cello", "Violoncello");
+
     public static InstrumentInfo Piano { get; } = new("Piano", InstrumentCategory.Keys, "Piano", "Klavier");
 
     public static InstrumentInfo Keyboard { get; } = new("Keyboard", InstrumentCategory.Keys, "Keyboard");
+
+    public static InstrumentInfo Choir { get; } = new("Choir", InstrumentCategory.Vocal, "Choir", "Chor");
 
     public static IReadOnlyList<InstrumentInfo> All { get; } = typeof(InstrumentInfo)
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
@@ -342,7 +350,8 @@ public enum InstrumentCategory
     Brass,
     Percussion,
     Strings,
-    Keys
+    Keys,
+    Vocal
 }
 
 public static class InstrumentInfoExtensions
@@ -362,7 +371,7 @@ public static class InstrumentInfoExtensions
         { InstrumentInfo.BassBb, [InstrumentInfo.BassClarinetBb] },
         { InstrumentInfo.Bassoon, [InstrumentInfo.TenorHornC, InstrumentInfo.BaritoneHornC, InstrumentInfo.EuphoniumC, InstrumentInfo.BassTromboneC, InstrumentInfo.BassC] },
         { InstrumentInfo.AltoSaxophoneEb, [InstrumentInfo.TenorHornEb] },
-        { InstrumentInfo.TenorSaxophoneBb, [InstrumentInfo.TenorHornBb] },
+        { InstrumentInfo.TenorSaxophoneBb, [InstrumentInfo.TenorHornBb, InstrumentInfo.EuphoniumBb] },
         { InstrumentInfo.BaritoneSaxophoneEb, [InstrumentInfo.BassEb, InstrumentInfo.HornEb] },
         { InstrumentInfo.HornEb, [InstrumentInfo.TenorHornEb] },
         { InstrumentInfo.BassEb, [InstrumentInfo.BaritoneSaxophoneEb, InstrumentInfo.HornEb] },

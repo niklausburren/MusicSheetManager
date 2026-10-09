@@ -530,6 +530,10 @@ namespace MusicSheetManager.ViewModels
         ThreePages,
         [Display(Name = "4 pages")]
         FourPages,
+        [Display(Name = "5 pages")]
+        FivePages,
+        [Display(Name = "6 pages")]
+        SixPages,
         [Display(Name = "All pages")]
         AllPages
     }
