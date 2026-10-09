@@ -18,6 +18,7 @@
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:RowNumberConverter x:Key="RowNumberConverter" />
         <converters:EnumDisplayNameConverter x:Key="EnumDisplayNameConverter" />
         <ObjectDataProvider x:Key="PagesPerSheetValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
@@ -153,6 +154,22 @@
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="ToolTipService.ShowDuration" Value="60000" />
+                                <Setter Property="ToolTip">
+                                    <Setter.Value>
+                                        <ToolTip Content="{Binding OcrTextToolTip}"
+                                                 Visibility="{Binding OcrTextToolTip, Converter={StaticResource NullToVisibilityConverter}}">
+                                            <ToolTip.ContentTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"
+                                                               FontFamily="Consolas"
+                                                               MaxWidth="500"
+                                                               TextWrapping="Wrap" />
+                                                </DataTemplate>
+                                            </ToolTip.ContentTemplate>
+                                        </ToolTip>
+                                    </Setter.Value>
+                                </Setter>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Instrument}" Value="{x:Static models:InstrumentInfo.Unknown}">
                                         <Setter Property="Background" Value="Yellow"/>

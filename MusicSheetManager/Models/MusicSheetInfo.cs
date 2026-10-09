@@ -54,6 +54,12 @@ namespace MusicSheetManager.Models
 
         public string FileName => this.Sheet.FileName;
 
+        public string OcrText => this.Sheet.OcrText;
+
+        public string OcrTextToolTip => string.IsNullOrWhiteSpace(this.Sheet.OcrText)
+            ? null
+            : $"Recognized text:{System.Environment.NewLine}{this.Sheet.OcrText}";
+
         #endregion
     }
 }

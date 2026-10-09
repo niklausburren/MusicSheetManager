@@ -33,11 +33,12 @@ public class MusicSheet : ObservableObject
 
     #region Constructors
 
-    private MusicSheet(string fileName, MusicSheetFolderMetadata metadata, InstrumentInfo instrument, IEnumerable<PartInfo> parts, ClefInfo clef)
+    private MusicSheet(string fileName, MusicSheetFolderMetadata metadata, InstrumentInfo instrument, IEnumerable<PartInfo> parts, ClefInfo clef, string ocrText)
     {
         this.Id = Guid.NewGuid();
         this.FileName = fileName;
         this.Metadata = metadata;
+        this.OcrText = ocrText;
 
         this.Metadata.PropertyChanged += (_, _) => this.OnPropertyChanged(nameof(this.Metadata));
 
@@ -166,6 +167,13 @@ public class MusicSheet : ObservableObject
     [Browsable(false)]
     public string DisplayName => this.ToString();
 
+    /// <summary>
+    /// The raw text recognized by OCR during import. Only available for freshly imported sheets and
+    /// intended for diagnosing detection problems.
+    /// </summary>
+    [Browsable(false)]
+    public string OcrText { get; }
+
     [Browsable(false)]
     public bool HasConflict
     {
@@ -196,7 +204,7 @@ public class MusicSheet : ObservableObject
             outputDocument.Close();
         }
 
-        return new MusicSheet(fileName, metadata, ocrResult.instrument, ocrResult.parts, ocrResult.clef);
+        return new MusicSheet(fileName, metadata, ocrResult.instrument, ocrResult.parts, ocrResult.clef, ocrResult.text);
     }
 
     public static MusicSheet Load(string fileName)
@@ -290,13 +298,14 @@ public class MusicSheet : ObservableObject
 
     #region Private Methods
 
-    private static async Task<(InstrumentInfo instrument, IReadOnlyList<PartInfo> parts, ClefInfo clef)> PerformOcrAsync(PdfDocument document, int startIndex)
+    private static async Task<(InstrumentInfo instrument, IReadOnlyList<PartInfo> parts, ClefInfo clef, string text)> PerformOcrAsync(PdfDocument document, int startIndex)
     {
         var languages = new[] { OcrLanguage.EnglishBest, OcrLanguage.GermanBest };
 
         var instrument = InstrumentInfo.Unknown;
         var parts = new List<PartInfo>();
         var clef = ClefInfo.TrebleClef;
+        var texts = new List<string>();
 
         foreach (var language in languages)
         {
@@ -308,17 +317,19 @@ public class MusicSheet : ObservableObject
             ocrInput.LoadPdfPage(document.FullPath, startIndex, 200, false, contentArea);
             var ocrResult = await ocr.ReadAsync(ocrInput).ConfigureAwait(false);
 
+            texts.Add($"--- {language} (confidence: {ocrResult.Confidence:0.##}) ---{Environment.NewLine}{ocrResult.Text}");
+
             instrument = InstrumentInfo.TryGet(ocrResult.Text);
             parts = PartInfo.TryGet(ocrResult.Text, instrument).ToList();
             clef = ClefInfo.TryGet(ocrResult.Text, instrument);
 
             if (instrument != InstrumentInfo.Unknown)
             {
-                return (instrument, parts, clef);
+                break;
             }
         }
 
-        return (instrument, parts, clef);
+        return (instrument, parts, clef, string.Join(Environment.NewLine + Environment.NewLine, texts));
     }
 
     private static string BuildFilename(string folder, string name, InstrumentInfo instrument, IReadOnlyList<PartInfo> parts, ClefInfo clef, bool unique = true)
